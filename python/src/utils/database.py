@@ -2,6 +2,7 @@ import sqlalchemy
 import logging
 from sqlalchemy.orm import sessionmaker, scoped_session
 
+
 class DatabaseClient:
     def __init__(self, db_type, database, username, password, host, port=None):
         if db_type.lower() == 'mssql':
