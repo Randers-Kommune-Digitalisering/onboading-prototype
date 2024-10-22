@@ -1,56 +1,73 @@
 import logging
-import time
+from flask import Blueprint, request, jsonify
+from datetime import datetime
+from models.opgaver import Opgaver, Base as BaseOpgaver
+from utils.database import DatabaseClient
+from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 
-from datetime import timedelta
-from flask import Blueprint, Response, request
 
-from utils.config import POD_NAME
-from utils.logging import is_ready_gauge, last_updated_gauge, job_start_counter, job_complete_counter, job_duration_summary
+db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
+
+BaseOpgaver.metadata.create_all(db_client.engine)
 
 logger = logging.getLogger(__name__)
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 
-# NB: uncomment code in main.py to enable these endpoints
-# Any endpoints added here will be available at /api/<endpoint> - e.g. http://127.0.0.1:8080/api/example
-# Change the the example below to suit your needs + add more as needed
+
+@api_endpoints.route('/opgaver', methods=['GET'])
+def get_opgaver():
+    session = db_client.get_session()
+    try:
+        rows = session.query(Opgaver).all()
+        result = []
+        for row in rows:
+            result.append({
+                'OpgaverID': row.OpgaverID,
+                'title': row.title,
+                'beskrivelse': row.beskrivelse,
+                'resourcer': row.resourcer,
+                'ansvarlig': row.ansvarlig,
+                'startdato': row.startdato.isoformat(),
+                'slutdato': row.slutdato.isoformat()
+            })
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error retrieving data: {e}")
+        return jsonify({"error": "Error retrieving data"}), 500
+    finally:
+        session.close()
 
 
-@api_endpoints.route('/example', methods=['GET', 'POST'])
-def example():
-    if request.method == 'POST':
-        if request.headers.get('Content-Type') == 'application/json':
-            payload = request.get_json()
+@api_endpoints.route('/opgaver', methods=['POST'])
+def add_opgave():
+    session = db_client.get_session()
+    try:
+        data = request.json
+        title = data.get('title')
+        beskrivelse = data.get('beskrivelse')
+        resourcer = data.get('resourcer')
+        ansvarlig = data.get('ansvarlig')
+        startdato = data.get('startdato')
+        slutdato = data.get('slutdato')
 
-            # -- Example job with example use of metrics -- #
-            is_ready_gauge.labels(error_type='working', job_name=POD_NAME).set(0)
-            last_updated_gauge.set_to_current_time()
+        if not all([title, beskrivelse, resourcer, ansvarlig, startdato, slutdato]):
+            return jsonify({"error": "Missing required fields"}), 400
 
-            job_start_counter.labels(job_name='example job').inc()
+        new_opgave = Opgaver(
+            title=title,
+            beskrivelse=beskrivelse,
+            resourcer=resourcer,
+            ansvarlig=ansvarlig,
+            startdato=datetime.fromisoformat(startdato),
+            slutdato=datetime.fromisoformat(slutdato)
+        )
 
-            start_time = time.time()
-            logger.info('Doing important job - that somehow prevents the app from being ready')
-            duration = timedelta(seconds=(time.time() - start_time))
-
-            job_duration_summary.labels(job_name='example job', status='success').observe(duration.total_seconds())
-            job_complete_counter.labels(job_name='example job', status='success').inc()
-
-            is_ready_gauge.labels(error_type=None, job_name=POD_NAME).set(1)
-            last_updated_gauge.set_to_current_time()
-            # --------------------------------------------- #
-
-            return Response(f'You posted: {payload}', status=200)
-        else:
-            return Response('Content-Type must be application/json', status=400)
-    else:
-        # -- Example job with example use of metrics -- #
-        job_start_counter.labels(job_name='another example job').inc()
-
-        start_time = time.time()
-        logger.info('Doing important job - that does NOT prevent the app from being ready')
-        duration = timedelta(seconds=(time.time() - start_time))
-
-        job_duration_summary.labels(job_name='another example job', status='success').observe(duration.total_seconds())
-        job_complete_counter.labels(job_name='another example job', status='success').inc()
-        # --------------------------------------------- #
-
-        return Response('Example response', status=200)
+        session.add(new_opgave)
+        session.commit()
+        return jsonify({"message": "Task added successfully"}), 201
+    except Exception as e:
+        logger.error(f"Error adding task: {e}")
+        session.rollback()
+        return jsonify({"error": "Error adding task"}), 500
+    finally:
+        session.close()
