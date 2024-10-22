@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
 
+Base = declarative_base()
 
 class Opgaver(Base):
     __tablename__ = 'Opgaver'
@@ -13,3 +13,5 @@ class Opgaver(Base):
     ansvarlig = Column(String)
     startdato = Column(DateTime)
     slutdato = Column(DateTime)
+    result = Column(Boolean)
+    timestamp = Column(DateTime)

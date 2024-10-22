@@ -2,22 +2,19 @@ import logging
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from models.opgaver import Opgaver, Base as BaseOpgaver
-from models.forloebsskabeloner import Forloebsskabeloner, Base as BaseForloebsskabeloner
 from utils.database import DatabaseClient
 from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 
 
 db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
-
 BaseOpgaver.metadata.create_all(db_client.engine)
-BaseForloebsskabeloner.metadata.create_all(db_client.engine)
 
 logger = logging.getLogger(__name__)
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 
 
 @api_endpoints.route('/opgaver', methods=['GET'])
-def get_opgaver():
+def get_all_opgaver():
     session = db_client.get_session()
     try:
         rows = session.query(Opgaver).all()
@@ -30,7 +27,9 @@ def get_opgaver():
                 'resourcer': row.resourcer,
                 'ansvarlig': row.ansvarlig,
                 'startdato': row.startdato.isoformat(),
-                'slutdato': row.slutdato.isoformat()
+                'slutdato': row.slutdato.isoformat(),
+                'result': row.result,
+                'timestamp': row.timestamp.isoformat()
             })
         return jsonify(result)
     except Exception as e:
@@ -51,8 +50,10 @@ def add_opgave():
         ansvarlig = data.get('ansvarlig')
         startdato = data.get('startdato')
         slutdato = data.get('slutdato')
+        result = data.get('result')
+        timestamp = data.get('timestamp')
 
-        if not all([title, beskrivelse, resourcer, ansvarlig, startdato, slutdato]):
+        if not all([title, beskrivelse, resourcer, ansvarlig, startdato, slutdato, result, timestamp]):
             return jsonify({"error": "Missing required fields"}), 400
 
         new_opgave = Opgaver(
@@ -61,7 +62,9 @@ def add_opgave():
             resourcer=resourcer,
             ansvarlig=ansvarlig,
             startdato=datetime.fromisoformat(startdato),
-            slutdato=datetime.fromisoformat(slutdato)
+            slutdato=datetime.fromisoformat(slutdato),
+            result=bool(result),
+            timestamp=datetime.fromisoformat(timestamp)
         )
 
         session.add(new_opgave)
@@ -73,6 +76,7 @@ def add_opgave():
         return jsonify({"error": "Error adding task"}), 500
     finally:
         session.close()
+
 
 @api_endpoints.route('/opgaver/<int:opgave_id>', methods=['DELETE'])
 def delete_opgave(opgave_id):
@@ -107,7 +111,9 @@ def update_opgave(opgave_id):
         opgave.resourcer = data.get('resourcer', opgave.resourcer)
         opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
         opgave.startdato = datetime.fromisoformat(data.get('startdato', opgave.startdato.isoformat()))
-        opgave.slutdato = datetime.fromisoformat(data.get('slutdato', opgave.slutdato.isoformat()))
+        opgave.slutdato = datetime.fromisoformat(data.get('slutdato', opgave.slutdato.isoformat())),
+        opgave.result = data.get('result', opgave.result)
+        opgave.timestamp = datetime.fromisoformat(data.get('timestamp', opgave.timestamp.isoformat()))
 
         session.commit()
         return jsonify({"message": "Task updated successfully"})
@@ -115,5 +121,32 @@ def update_opgave(opgave_id):
         logger.error(f"Error updating task: {e}")
         session.rollback()
         return jsonify({"error": "Error updating task"}), 500
+    finally:
+        session.close()
+
+
+@api_endpoints.route('/opgaver/<int:opgave_id>', methods=['GET'])
+def get_opgave(opgave_id):
+    session = db_client.get_session()
+    try:
+        opgave = session.query(Opgaver).filter_by(OpgaverID=opgave_id).first()
+        if opgave is None:
+            return jsonify({"error": "Task not found"}), 404
+
+        result = {
+            'OpgaverID': opgave.OpgaverID,
+            'title': opgave.title,
+            'beskrivelse': opgave.beskrivelse,
+            'resourcer': opgave.resourcer,
+            'ansvarlig': opgave.ansvarlig,
+            'startdato': opgave.startdato.isoformat(),
+            'slutdato': opgave.slutdato.isoformat(),
+            'result': opgave.result,
+            'timestamp': opgave.timestamp.isoformat()
+        }
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error retrieving task: {e}")
+        return jsonify({"error": "Error retrieving task"}), 500
     finally:
         session.close()
