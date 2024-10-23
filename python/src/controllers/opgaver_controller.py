@@ -7,7 +7,7 @@ from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
 
 
-def create_opgave():
+def create_opgaver_with_forloebs_id():
     session = db_client.get_session()
     try:
         data = request.json
@@ -81,6 +81,33 @@ def get_opgaver_by_forloebsskabelon_id(forlobsskabelon_id):
         ]
         return jsonify(opgaver_data)
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def update_opgaver(opgave_id):
+    session = db_client.get_session()
+    try:
+        data = request.json
+
+        opgave = session.query(Opgaver).filter_by(OpgaverID=opgave_id).first()
+        if not opgave:
+            return jsonify({"error": "Opgaver not found"}), 404
+
+        opgave.title = data.get('title', opgave.title)
+        opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
+        opgave.resourcer = data.get('resourcer', opgave.resourcer)
+        opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
+        opgave.startdato = datetime.fromisoformat(data['startdato']) if 'startdato' in data else opgave.startdato
+        opgave.slutdato = datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else opgave.slutdato
+        opgave.result = data.get('result', opgave.result)
+        opgave.timestamp = datetime.fromisoformat(data['timestamp']) if 'timestamp' in data else opgave.timestamp
+
+        session.commit()
+        return jsonify({"message": "Opgaver updated successfully"}), 200
+    except Exception as e:
+        session.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
