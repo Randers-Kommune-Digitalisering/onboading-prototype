@@ -6,7 +6,7 @@ from models.base import Base
 class Opgaver(Base):
     __tablename__ = 'Opgaver'
     OpgaverID = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String, nullable=False) 
+    title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     resourcer = Column(String, nullable=False)
     ansvarlig = Column(String, nullable=False)
