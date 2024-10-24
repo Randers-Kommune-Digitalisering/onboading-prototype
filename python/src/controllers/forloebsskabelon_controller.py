@@ -1,10 +1,9 @@
 from flask import request, jsonify
 from datetime import datetime
 from models import Forløbsskabelon
-from utils.database import DatabaseClient
-from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
+from utils.db_connection import get_db_client
 
-db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
+db_client = get_db_client()
 
 
 def create_forloebsskabelon():
@@ -23,6 +22,24 @@ def create_forloebsskabelon():
         return jsonify({"message": "Forløbsskabelon created successfully"}), 201
     except Exception as e:
         session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_all_forloebsskabeloner():
+    session = db_client.get_session()
+    try:
+        forloebsskabeloner = session.query(Forløbsskabelon).all()
+        forloebsskabeloner_data = [
+            {
+                'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
+                'name': forloebsskabelon.name,
+                'varighed': forloebsskabelon.varighed.isoformat()
+            } for forloebsskabelon in forloebsskabeloner
+        ]
+        return jsonify(forloebsskabeloner_data)
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
