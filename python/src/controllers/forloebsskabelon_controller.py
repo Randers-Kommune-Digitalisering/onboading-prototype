@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from datetime import datetime
-from models.forloebsskabeloner import Forløbsskabelon
+from models import Forløbsskabelon
 from utils.database import DatabaseClient
 from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 

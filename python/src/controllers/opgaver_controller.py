@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from datetime import datetime
-from models.opgaver import Opgaver
+from models import Opgaver
 from utils.database import DatabaseClient
 from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 
