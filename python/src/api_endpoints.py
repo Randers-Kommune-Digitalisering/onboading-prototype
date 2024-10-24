@@ -12,9 +12,10 @@ from controllers.opgaver_controller import (
 )
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
-    get_all_forloebsskabeloner
-)
+    get_all_forloebsskabeloner,
+    update_forloebsskabelon_name
 
+)
 
 db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
 Base.metadata.create_all(db_client.engine)
@@ -57,3 +58,8 @@ def create_forloebsskabelon_endpoint():
 @api_endpoints.route('/forlobsskabelon', methods=['GET'])
 def get_all_forloebsskabeloner_endpoint():
     return get_all_forloebsskabeloner()
+
+
+@api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['PUT'])
+def update_forloebsskabelon_name_endpoint(forloebsskabelon_id):
+    return update_forloebsskabelon_name(forloebsskabelon_id)

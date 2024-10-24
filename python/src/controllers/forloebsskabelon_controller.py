@@ -43,3 +43,24 @@ def get_all_forloebsskabeloner():
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def update_forloebsskabelon_name(forloebsskabelon_id):
+    session = db_client.get_session()
+    try:
+        data = request.json
+        if 'name' not in data:
+            return jsonify({"error": "Missing required field: name"}), 400
+
+        forloebsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=forloebsskabelon_id).first()
+        if not forloebsskabelon:
+            return jsonify({"error": "Forløbsskabelon not found"}), 404
+
+        forloebsskabelon.name = data['name']
+        session.commit()
+        return jsonify({"message": "Forløbsskabelon name updated successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
