@@ -111,3 +111,20 @@ def update_opgaver(opgave_id):
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def delete_opgaver(opgave_id):
+    session = db_client.get_session()
+    try:
+        opgave = session.query(Opgaver).filter_by(OpgaverID=opgave_id).first()
+        if not opgave:
+            return jsonify({"error": "Opgaver not found"}), 404
+
+        session.delete(opgave)
+        session.commit()
+        return jsonify({"message": "Opgaver deleted successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()

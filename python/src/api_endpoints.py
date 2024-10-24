@@ -7,8 +7,10 @@ from controllers.opgaver_controller import (
     create_opgaver_with_forloebs_id,
     get_all_opgaver,
     get_opgaver_by_forloebsskabelon_id,
-    update_opgaver
+    update_opgaver,
+    delete_opgaver
 )
+
 
 db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
 Base.metadata.create_all(db_client.engine)
@@ -36,3 +38,8 @@ def get_opgaver_by_forloebsskabelon_id_endpoint(forlobsskabelon_id):
 @api_endpoints.route('/opgaver/<int:opgave_id>', methods=['PUT'])
 def update_opgaver_endpoint(opgave_id):
     return update_opgaver(opgave_id)
+
+
+@api_endpoints.route('/opgaver/<int:opgave_id>', methods=['DELETE'])
+def delete_opgaver_endpoint(opgave_id):
+    return delete_opgaver(opgave_id)
