@@ -8,7 +8,9 @@ from controllers.opgaver_controller import (
     get_all_opgaver,
     get_opgaver_by_forloebsskabelon_id,
     update_opgaver,
-    delete_opgaver
+    delete_opgaver,
+    create_opgaver_with_forloeb_id,
+    get_opgaver_by_forloeb_id
 )
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
@@ -16,6 +18,7 @@ from controllers.forloebsskabelon_controller import (
     update_forloebsskabelon_name
 
 )
+
 
 db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
 Base.metadata.create_all(db_client.engine)
@@ -48,6 +51,16 @@ def update_opgaver_endpoint(opgave_id):
 @api_endpoints.route('/opgaver/<int:opgave_id>', methods=['DELETE'])
 def delete_opgaver_endpoint(opgave_id):
     return delete_opgaver(opgave_id)
+
+
+@api_endpoints.route('/opgaver/forloeb/<int:forloeb_id>', methods=['GET'])
+def get_opgaver_by_forloeb_id_endpoint(forloeb_id):
+    return get_opgaver_by_forloeb_id(forloeb_id)
+
+
+@api_endpoints.route('/opgaver/forloeb', methods=['POST'])
+def create_opgaver_with_forloeb_id_endpoint():
+    return create_opgaver_with_forloeb_id()
 
 
 @api_endpoints.route('/forlobsskabelon', methods=['POST'])
