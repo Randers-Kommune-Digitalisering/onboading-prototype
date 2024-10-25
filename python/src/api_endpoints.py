@@ -19,6 +19,9 @@ from controllers.forloebsskabelon_controller import (
 
 )
 
+from controllers.forloeb_controller import (
+    create_forloeb
+)
 
 db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
 Base.metadata.create_all(db_client.engine)
@@ -61,6 +64,11 @@ def get_opgaver_by_forloeb_id_endpoint(forloeb_id):
 @api_endpoints.route('/opgaver/forloeb', methods=['POST'])
 def create_opgaver_with_forloeb_id_endpoint():
     return create_opgaver_with_forloeb_id()
+
+
+@api_endpoints.route('/forloeb', methods=['POST'])
+def create_forloeb_endpoint():
+    return create_forloeb()
 
 
 @api_endpoints.route('/forlobsskabelon', methods=['POST'])
