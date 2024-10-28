@@ -1,5 +1,4 @@
 from flask import request, jsonify
-from datetime import datetime
 from models import Ressource, Opgave, Opgaveskabelon
 from utils.db_connection import get_db_client
 
