@@ -24,11 +24,12 @@ class Forløb(Base):
     opgaver = relationship('Opgaver', back_populates='forløb')
 
 
-class Opgaveskabeloner(Base):
+class Opgaveskabelon(Base):
     __tablename__ = 'Opgaveskabelon'
     OpgaveskabelonID = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
+    ansvarlig = Column(String, nullable=False)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
     startdato = Column(DateTime, nullable=False)
     slutdato = Column(DateTime, nullable=False)
@@ -59,4 +60,4 @@ class Ressource(Base):
     OpgaverID = Column(Integer, ForeignKey('Opgaver.OpgaverID'))
     opgaver = relationship('Opgaver', back_populates='ressource')
     OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID'))
-    opgaveskabelon = relationship('Opgaveskabeloner', back_populates='ressource')
+    opgaveskabelon = relationship('Opgaveskabelon', back_populates='ressource')
