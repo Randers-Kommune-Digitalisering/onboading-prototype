@@ -1,60 +1,45 @@
 from flask import request, jsonify
 from datetime import datetime
-from models import Opgaver
+from models import Opgaver, Forløb, Forløbsskabelon
 from utils.db_connection import get_db_client
 
 db_client = get_db_client()
 
 
-def create_opgaver_with_forloebsskabelon_id():
+def create_opgave():
     session = db_client.get_session()
     try:
         data = request.json
-        if 'ForløbsskabelonID' not in data:
-            return jsonify({"error": "Missing required field: ForløbsskabelonID"}), 400
+        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'startdato', 'slutdato', 'result', 'timestamp']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
 
-        opgave = Opgaver(
+        new_opgave = Opgaver(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
-            resourcer=data['resourcer'],
             ansvarlig=data['ansvarlig'],
             startdato=datetime.fromisoformat(data['startdato']),
             slutdato=datetime.fromisoformat(data['slutdato']),
             result=data['result'],
-            timestamp=datetime.fromisoformat(data['timestamp']),
-            ForløbsskabelonID=data['ForløbsskabelonID']
+            timestamp=datetime.fromisoformat(data['timestamp'])
         )
-        session.add(opgave)
+
+        if 'ForløbID' in data:
+            forløb = session.query(Forløb).filter_by(ForløbID=data['ForløbID']).first()
+            if not forløb:
+                return jsonify({"error": "Forløb not found"}), 404
+            new_opgave.forløb = forløb
+        elif 'ForløbsskabelonID' in data:
+            forløbsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=data['ForløbsskabelonID']).first()
+            if not forløbsskabelon:
+                return jsonify({"error": "Forløbsskabelon not found"}), 404
+            new_opgave.forløbsskabelon = forløbsskabelon
+        else:
+            return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
+
+        session.add(new_opgave)
         session.commit()
-        return jsonify({"message": "Opgaver created successfully with ForløbsskabelonID"}), 201
-    except Exception as e:
-        session.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
-
-
-def create_opgaver_with_forloeb_id():
-    session = db_client.get_session()
-    try:
-        data = request.json
-        if 'ForløbID' not in data:
-            return jsonify({"error": "Missing required field: ForløbID"}), 400
-
-        opgave = Opgaver(
-            title=data['title'],
-            beskrivelse=data['beskrivelse'],
-            resourcer=data['resourcer'],
-            ansvarlig=data['ansvarlig'],
-            startdato=datetime.fromisoformat(data['startdato']),
-            slutdato=datetime.fromisoformat(data['slutdato']),
-            result=data['result'],
-            timestamp=datetime.fromisoformat(data['timestamp']),
-            ForløbID=data['ForløbID']
-        )
-        session.add(opgave)
-        session.commit()
-        return jsonify({"message": "Opgaver created successfully with ForløbID"}), 201
+        return jsonify({"message": "Opgave created successfully"}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
