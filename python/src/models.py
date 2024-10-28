@@ -24,12 +24,21 @@ class Forløb(Base):
     opgaver = relationship('Opgaver', back_populates='forløb')
 
 
+class Opgaveskabeloner(Base):
+    __tablename__ = 'Opgaveskabelon'
+    OpgaveskabelonID = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=False)
+    beskrivelse = Column(String, nullable=False)
+    ressource = relationship('Ressource', back_populates='opgaveskabelon')
+    startdato = Column(DateTime, nullable=False)
+    slutdato = Column(DateTime, nullable=False)
+
+
 class Opgaver(Base):
     __tablename__ = 'Opgaver'
     OpgaverID = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
-    resourcer = Column(String, nullable=False)
     ansvarlig = Column(String, nullable=False)
     startdato = Column(DateTime, nullable=False)
     slutdato = Column(DateTime, nullable=False)
@@ -39,3 +48,15 @@ class Opgaver(Base):
     forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgaver')
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
     forløb = relationship('Forløb', back_populates='opgaver')
+    ressource = relationship('Ressource', back_populates='opgaver')
+
+
+class Ressource(Base):
+    __tablename__ = 'Ressource'
+    RessourceID = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    OpgaverID = Column(Integer, ForeignKey('Opgaver.OpgaverID'))
+    opgaver = relationship('Opgaver', back_populates='ressource')
+    OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID'))
+    opgaveskabelon = relationship('Opgaveskabeloner', back_populates='ressource')
