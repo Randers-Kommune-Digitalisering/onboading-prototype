@@ -10,7 +10,7 @@ def create_opgaveskabelon():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'startdato', 'slutdato']
+        required_fields = ['title', 'beskrivelse', 'startdato', 'slutdato']
 
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
@@ -18,7 +18,6 @@ def create_opgaveskabelon():
         new_opgaveskabelon = Opgaveskabelon(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
-            ansvarlig=data['ansvarlig'],
             startdato=datetime.fromisoformat(data['startdato']),
             slutdato=datetime.fromisoformat(data['slutdato']),
         )
@@ -41,7 +40,6 @@ def get_all_opgaveskabeloner():
                 'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
                 'title': opgaveskabelon.title,
                 'beskrivelse': opgaveskabelon.beskrivelse,
-                'ansvarlig': opgaveskabelon.ansvarlig,
                 'startdato': opgaveskabelon.startdato.isoformat(),
                 'slutdato': opgaveskabelon.slutdato.isoformat()
             } for opgaveskabelon in opgaveskabeloner
@@ -57,7 +55,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'startdato', 'slutdato']
+        required_fields = ['title', 'beskrivelse', 'startdato', 'slutdato']
  
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
@@ -68,7 +66,6 @@ def update_opgaveskabelon(opgaveskabelon_id):
 
         opgaveskabelon.title = data['title']
         opgaveskabelon.beskrivelse = data['beskrivelse']
-        opgaveskabelon.ansvarlig = data['ansvarlig']
         opgaveskabelon.startdato = datetime.fromisoformat(data['startdato'])
         opgaveskabelon.slutdato = datetime.fromisoformat(data['slutdato'])
 

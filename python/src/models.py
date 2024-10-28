@@ -29,7 +29,6 @@ class Opgaveskabelon(Base):
     OpgaveskabelonID = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
-    ansvarlig = Column(String, nullable=False)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
     startdato = Column(DateTime, nullable=False)
     slutdato = Column(DateTime, nullable=False)
