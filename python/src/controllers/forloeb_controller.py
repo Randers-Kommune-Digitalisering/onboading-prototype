@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from datetime import datetime
-from models import Forløb, Forløbsskabelon, Opgaver
+from models import Forløb, Forløbsskabelon, Opgave
 from utils.db_connection import get_db_client
 
 db_client = get_db_client()
@@ -29,8 +29,8 @@ def create_forloeb():
             if not forløbsskabelon:
                 return jsonify({"error": "Forløbsskabelon not found"}), 404
 
-            for opgave in forløbsskabelon.opgaver:
-                new_opgave = Opgaver(
+            for opgave in forløbsskabelon.opgave:
+                new_opgave = Opgave(
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
                     ansvarlig=opgave.ansvarlig,

@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from datetime import datetime
-from models import Opgaver, Forløb, Forløbsskabelon
+from models import Opgave, Forløb, Forløbsskabelon
 from utils.db_connection import get_db_client
 
 db_client = get_db_client()
@@ -14,7 +14,7 @@ def create_opgave():
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
-        new_opgave = Opgaver(
+        new_opgave = Opgave(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
             ansvarlig=data['ansvarlig'],
@@ -47,92 +47,110 @@ def create_opgave():
         session.close()
 
 
-def get_all_opgaver():
+def get_all_opgave():
     session = db_client.get_session()
     try:
-        opgaver = session.query(Opgaver).all()
-        opgaver_data = [
+        opgave = session.query(Opgave).all()
+        opgave_data = [
             {
-                'OpgaverID': opgave.OpgaverID,
+                'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': opgave.resourcer,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
                 'ansvarlig': opgave.ansvarlig,
                 'startdato': opgave.startdato.isoformat(),
                 'slutdato': opgave.slutdato.isoformat(),
                 'result': opgave.result,
                 'timestamp': opgave.timestamp.isoformat()
-            } for opgave in opgaver
+            } for opgave in opgave
         ]
-        return jsonify(opgaver_data)
+        return jsonify(opgave_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
 
 
-def get_opgaver_by_forloebsskabelon_id(forlobsskabelon_id):
+def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
     session = db_client.get_session()
     try:
-        opgaver = session.query(Opgaver).filter_by(ForløbsskabelonID=forlobsskabelon_id).all()
-        if not opgaver:
-            return jsonify({"error": "No opgaver found for the specified ForløbsskabelonID"}), 404
+        opgave = session.query(Opgave).filter_by(ForløbsskabelonID=forlobsskabelon_id).all()
+        if not opgave:
+            return jsonify({"error": "No opgave found for the specified ForløbsskabelonID"}), 404
 
-        opgaver_data = [
+        opgave_data = [
             {
-                'OpgaverID': opgave.OpgaverID,
+                'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': opgave.resourcer,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
                 'ansvarlig': opgave.ansvarlig,
                 'startdato': opgave.startdato.isoformat(),
                 'slutdato': opgave.slutdato.isoformat(),
                 'result': opgave.result,
                 'timestamp': opgave.timestamp.isoformat()
-            } for opgave in opgaver
+            } for opgave in opgave
         ]
-        return jsonify(opgaver_data)
+        return jsonify(opgave_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
 
 
-def get_opgaver_by_forloeb_id(forlob_id):
+def get_opgave_by_forloeb_id(forlob_id):
     session = db_client.get_session()
     try:
-        opgaver = session.query(Opgaver).filter_by(ForløbID=forlob_id).all()
-        if not opgaver:
-            return jsonify({"error": "No opgaver found for the specified ForløbID"}), 404
+        opgave = session.query(Opgave).filter_by(ForløbID=forlob_id).all()
+        if not opgave:
+            return jsonify({"error": "No opgave found for the specified ForløbID"}), 404
 
-        opgaver_data = [
+        opgave_data = [
             {
-                'OpgaverID': opgave.OpgaverID,
+                'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': opgave.resourcer,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
                 'ansvarlig': opgave.ansvarlig,
                 'startdato': opgave.startdato.isoformat(),
                 'slutdato': opgave.slutdato.isoformat(),
                 'result': opgave.result,
                 'timestamp': opgave.timestamp.isoformat()
-            } for opgave in opgaver
+            } for opgave in opgave
         ]
-        return jsonify(opgaver_data)
+        return jsonify(opgave_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
 
 
-def update_opgaver(opgave_id):
+def update_opgave(opgave_id):
     session = db_client.get_session()
     try:
         data = request.json
 
-        opgave = session.query(Opgaver).filter_by(OpgaverID=opgave_id).first()
+        opgave = session.query(Opgave).filter_by(OpgaveID=opgave_id).first()
         if not opgave:
-            return jsonify({"error": "Opgaver not found"}), 404
+            return jsonify({"error": "Opgave not found"}), 404
 
         opgave.title = data.get('title', opgave.title)
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
@@ -144,7 +162,7 @@ def update_opgaver(opgave_id):
         opgave.timestamp = datetime.fromisoformat(data['timestamp']) if 'timestamp' in data else opgave.timestamp
 
         session.commit()
-        return jsonify({"message": "Opgaver updated successfully"}), 200
+        return jsonify({"message": "Opgave updated successfully"}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -152,16 +170,16 @@ def update_opgaver(opgave_id):
         session.close()
 
 
-def delete_opgaver(opgave_id):
+def delete_opgave(opgave_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgaver).filter_by(OpgaverID=opgave_id).first()
+        opgave = session.query(Opgave).filter_by(OpgaveID=opgave_id).first()
         if not opgave:
-            return jsonify({"error": "Opgaver not found"}), 404
+            return jsonify({"error": "Opgave not found"}), 404
 
         session.delete(opgave)
         session.commit()
-        return jsonify({"message": "Opgaver deleted successfully"}), 200
+        return jsonify({"message": "Opgave deleted successfully"}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

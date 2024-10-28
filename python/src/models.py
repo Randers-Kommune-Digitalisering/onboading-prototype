@@ -10,7 +10,7 @@ class Forløbsskabelon(Base):
     ForløbsskabelonID = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     varighed = Column(DateTime, nullable=False)
-    opgaver = relationship('Opgaver', back_populates='forløbsskabelon')
+    opgave = relationship('Opgave', back_populates='forløbsskabelon')
 
 
 class Forløb(Base):
@@ -21,7 +21,7 @@ class Forløb(Base):
     admin = Column(String)
     usermail = Column(String)
     userdq = Column(String)
-    opgaver = relationship('Opgaver', back_populates='forløb')
+    opgave = relationship('Opgave', back_populates='forløb')
 
 
 class Opgaveskabelon(Base):
@@ -35,9 +35,9 @@ class Opgaveskabelon(Base):
     slutdato = Column(DateTime, nullable=False)
 
 
-class Opgaver(Base):
-    __tablename__ = 'Opgaver'
-    OpgaverID = Column(Integer, primary_key=True, autoincrement=True)
+class Opgave(Base):
+    __tablename__ = 'Opgave'
+    OpgaveID = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     ansvarlig = Column(String, nullable=False)
@@ -46,10 +46,10 @@ class Opgaver(Base):
     result = Column(Boolean, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
-    forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgaver')
+    forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgave')
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
-    forløb = relationship('Forløb', back_populates='opgaver')
-    ressource = relationship('Ressource', back_populates='opgaver')
+    forløb = relationship('Forløb', back_populates='opgave')
+    ressource = relationship('Ressource', back_populates='opgave')
 
 
 class Ressource(Base):
@@ -57,7 +57,7 @@ class Ressource(Base):
     RessourceID = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
-    OpgaverID = Column(Integer, ForeignKey('Opgaver.OpgaverID'))
-    opgaver = relationship('Opgaver', back_populates='ressource')
+    OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID'))
+    opgave = relationship('Opgave', back_populates='ressource')
     OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID'))
     opgaveskabelon = relationship('Opgaveskabelon', back_populates='ressource')
