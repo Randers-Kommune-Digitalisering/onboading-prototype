@@ -131,11 +131,11 @@ def get_all_opgaveskabeloner_endpoint():
     return get_all_opgaveskabeloner()
 
 
-@api_endpoints.route('/opgaveskabelon/<int:id>', methods=['PUT'])
-def update_opgaveskabelon_endpoint(id):
-    return update_opgaveskabelon(id)
+@api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['PUT'])
+def update_opgaveskabelon_endpoint(opgaveskabelon_id):
+    return update_opgaveskabelon(opgaveskabelon_id)
 
 
-@api_endpoints.route('/opgaveskabelon/<int:id>', methods=['DELETE'])
-def delete_opgaveskabelon_endpoint(id):
-    return delete_opgaveskabelon(id)
+@api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['DELETE'])
+def delete_opgaveskabelon_endpoint(opgaveskabelon_id):
+    return delete_opgaveskabelon(opgaveskabelon_id)
