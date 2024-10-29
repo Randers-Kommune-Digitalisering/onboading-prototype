@@ -31,7 +31,7 @@ from controllers.ressource_controller import (
 
 )
 
-from controllers.opgaveskabeloner_controller import (
+from controllers.opgaveskabelon_controller import (
     create_opgaveskabelon,
     get_all_opgaveskabeloner,
     update_opgaveskabelon,

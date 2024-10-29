@@ -56,7 +56,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
     try:
         data = request.json
         required_fields = ['title', 'beskrivelse', 'startdato', 'slutdato']
- 
+
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
