@@ -16,11 +16,11 @@ class Forløbsskabelon(Base):
 class Forløb(Base):
     __tablename__ = 'Forløb'
     ForløbID = Column(Integer, primary_key=True, autoincrement=True)
-    startdate = Column(DateTime)
-    enddate = Column(DateTime)
-    admin = Column(String)
-    usermail = Column(String)
-    userdq = Column(String)
+    startdate = Column(DateTime, nullable=False)
+    enddate = Column(DateTime, nullable=False)
+    admin = Column(String, nullable=False)
+    usermail = Column(String, nullable=False)
+    userdq = Column(String, nullable=False)
     opgave = relationship('Opgave', back_populates='forløb')
 
 
