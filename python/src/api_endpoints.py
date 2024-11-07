@@ -1,56 +1,141 @@
 import logging
-import time
+from flask import Blueprint
+from utils.database import DatabaseClient
+from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
+from models import Base
+from controllers.opgave_controller import (
+    create_opgave_with_opgaveskabelon,
+    get_opgave_by_forloebsskabelon_id,
+    update_opgave,
+    delete_opgave,
+    get_opgave_by_forloeb_id,
+    create_opgave
+)
+from controllers.forloebsskabelon_controller import (
+    create_forloebsskabelon,
+    get_all_forloebsskabeloner,
+    update_forloebsskabelon_name
 
-from datetime import timedelta
-from flask import Blueprint, Response, request
+)
 
-from utils.config import POD_NAME
-from utils.logging import is_ready_gauge, last_updated_gauge, job_start_counter, job_complete_counter, job_duration_summary
+from controllers.forloeb_controller import (
+    create_forloeb
+)
+
+from controllers.ressource_controller import (
+    create_ressource,
+    get_ressources_by_opgaveid,
+    delete_ressource,
+    update_ressource,
+    get_ressources_by_opgaveskabelonid
+
+)
+
+from controllers.opgaveskabelon_controller import (
+    create_opgaveskabelon,
+    get_all_opgaveskabeloner,
+    update_opgaveskabelon,
+    delete_opgaveskabelon
+)
+
+db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
+Base.metadata.create_all(db_client.engine)
+
 
 logger = logging.getLogger(__name__)
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 
-# NB: uncomment code in main.py to enable these endpoints
-# Any endpoints added here will be available at /api/<endpoint> - e.g. http://127.0.0.1:8080/api/example
-# Change the the example below to suit your needs + add more as needed
+
+@api_endpoints.route('/opgave', methods=['POST'])
+def create_opgave_endpoint():
+    return create_opgave()
 
 
-@api_endpoints.route('/example', methods=['GET', 'POST'])
-def example():
-    if request.method == 'POST':
-        if request.headers.get('Content-Type') == 'application/json':
-            payload = request.get_json()
+@api_endpoints.route('/opgave/opgaveskabelon', methods=['POST'])
+def create_opgave_with_opgaveskabelon_endpoint():
+    return create_opgave_with_opgaveskabelon()
 
-            # -- Example job with example use of metrics -- #
-            is_ready_gauge.labels(error_type='working', job_name=POD_NAME).set(0)
-            last_updated_gauge.set_to_current_time()
 
-            job_start_counter.labels(job_name='example job').inc()
+@api_endpoints.route('/opgave/forloebsskabelon/<int:forlobsskabelon_id>', methods=['GET'])
+def get_opgave_by_forloebsskabelon_id_endpoint(forlobsskabelon_id):
+    return get_opgave_by_forloebsskabelon_id(forlobsskabelon_id)
 
-            start_time = time.time()
-            logger.info('Doing important job - that somehow prevents the app from being ready')
-            duration = timedelta(seconds=(time.time() - start_time))
 
-            job_duration_summary.labels(job_name='example job', status='success').observe(duration.total_seconds())
-            job_complete_counter.labels(job_name='example job', status='success').inc()
+@api_endpoints.route('/opgave/<int:opgave_id>', methods=['PUT'])
+def update_opgave_endpoint(opgave_id):
+    return update_opgave(opgave_id)
 
-            is_ready_gauge.labels(error_type=None, job_name=POD_NAME).set(1)
-            last_updated_gauge.set_to_current_time()
-            # --------------------------------------------- #
 
-            return Response(f'You posted: {payload}', status=200)
-        else:
-            return Response('Content-Type must be application/json', status=400)
-    else:
-        # -- Example job with example use of metrics -- #
-        job_start_counter.labels(job_name='another example job').inc()
+@api_endpoints.route('/opgave/<int:opgave_id>', methods=['DELETE'])
+def delete_opgave_endpoint(opgave_id):
+    return delete_opgave(opgave_id)
 
-        start_time = time.time()
-        logger.info('Doing important job - that does NOT prevent the app from being ready')
-        duration = timedelta(seconds=(time.time() - start_time))
 
-        job_duration_summary.labels(job_name='another example job', status='success').observe(duration.total_seconds())
-        job_complete_counter.labels(job_name='another example job', status='success').inc()
-        # --------------------------------------------- #
+@api_endpoints.route('/opgave/forloeb/<int:forloeb_id>', methods=['GET'])
+def get_opgave_by_forloeb_id_endpoint(forloeb_id):
+    return get_opgave_by_forloeb_id(forloeb_id)
 
-        return Response('Example response', status=200)
+
+@api_endpoints.route('/forloeb', methods=['POST'])
+def create_forloeb_endpoint():
+    return create_forloeb()
+
+
+@api_endpoints.route('/forlobsskabelon', methods=['POST'])
+def create_forloebsskabelon_endpoint():
+    return create_forloebsskabelon()
+
+
+@api_endpoints.route('/forlobsskabelon', methods=['GET'])
+def get_all_forloebsskabeloner_endpoint():
+    return get_all_forloebsskabeloner()
+
+
+@api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['PUT'])
+def update_forloebsskabelon_name_endpoint(forloebsskabelon_id):
+    return update_forloebsskabelon_name(forloebsskabelon_id)
+
+
+@api_endpoints.route('/ressource', methods=['POST'])
+def create_ressource_endpoint():
+    return create_ressource()
+
+
+@api_endpoints.route('/ressource/opgave/<int:opgave_id>', methods=['GET'])
+def get_ressources_by_opgaveid_endpoint(opgave_id):
+    return get_ressources_by_opgaveid(opgave_id)
+
+
+@api_endpoints.route('/ressource/<int:ressource_id>', methods=['DELETE'])
+def delete_ressource_endpoint(ressource_id):
+    return delete_ressource(ressource_id)
+
+
+@api_endpoints.route('/ressource/<int:ressource_id>', methods=['PUT'])
+def update_ressource_endpoint(ressource_id):
+    return update_ressource(ressource_id)
+
+
+@api_endpoints.route('/ressource/opgaveskabelon/<int:opgaveskabelon_id>', methods=['GET'])
+def get_ressources_by_opgaveskabelonid_endpoint(opgaveskabelon_id):
+    return get_ressources_by_opgaveskabelonid(opgaveskabelon_id)
+
+
+@api_endpoints.route('/opgaveskabelon', methods=['POST'])
+def create_opgaveskabelon_endpoint():
+    return create_opgaveskabelon()
+
+
+@api_endpoints.route('/opgaveskabelon', methods=['GET'])
+def get_all_opgaveskabeloner_endpoint():
+    return get_all_opgaveskabeloner()
+
+
+@api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['PUT'])
+def update_opgaveskabelon_endpoint(opgaveskabelon_id):
+    return update_opgaveskabelon(opgaveskabelon_id)
+
+
+@api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['DELETE'])
+def delete_opgaveskabelon_endpoint(opgaveskabelon_id):
+    return delete_opgaveskabelon(opgaveskabelon_id)

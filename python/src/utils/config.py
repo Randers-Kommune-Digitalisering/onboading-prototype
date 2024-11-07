@@ -10,8 +10,8 @@ DEBUG = os.getenv('DEBUG', 'False') in ['True', 'true']
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
 
-# DB_USER = os.environ["DB_USER"].strip()
-# DB_PASS = os.environ["DB_PASS"].strip()
-# DB_HOST = os.environ["DB_HOST"].strip()
-# DB_PORT = os.environ["DB_PORT"].strip()
-# DB_DATABASE = os.environ["DB_DATABASE"].strip()
+MSSQL_USER = os.environ["MSSQL_USER"].strip()
+MSSQL_PASS = os.environ["MSSQL_PASS"].strip()
+MSSQL_HOST = os.environ["MSSQL_HOST"].strip()
+MSSQL_PORT = None
+MSSQL_DATABASE = os.environ["MSSQL_DATABASE"].strip()
