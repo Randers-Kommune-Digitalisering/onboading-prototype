@@ -35,7 +35,8 @@
 </template>
 
 <script>
-import { createRessource, getOpgaver, getOpgaveskabeloner } from '../apiService';
+import { createRessource, getOpgaveskabeloner } from '../apiService';
+import { getOpgaver } from '../services/opgaveService';
 
 export default {
   data() {

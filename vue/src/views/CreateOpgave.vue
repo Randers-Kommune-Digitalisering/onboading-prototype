@@ -50,6 +50,7 @@
   
   <script>
   import { getForloebsskabeloner } from '../apiService';
+  import { createOpgave } from '../services/opgaveService';
   
   export default {
     data() {

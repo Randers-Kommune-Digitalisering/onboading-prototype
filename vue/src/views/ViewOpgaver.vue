@@ -46,7 +46,8 @@
 </template>
 
 <script>
-import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getForloebsskabelonerWithOpgavers, updateOpgave } from '../apiService';
+import { getForloebsskabelonerWithOpgavers } from '../apiService';
+import { updateOpgave, getOpgaverByForloebsskabelonID, getOpgaverByForloebID } from '../services/opgaveService';
 
 export default {
   data() {
