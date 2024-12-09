@@ -49,3 +49,26 @@ def create_forloeb():
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def get_all_forloeb():
+    session = db_client.get_session()
+    try:
+        forloeb_list = session.query(Forløb).all()
+        result = [
+            {
+                "ForløbID": forloeb.ForløbID,
+                "name": f"Forløb {forloeb.ForløbID}",
+                "startdate": forloeb.startdate.isoformat(),
+                "enddate": forloeb.enddate.isoformat(),
+                "admin": forloeb.admin,
+                "usermail": forloeb.usermail,
+                "userdq": forloeb.userdq
+            }
+            for forloeb in forloeb_list
+        ]
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()

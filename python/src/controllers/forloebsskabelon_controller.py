@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from datetime import datetime
-from models import Forløbsskabelon
+from models import Forløbsskabelon, Opgave
 from utils.db_connection import get_db_client
 
 db_client = get_db_client()
@@ -61,6 +61,23 @@ def update_forloebsskabelon_name(forloebsskabelon_id):
         return jsonify({"message": "Forløbsskabelon name updated successfully"}), 200
     except Exception as e:
         session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_forloebsskabeloner_with_opgaver():
+    session = db_client.get_session()
+    try:
+        forloebsskabeloner = session.query(Forløbsskabelon).join(Opgave).all()
+        forloebsskabeloner_data = [
+            {
+                'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
+                'name': forloebsskabelon.name
+            } for forloebsskabelon in forloebsskabeloner
+        ]
+        return jsonify(forloebsskabeloner_data)
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()

@@ -47,6 +47,36 @@ def create_opgave():
         session.close()
 
 
+def get_all_opgaver():
+    session = db_client.get_session()
+    try:
+        opgaver = session.query(Opgave).all()
+        opgave_data = [
+            {
+                'OpgaveID': opgave.OpgaveID,
+                'title': opgave.title,
+                'beskrivelse': opgave.beskrivelse,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
+                'ansvarlig': opgave.ansvarlig,
+                'startdato': opgave.startdato.isoformat(),
+                'slutdato': opgave.slutdato.isoformat(),
+                'result': opgave.result,
+                'timestamp': opgave.timestamp.isoformat()
+            } for opgave in opgaver
+        ]
+        return jsonify(opgave_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def create_opgave_with_opgaveskabelon():
     session = db_client.get_session()
     try:
@@ -204,6 +234,26 @@ def delete_opgave(opgave_id):
         session.delete(opgave)
         session.commit()
         return jsonify({"message": "Opgave deleted successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def update_opgave_result(opgave_id):
+    session = db_client.get_session()
+    try:
+        data = request.json
+
+        opgave = session.query(Opgave).filter_by(OpgaveID=opgave_id).first()
+        if not opgave:
+            return jsonify({"error": "Opgave not found"}), 404
+
+        opgave.result = data.get('result', opgave.result)
+
+        session.commit()
+        return jsonify({"message": "Opgave result updated successfully"}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
