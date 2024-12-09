@@ -10,7 +10,6 @@ from controllers.opgave_controller import (
     delete_opgave,
     get_opgave_by_forloeb_id,
     create_opgave,
-    update_opgave_result,
     get_all_opgaver
 )
 from controllers.forloebsskabelon_controller import (
@@ -53,11 +52,6 @@ api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 @api_endpoints.route('/opgave', methods=['POST'])
 def create_opgave_endpoint():
     return create_opgave()
-
-
-@api_endpoints.route('/opgave/result/<int:opgave_id>', methods=['PUT'])
-def update_opgave_result_endpoint(opgave_id):
-    return update_opgave_result(opgave_id)
 
 
 @api_endpoints.route('/opgave/opgaveskabelon', methods=['POST'])

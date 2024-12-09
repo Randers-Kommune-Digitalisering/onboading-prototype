@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getForloebsskabelonerWithOpgavers, updateOpgaveResult } from '../apiService';
+import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getForloebsskabelonerWithOpgavers, updateOpgave } from '../apiService';
 
 export default {
   data() {
@@ -96,7 +96,7 @@ export default {
     },
     async updateResult(opgave) {
       try {
-        await updateOpgaveResult(opgave.OpgaveID, opgave.result);
+        await updateOpgave(opgave.OpgaveID, { result: opgave.result });
         this.message = 'Result updated successfully';
       } catch (error) {
         this.message = 'Failed to update result';

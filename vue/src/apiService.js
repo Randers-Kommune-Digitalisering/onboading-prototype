@@ -18,10 +18,6 @@ export const getOpgaverByForloebsskabelonID = (forloebsskabelonID) => {
   return axios.get(`${API_URL}/opgave/forloebsskabelon/${forloebsskabelonID}`);
 };
 
-export const updateOpgaveResult = (opgaveID, result) => {
-  return axios.put(`${API_URL}/opgave/result/${opgaveID}`, { result });
-};
-
 export const createRessource = (data) => {
   return axios.post(`${API_URL}/ressource`, data);
 };
@@ -53,3 +49,7 @@ export const getForloebsskabelonerWithOpgavers = () => {
 export const deleteOpgave = (opgaveID) => {
   return axios.delete(`${API_URL}/opgave/${opgaveID}`);
 }
+
+export const updateOpgave = (opgaveID, data) => {
+  return axios.put(`${API_URL}/opgave/${opgaveID}`, data);
+};
