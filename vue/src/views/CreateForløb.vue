@@ -38,7 +38,8 @@
   </template>
   
   <script>
-  import { createForloeb, getForloebsskabeloner } from '../apiService';
+  import { getForloebsskabeloner } from '../services/forløbsskabelonService';
+  import { createForloeb } from '../services/forløbService';
   
   export default {
     data() {

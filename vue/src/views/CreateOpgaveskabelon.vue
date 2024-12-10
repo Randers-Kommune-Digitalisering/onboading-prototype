@@ -25,7 +25,7 @@
   </template>
   
   <script>
-  import { createOpgaveskabelon } from '../apiService';
+  import { createOpgaveskabelon } from '../services/opgaveskabelonService';
 
 export default {
   data() {

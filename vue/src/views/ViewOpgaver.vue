@@ -46,7 +46,8 @@
 </template>
 
 <script>
-import { getForloebsskabelonerWithOpgavers } from '../apiService';
+// import { getForloebsskabelonerWithOpgavers } from '../apiService';
+import { getForloebsskabelonerWithOpgavers } from '../services/forløbsskabelonService';
 import { updateOpgave, getOpgaverByForloebsskabelonID, getOpgaverByForloebID } from '../services/opgaveService';
 
 export default {

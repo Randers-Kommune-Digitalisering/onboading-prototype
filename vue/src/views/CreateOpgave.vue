@@ -49,7 +49,7 @@
   </template>
   
   <script>
-  import { getForloebsskabeloner } from '../apiService';
+  import { getForloebsskabeloner } from '../services/forløbsskabelonService';
   import { createOpgave } from '../services/opgaveService';
   
   export default {
