@@ -15,7 +15,7 @@ from controllers.opgave_controller import (
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
     get_all_forloebsskabeloner,
-    update_forloebsskabelon_name,
+    update_forloebsskabelon,
     get_forloebsskabeloner_with_opgaver
 
 )
@@ -110,8 +110,8 @@ def get_forloebsskabeloner_with_opgaver_endpoint():
 
 
 @api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['PUT'])
-def update_forloebsskabelon_name_endpoint(forloebsskabelon_id):
-    return update_forloebsskabelon_name(forloebsskabelon_id)
+def update_forloebsskabelon_endpoint(forloebsskabelon_id):
+    return update_forloebsskabelon(forloebsskabelon_id)
 
 
 @api_endpoints.route('/ressource', methods=['POST'])
