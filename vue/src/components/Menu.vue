@@ -52,9 +52,11 @@ onMounted(() => {
 
         // Filter menu items based on roles
         if (clientRoles.includes('Admin')) {
-            menuItems.value = allMenuItems
+            menuItems.value = allMenuItems.filter(item => item.url !== '/ansvarlig-overview')
         } else if (clientRoles.includes('Ny medarbejder')) {
             menuItems.value = allMenuItems.filter(item => item.url === '/' || item.url === '/view-opgaver')
+        } else if (clientRoles.includes('Ansvarlig')) {
+            menuItems.value = allMenuItems.filter(item => item.url === '/' || item.url === '/ansvarlig-overview')
         } else {
             menuItems.value = allMenuItems.filter(item => item.url === '/')
         }

@@ -70,7 +70,7 @@ const routes = [
         path: '/ansvarlig-overview',
         name: 'AnsvarligOverview',
         component: AnsvarligOverview,
-        meta: { roles: ['Admin'] }
+        meta: { roles: ['Ansvarlig'] }
     }
 ]
 
