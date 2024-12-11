@@ -17,7 +17,7 @@
   </template>
   
   <script>
-  import { createForloebsskabelon } from '../services/forløbsskabelonService';
+  import { createForloebsskabelon } from '../../services/forløbsskabelonService';
   
   export default {
     data() {

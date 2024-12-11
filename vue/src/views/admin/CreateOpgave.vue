@@ -49,8 +49,8 @@
   </template>
   
   <script>
-  import { getForloebsskabeloner } from '../services/forløbsskabelonService';
-  import { createOpgave } from '../services/opgaveService';
+  import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
+  import { createOpgave } from '../../services/opgaveService';
   
   export default {
     data() {

@@ -1,83 +1,101 @@
 <script setup>
-    import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import keycloak from '@/keycloak'
 
-    defineExpose( { setAlert } )
+defineExpose({ setAlert })
 
-    // Set menu items
+// Define all menu items
+const allMenuItems = [
+    {
+        "title": "Introduktion",
+        "url": "/"
+    },
+    {
+        "title": "Opret opgave",
+        "url": "/create-opgave"
+    },
+    {
+        "title": "Opret forløb",
+        "url": "/create-forloeb"
+    },
+    {
+        "title": "Se opgaver",
+        "url": "/view-opgaver"
+    },
+    {
+        "title": "Opret ressource",
+        "url": "/create-ressource"
+    },
+    {
+        "title": "Opret forløbsskabelon",
+        "url": "/create-forloebsskabelon"
+    },
+    {
+        "title": "Opret opgaveskabelon",
+        "url": "/create-opgaveskabelon"
+    },
+    {
+        "title": "Admin oversigt",
+        "url": "/admin-overview"
+    },
+    {
+        "title": "Ansvarlig oversigt",
+        "url": "/ansvarlig-overview"
+    }
+]
 
-    const menuItems = ref([
-        {
-            "title": "Opret opgave",
-            "url": "/create-opgave"
-        },
-        {
-            "title": "Opret forløb",
-            "url": "/create-forloeb"
-        },
-        {
-            "title": "Se opgaver",
-            "url": "/view-opgaver"
-        },
-        {
-            "title": "Opret ressource",
-            "url": "/create-ressource"
-        },
-        {
-            "title": "Opret forløbsskabelon",
-            "url": "/create-forloebsskabelon"
-        },
-        {
-            "title": "Opret opgaveskabelon",
-            "url": "/create-opgaveskabelon"
+const menuItems = ref([])
+
+onMounted(() => {
+    if (keycloak.authenticated) {
+        const clientRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
+
+        // Filter menu items based on roles
+        if (clientRoles.includes('Admin')) {
+            menuItems.value = allMenuItems
+        } else if (clientRoles.includes('Ny medarbejder')) {
+            menuItems.value = allMenuItems.filter(item => item.url === '/' || item.url === '/view-opgaver')
+        } else {
+            menuItems.value = allMenuItems.filter(item => item.url === '/')
         }
-    ])
 
-    // Set selected = true for landing page (URL)
-
-    const landingPageIndex = menuItems.value.findIndex(x => x.url == new URL(location.href).pathname)
-
-    if(landingPageIndex !== -1)
-        menuItems.value[ landingPageIndex ].selected = true
-
-
-    // Function to visually update selected item
-
-    function select(item)
-    {
-        menuItems.value.forEach(x => x.selected = false)
-        item.selected = true
+        // Set selected = true for landing page (URL)
+        const landingPageIndex = menuItems.value.findIndex(x => x.url == new URL(location.href).pathname)
+        if (landingPageIndex !== -1)
+            menuItems.value[landingPageIndex].selected = true
     }
+})
 
-    // Function to set alert on an item
+// Function to visually update selected item
+function select(item) {
+    menuItems.value.forEach(x => x.selected = false)
+    item.selected = true
+}
 
-    function setAlert(itemTitle, alert)
-    {
-        // Delete alert
-        if(alert === "" || alert === null || alert === undefined)
-            delete menuItems.value[ menuItems.value.findIndex(x => x.title == itemTitle) ].alert
-
-        // Set alert
-        else
-            menuItems.value[ menuItems.value.findIndex(x => x.title == itemTitle) ].alert = alert
+// Function to set alert on an item
+function setAlert(itemTitle, alert) {
+    const itemIndex = menuItems.value.findIndex(x => x.title == itemTitle)
+    if (itemIndex !== -1) {
+        if (alert === "" || alert === null || alert === undefined) {
+            delete menuItems.value[itemIndex].alert
+        } else {
+            menuItems.value[itemIndex].alert = alert
+        }
     }
+}
 
-    // Dark mode
-
-    function toggleDarkMode()
-    {
-        const element = document.getElementById("body");
-        element.classList.toggle("darkmode");
-    }
-
+// Dark mode
+function toggleDarkMode() {
+    const element = document.getElementById("body")
+    element.classList.toggle("darkmode")
+}
 </script>
 
 <template>
-
     <div class="header">
-
         <div class="randers-logo"></div>
         
-        <router-link v-for="item in menuItems" :to="item.url" :class="item.selected ? 'selected' : ''" @click="select(item)">
+        <router-link v-for="item in menuItems" :key="item.url" :to="item.url" :class="item.selected ? 'selected' : ''" @click="select(item)">
             <span v-if="item.alert" class="alert">{{item.alert}}</span>
             <span>{{item.title}}</span>
         </router-link>
@@ -88,22 +106,18 @@
             <input type="checkbox" id="darkmodeToggle" name="darkmodeToggle" @click="toggleDarkMode()">
             <label for="darkmodeToggle">Dark Mode</label>
         </div>
-
     </div>
-
 </template>
 
 <style scoped>
 /* Mobile first */
 /* 1 rem = 10 px, except when defining @media rules, then 1 rem = 16 px */
-.randers-logo
-{
+.randers-logo {
     background-position: 2rem 0rem;
 }
 
 /* Is top header */
-.header
-{
+.header {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
@@ -122,67 +136,58 @@
 
     overflow-x: auto;
 }
-    .header a
-    {
-        border-bottom: 0.4rem solid #ffffff00;
+.header a {
+    border-bottom: 0.4rem solid #ffffff00;
 
-        padding-right: 1.2rem;
-        padding-left: 1.2rem;
+    padding-right: 1.2rem;
+    padding-left: 1.2rem;
 
-        font-family: Inter;
-        line-height: 4rem;
+    font-family: Inter;
+    line-height: 4rem;
 
-        white-space: nowrap;
-    }
-        .header a:hover
-        {
-            border-bottom: 0.4rem solid var(--randers-color-light);
-        }
-        .header a.selected
-        {
-            border-bottom: 0.4rem solid var(--randers-color-dark);
-        }
-        .header a .alert
-        {
-            font-size: 0.8em;
-            color: var(--color-white);
-            
-            background-color: var(--randers-color-);
-            border-radius: 0.3rem;
-            
-            padding: 0.1rem 0.4rem;
-            margin-right: 0.8rem;
-            
-            line-height: normal;
-        }
-    .header .filler 
-    {
-        flex-grow: 1;
-    }
-    .header .darkmodeItem
-    {
-        padding-right: 1.2rem;
-        padding-left: 1.2rem;
+    white-space: nowrap;
+}
+.header a:hover {
+    border-bottom: 0.4rem solid var(--randers-color-light);
+}
+.header a.selected {
+    border-bottom: 0.4rem solid var(--randers-color-dark);
+}
+.header a .alert {
+    font-size: 0.8em;
+    color: var(--color-white);
+    
+    background-color: var(--randers-color-);
+    border-radius: 0.3rem;
+    
+    padding: 0.1rem 0.4rem;
+    margin-right: 0.8rem;
+    
+    line-height: normal;
+}
+.header .filler {
+    flex-grow: 1;
+}
+.header .darkmodeItem {
+    padding-right: 1.2rem;
+    padding-left: 1.2rem;
 
-        font-family: Inter;
-        line-height: 4rem;
-        white-space: nowrap;
-    }
-        .darkmodeItem input {
-            transform: translateY(0.5rem);
-        }
-        .darkmodeItem label
-        {
-            font-size: 0.8em;
-            transform: translateY(0.1rem);
-        }
-        
+    font-family: Inter;
+    line-height: 4rem;
+    white-space: nowrap;
+}
+.darkmodeItem input {
+    transform: translateY(0.5rem);
+}
+.darkmodeItem label {
+    font-size: 0.8em;
+    transform: translateY(0.1rem);
+}
+
 /* Tablet or desktop */
-@media screen and (min-width: 80rem) /* 1280 px */
-{
+@media screen and (min-width: 80rem) /* 1280 px */ {
     /* Is lefside header */
-    .header
-    {
+    .header {
         background-color: #ffffff00;
 
         flex-direction: column;
@@ -198,39 +203,31 @@
 
         border-bottom: 0rem;
     }
-        .header a
-        {
-            padding-right: 1.5rem;
+    .header a {
+        padding-right: 1.5rem;
 
-            border-bottom: 0rem;
-            border-right: 0.4rem solid #ffffff00;
-        }
-            .header a:first-of-type
-            {
-                margin-top: 2rem;
-            }
-            .header a:hover
-            {
-                border-right: 0.4rem solid var(--randers-color-light);
-                border-bottom: 0rem;
-            }
-            .header a.selected
-            {
-                border-right: 0.4rem solid var(--randers-color-dark);
-                border-bottom: 0rem;
-            }
+        border-bottom: 0rem;
+        border-right: 0.4rem solid #ffffff00;
+    }
+    .header a:first-of-type {
+        margin-top: 2rem;
+    }
+    .header a:hover {
+        border-right: 0.4rem solid var(--randers-color-light);
+        border-bottom: 0rem;
+    }
+    .header a.selected {
+        border-right: 0.4rem solid var(--randers-color-dark);
+        border-bottom: 0rem;
+    }
 }
 
-
 /* Logo skjules på meget små skærme */
-@media screen and (max-width: 35rem)
-{
-    .randers-logo
-    {
+@media screen and (max-width: 35rem) {
+    .randers-logo {
         display: none;
     }
-    .header
-    {
+    .header {
         padding-left: 10px;
         padding-right: 10px;
     }

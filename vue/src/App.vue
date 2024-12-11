@@ -1,17 +1,17 @@
 <script setup>
 import { ref } from 'vue';
+import Header from './components/Menu.vue';
+import SignInButton from './components/SignInButton.vue';
 
-import Header from './components/Menu.vue'
-const headerComponent = ref(null)
-const currentComponent = ref(null)
+const headerComponent = ref(null);
+const currentComponent = ref(null);
 
 const setHeaderAlert = (headerItemTitle, alertText) => {
-    headerComponent.value.setAlert(headerItemTitle, alertText)
+    headerComponent.value.setAlert(headerItemTitle, alertText);
 };
 </script>
 
 <template>
-
   <header>
     <div id="logo-container">
         <svg id="logo" class="desktop-only w-196px" viewBox="0 0 243 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -21,6 +21,7 @@ const setHeaderAlert = (headerItemTitle, alertText) => {
         <span class="logo-subtext semi-bold uppercase desktop-only">Onboardingmodul</span>
     </div>
     <Header ref="headerComponent" />
+    <SignInButton />
   </header>
   
   <main>
@@ -28,7 +29,6 @@ const setHeaderAlert = (headerItemTitle, alertText) => {
           <router-view ref="currentComponent" @onHeaderAlert="setHeaderAlert"></router-view>
       </div>
   </main>
-
 </template>
 
 <style scoped>
