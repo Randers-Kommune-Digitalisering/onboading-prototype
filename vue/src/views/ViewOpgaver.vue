@@ -112,7 +112,7 @@ export default {
       return diffInHours.toFixed(2);
     },
     formatDate(date) {
-      return new Date(date).toLocaleDateString('en-CA'); // 'en-CA' giver 'YYYY-MM-DD' formattet
+      return new Date(date).toLocaleDateString('en-GB'); // 'en-GB' giver 'DD/MM/YYYY' formattet
     }
   }
 };
