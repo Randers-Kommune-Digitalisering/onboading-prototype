@@ -5,11 +5,13 @@ import keycloak from '@/keycloak'
 const userName = ref('')
 const userFullName = ref('')
 const userRole = ref('')
+const userEmail = ref('')
 
 onMounted(() => {
     if (keycloak.authenticated) {
         userName.value = keycloak.tokenParsed?.preferred_username || 'User'
         userFullName.value = keycloak.tokenParsed?.name || 'No name'
+        userEmail.value = keycloak.tokenParsed?.email || 'No email'
         const clientRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
         userRole.value = clientRoles.length > 0 ? clientRoles.join(', ') : 'No role'
     }
@@ -26,7 +28,8 @@ onMounted(() => {
         <div class="heading">Velkommen, {{ userFullName }}!</div>
         <p>
             Fulde navn: {{ userFullName }}<br>
-            Rolle: {{ userRole }}
+            Rolle: {{ userRole }}<br>
+            Email: {{ userEmail }}
         </p>
         <p>
             Vi er glade for at have dig med på holdet. Vi håber, du vil få en fantastisk start og ser frem til at arbejde sammen med dig.

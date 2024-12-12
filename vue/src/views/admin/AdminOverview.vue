@@ -1,4 +1,4 @@
-<template>
+  <template>
     <div>
       <h1>Admin Oversigt</h1>
       <h2>Igangværende Forløb</h2>
@@ -9,6 +9,7 @@
             <p><strong>Admin:</strong> {{ forloeb.admin }}</p>
             <p><strong>User DQ:</strong> {{ forloeb.userdq }}</p>
             <p><strong>User Mail:</strong> {{ forloeb.usermail }}</p>
+            <p><strong>Løsningsprocent:</strong> {{ forloeb.solutionPercentage }}%</p>
           </div>
         </li>
       </ul>
@@ -20,6 +21,7 @@
             <p><strong>Admin:</strong> {{ forloeb.admin }}</p>
             <p><strong>User DQ:</strong> {{ forloeb.userdq }}</p>
             <p><strong>User Mail:</strong> {{ forloeb.usermail }}</p>
+            <p><strong>Løsningsprocent:</strong> {{ forloeb.solutionPercentage }}%</p>
           </div>
         </li>
       </ul>
@@ -28,23 +30,39 @@
   
   <script>
   import { getAllForloeb } from '../../services/forløbService';
+  import { getOpgaverByForloebID } from '../../services/opgaveService';
+  import keycloak from '@/keycloak';
   
   export default {
     data() {
       return {
         ongoingForloeb: [],
         completedForloeb: [],
-        selectedForloebID: null
+        selectedForloebID: null,
+        userFullName: ''
       };
     },
     async created() {
-      try {
-        const response = await getAllForloeb();
-        const forloeb = response.data;
-        this.ongoingForloeb = forloeb.filter(f => new Date(f.enddate) > new Date());
-        this.completedForloeb = forloeb.filter(f => new Date(f.enddate) <= new Date());
-      } catch (error) {
-        console.error('Error fetching forløb:', error);
+      if (keycloak.authenticated) {
+        this.userFullName = keycloak.tokenParsed?.name || 'No name';
+        try {
+          const response = await getAllForloeb();
+          const filteredForloeb = response.data.filter(f => f.admin === this.userFullName);
+          const forloeb = await Promise.all(filteredForloeb.map(async f => {
+            const opgaverResponse = await getOpgaverByForloebID(f.ForløbID);
+            const opgaver = opgaverResponse.data;
+            const totalTasks = opgaver.length;
+            const completedTasks = opgaver.filter(opg => opg.result === true).length;
+            const solutionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            return { ...f, solutionPercentage: solutionPercentage.toFixed(2) };
+          }));
+          this.ongoingForloeb = forloeb.filter(f => new Date(f.enddate) > new Date());
+          this.completedForloeb = forloeb.filter(f => new Date(f.enddate) <= new Date());
+        } catch (error) {
+          console.error('Error fetching forløb:', error);
+        }
+      } else {
+        console.warn('Keycloak not authenticated');
       }
     },
     methods: {
