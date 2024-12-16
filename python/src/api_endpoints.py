@@ -95,9 +95,11 @@ def create_forloeb_endpoint():
 def get_all_forloeb_endpoint():
     return get_all_forloeb()
 
+
 @api_endpoints.route('/forloeb/admin', methods=['GET'])
 def get_all_admin_names_endpoint():
     return get_admin_names()
+
 
 @api_endpoints.route('/forloeb/opgaver', methods=['GET'])
 def get_forloeb_with_opgaver_endpoint():

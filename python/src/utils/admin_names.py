@@ -20,4 +20,3 @@ def handle_files(connection):
     except Exception as e:
         logger.error(f"Error handling files: {e}")
         return []
-
