@@ -4,11 +4,16 @@ import keycloak from '@/keycloak'
 
 defineExpose({ setAlert })
 
-// Define all menu items
-const allMenuItems = [
+// Define menu items
+
+const adminMenuItems = [
     {
-        "title": "Introduktion",
-        "url": "/"
+        "title": "Admin Introduktion",
+        "url": "/admin-start"
+    },
+    {
+        "title": "Admin oversigt",
+        "url": "/admin-overview"
     },
     {
         "title": "Opret opgave",
@@ -33,10 +38,24 @@ const allMenuItems = [
     {
         "title": "Opret opgaveskabelon",
         "url": "/create-opgaveskabelon"
+    }
+]
+
+const medabrjederMenuItems = [
+    {
+        "title": "Medarbejder Introduktion",
+        "url": "/medarbejder-start"
     },
     {
-        "title": "Admin oversigt",
-        "url": "/admin-overview"
+        "title": "Se opgaver",
+        "url": "/view-opgaver"
+    }
+]
+
+const ansvarligMenuItems = [
+    {
+        "title": "Ansvarlig Introduktion",
+        "url": "/ansvarlig-start"
     },
     {
         "title": "Ansvarlig oversigt",
@@ -52,13 +71,11 @@ onMounted(() => {
 
         // Filter menu items based on roles
         if (clientRoles.includes('Admin')) {
-            menuItems.value = allMenuItems.filter(item => item.url !== '/ansvarlig-overview')
+            menuItems.value = adminMenuItems
         } else if (clientRoles.includes('Ny medarbejder')) {
-            menuItems.value = allMenuItems.filter(item => item.url === '/' || item.url === '/view-opgaver')
+            menuItems.value = medabrjederMenuItems
         } else if (clientRoles.includes('Ansvarlig')) {
-            menuItems.value = allMenuItems.filter(item => item.url === '/' || item.url === '/ansvarlig-overview')
-        } else {
-            menuItems.value = allMenuItems.filter(item => item.url === '/')
+            menuItems.value = ansvarligMenuItems
         }
 
         // Set selected = true for landing page (URL)

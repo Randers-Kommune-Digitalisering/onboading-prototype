@@ -15,7 +15,10 @@ import CreateForløbsskabelon from './views/admin/CreateForløbsskabelon.vue'
 import CreateOpgaveskabelon from './views/admin/CreateOpgaveskabelon.vue'
 import AdminOverview from './views/admin/AdminOverview.vue'
 import AnsvarligOverview from './views/ansvarlig/AnsvarligOverview.vue'
+import AnsvarligStart from './views/ansvarlig/AnsvarligStart.vue'
+import AdminStart from './views/admin/AdminStart.vue'
 import Start from '@/views/Start.vue'
+import MedarbejderStart from './views/ny_medarbejder/MedarbejderStart.vue'
 
 // Define routes
 const routes = [
@@ -71,6 +74,25 @@ const routes = [
         name: 'AnsvarligOverview',
         component: AnsvarligOverview,
         meta: { roles: ['Ansvarlig'] }
+    },
+    {
+        path: '/admin-start',
+        name: 'AdminStart',
+        component: AdminStart,
+        meta: { roles: ['Admin'] }
+    },
+    
+    {
+        path: '/ansvarlig-start',
+        name: 'AnsvarligStart',
+        component: AnsvarligStart,
+        meta: { roles: ['Ansvarlig'] }
+    },
+    {
+        path: '/medarbejder-start',
+        name: 'MedarbejderStart',
+        component: MedarbejderStart,
+        meta: { roles: ['Ny medarbejder'] }
     }
 ]
 
@@ -101,9 +123,20 @@ router.beforeEach((to, from, next) => {
 
 // Initialize Keycloak and then create the Vue app
 keycloak.init({ onLoad: 'login-required' }).then(() => {
-    createApp(App)
-        .use(router)
-        .mount('#app')
+    const app = createApp(App)
+    app.use(router)
+
+    // Check roles and redirect if necessary
+    const userRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
+    if (userRoles.includes('Admin')) {
+        router.push('/admin-start')
+    } else if (userRoles.includes('Ansvarlig')) {
+        router.push('/ansvarlig-start')
+    } else if (userRoles.includes('Ny medarbejder')) {
+        router.push('/medarbejder-start')
+    }
+
+    app.mount('#app')
 }).catch(() => {
     console.error('Keycloak initialization failed');
 });
