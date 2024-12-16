@@ -9,3 +9,7 @@ export const createForloeb = (data) => {
 export const getAllForloeb = () => {
   return axios.get(`${API_URL}/forloeb`);
 };
+
+export const getAdminNames = () => {
+  return axios.get(`${API_URL}/forloeb/admin`);
+};

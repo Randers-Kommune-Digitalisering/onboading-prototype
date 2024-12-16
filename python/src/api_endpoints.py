@@ -22,7 +22,9 @@ from controllers.forloebsskabelon_controller import (
 
 from controllers.forloeb_controller import (
     create_forloeb,
-    get_all_forloeb
+    get_all_forloeb,
+    get_admin_names,
+    get_forloeb_with_opgaver
 )
 
 from controllers.ressource_controller import (
@@ -92,6 +94,14 @@ def create_forloeb_endpoint():
 @api_endpoints.route('/forloeb', methods=['GET'])
 def get_all_forloeb_endpoint():
     return get_all_forloeb()
+
+@api_endpoints.route('/forloeb/admin', methods=['GET'])
+def get_all_admin_names_endpoint():
+    return get_admin_names()
+
+@api_endpoints.route('/forloeb/opgaver', methods=['GET'])
+def get_forloeb_with_opgaver_endpoint():
+    return get_forloeb_with_opgaver()
 
 
 @api_endpoints.route('/forlobsskabelon', methods=['POST'])

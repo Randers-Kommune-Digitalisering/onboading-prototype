@@ -2,6 +2,12 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Forløb, Forløbsskabelon, Opgave
 from utils.db_connection import get_db_client
+from utils.admin_names import handle_files
+from utils.sftp import SFTPClient
+import logging
+from utils.config import SFTP_HOST, SFTP_USER, SFTP_PASS
+
+logger = logging.getLogger(__name__)
 
 db_client = get_db_client()
 
@@ -10,11 +16,12 @@ def create_forloeb():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['startdate', 'enddate', 'admin', 'usermail', 'userdq']
+        required_fields = ['name', 'startdate', 'enddate', 'admin', 'usermail', 'userdq']
         if not all(field in data for field in required_fields):
             return jsonify({"error": f"Missing required fields: {', '.join(required_fields)}"}), 400
 
         forloeb = Forløb(
+            name=data['name'],
             startdate=datetime.fromisoformat(data['startdate']),
             enddate=datetime.fromisoformat(data['enddate']),
             admin=data['admin'],
@@ -58,7 +65,7 @@ def get_all_forloeb():
         result = [
             {
                 "ForløbID": forloeb.ForløbID,
-                "name": f"Forløb {forloeb.ForløbID}",
+                "name": forloeb.name,
                 "startdate": forloeb.startdate.isoformat(),
                 "enddate": forloeb.enddate.isoformat(),
                 "admin": forloeb.admin,
@@ -68,6 +75,40 @@ def get_all_forloeb():
             for forloeb in forloeb_list
         ]
         return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_admin_names():
+    logger.info("Retrieving admin names...")
+    sftp_client = SFTPClient(SFTP_HOST, SFTP_USER, SFTP_PASS)
+    conn = sftp_client.get_connection()
+    if conn:
+        admin_names = handle_files(conn)
+        if not admin_names:
+            logger.error("Error retrieving admin names from SFTP")
+            return jsonify({"error": "Error retrieving admin names from SFTP"}), 500
+    else:
+        logger.error("Error establishing SFTP connection")
+        return jsonify({"error": "Error establishing SFTP connection"}), 500
+
+    logger.info(f"Retrieved admin names: {admin_names}")
+    return jsonify({"admin_names": admin_names}), 200
+
+
+def get_forloeb_with_opgaver():
+    session = db_client.get_session()
+    try:
+        forloeb_list = session.query(Forløb).join(Opgave).all()
+        forloeb_data = [
+            {
+                'ForløbID': forloeb.ForløbID,
+                'name': forloeb.name
+            } for forloeb in forloeb_list
+        ]
+        return jsonify(forloeb_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
