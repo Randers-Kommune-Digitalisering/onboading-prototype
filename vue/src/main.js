@@ -9,7 +9,6 @@ import keycloak from './keycloak'
 // Import af views til routing
 import CreateOpgave from './views/admin/CreateOpgave.vue'
 import CreateForløb from './views/admin/CreateForløb.vue'
-import ViewOpgaver from '@/views/ViewOpgaver.vue'
 import CreateRessource from '@/views/CreateRessource.vue'
 import CreateForløbsskabelon from './views/admin/CreateForløbsskabelon.vue'
 import CreateOpgaveskabelon from './views/admin/CreateOpgaveskabelon.vue'
@@ -19,6 +18,7 @@ import AnsvarligStart from './views/ansvarlig/AnsvarligStart.vue'
 import AdminStart from './views/admin/AdminStart.vue'
 import Start from '@/views/Start.vue'
 import MedarbejderStart from './views/ny_medarbejder/MedarbejderStart.vue'
+import MedarbejderOverview from './views/ny_medarbejder/MedarbejderOverview.vue'
 
 // Define routes
 const routes = [
@@ -38,12 +38,6 @@ const routes = [
         name: 'CreateForløb',
         component: CreateForløb,
         meta: { roles: ['Admin'] }
-    },
-    {
-        path: '/view-opgaver',
-        name: 'ViewOpgaver',
-        component: ViewOpgaver,
-        meta: { roles: ['Admin', 'Ny medarbejder'] }
     },
     {
         path: '/create-ressource',
@@ -92,6 +86,12 @@ const routes = [
         path: '/medarbejder-start',
         name: 'MedarbejderStart',
         component: MedarbejderStart,
+        meta: { roles: ['Ny medarbejder'] }
+    },
+    {
+        path: '/medarbejder-overview',
+        name: 'MedarbejderOverview',
+        component: MedarbejderOverview,
         meta: { roles: ['Ny medarbejder'] }
     }
 ]

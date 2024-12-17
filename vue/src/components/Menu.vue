@@ -24,10 +24,6 @@ const adminMenuItems = [
         "url": "/create-forloeb"
     },
     {
-        "title": "Se opgaver",
-        "url": "/view-opgaver"
-    },
-    {
         "title": "Opret ressource",
         "url": "/create-ressource"
     },
@@ -47,8 +43,8 @@ const medabrjederMenuItems = [
         "url": "/medarbejder-start"
     },
     {
-        "title": "Se opgaver",
-        "url": "/view-opgaver"
+        "title": "Se onboardings opgaver",
+        "url": "/medarbejder-overview"
     }
 ]
 

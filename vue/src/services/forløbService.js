@@ -13,3 +13,7 @@ export const getAllForloeb = () => {
 export const getAdminNames = () => {
   return axios.get(`${API_URL}/forloeb/admin`);
 };
+
+export const getForloebWithOpgaver = () => {
+  return axios.get(`${API_URL}/forloeb/opgaver`);
+};

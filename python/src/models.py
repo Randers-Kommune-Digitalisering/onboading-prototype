@@ -16,7 +16,7 @@ class Forløbsskabelon(Base):
 class Forløb(Base):
     __tablename__ = 'Forløb'
     ForløbID = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)  # Add this line
+    name = Column(String, nullable=False)
     startdate = Column(DateTime, nullable=False)
     enddate = Column(DateTime, nullable=False)
     admin = Column(String, nullable=False)

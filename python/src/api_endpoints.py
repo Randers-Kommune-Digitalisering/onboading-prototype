@@ -10,7 +10,9 @@ from controllers.opgave_controller import (
     delete_opgave,
     get_opgave_by_forloeb_id,
     create_opgave,
-    get_all_opgaver
+    get_all_opgaver,
+    get_opgave_by_forloebsskabelon_id_admin,
+    get_opgave_by_forloeb_id_admin
 )
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
@@ -65,6 +67,10 @@ def create_opgave_with_opgaveskabelon_endpoint():
 def get_opgave_by_forloebsskabelon_id_endpoint(forlobsskabelon_id):
     return get_opgave_by_forloebsskabelon_id(forlobsskabelon_id)
 
+@api_endpoints.route('/opgave/forloebsskabelon/admin/<int:forlobsskabelon_id>', methods=['GET'])
+def get_opgave_by_forloebsskabelon_id_admin_endpoint(forlobsskabelon_id):
+    return get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id)
+
 
 @api_endpoints.route('/opgave/<int:opgave_id>', methods=['PUT'])
 def update_opgave_endpoint(opgave_id):
@@ -79,6 +85,10 @@ def delete_opgave_endpoint(opgave_id):
 @api_endpoints.route('/opgave/forloeb/<int:forloeb_id>', methods=['GET'])
 def get_opgave_by_forloeb_id_endpoint(forloeb_id):
     return get_opgave_by_forloeb_id(forloeb_id)
+
+@api_endpoints.route('/opgave/forloeb/admin/<int:forloeb_id>', methods=['GET'])
+def get_opgave_by_forloeb_id_admin_endpoint(forloeb_id):
+    return get_opgave_by_forloeb_id_admin(forloeb_id)
 
 
 @api_endpoints.route('/opgave', methods=['GET'])
@@ -95,11 +105,9 @@ def create_forloeb_endpoint():
 def get_all_forloeb_endpoint():
     return get_all_forloeb()
 
-
 @api_endpoints.route('/forloeb/admin', methods=['GET'])
 def get_all_admin_names_endpoint():
     return get_admin_names()
-
 
 @api_endpoints.route('/forloeb/opgaver', methods=['GET'])
 def get_forloeb_with_opgaver_endpoint():

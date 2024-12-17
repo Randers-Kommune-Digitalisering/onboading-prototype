@@ -31,8 +31,12 @@
           <input type="datetime-local" v-model="timestamp" required />
         </div>
         <div>
-          <label for="ForløbID">ForløbID:</label>
-          <input type="text" v-model="ForløbID" />
+          <label for="ForløbID">Forløb:</label>
+          <select v-model="ForløbID">
+            <option v-for="forloeb in forloebs" :key="forloeb.ForløbID" :value="forloeb.ForløbID">
+              {{ forloeb.name }}
+            </option>
+          </select>
         </div>
         <div>
           <label for="ForløbsskabelonID">Forløbsskabelon:</label>
@@ -50,6 +54,7 @@
   
   <script>
   import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
+  import { getAllForloeb } from '../../services/forløbService';
   import { createOpgave } from '../../services/opgaveService';
   
   export default {
@@ -65,15 +70,19 @@
         ForløbID: '',
         ForløbsskabelonID: '',
         forloebsskabeloner: [],
+        forloebs: [],
         message: ''
       };
     },
     async created() {
       try {
-        const response = await getForloebsskabeloner();
-        this.forloebsskabeloner = response.data;
+        const skabelonResponse = await getForloebsskabeloner();
+        this.forloebsskabeloner = skabelonResponse.data;
+  
+        const forloebResponse = await getAllForloeb();
+        this.forloebs = forloebResponse.data;
       } catch (error) {
-        this.message = 'Failed to load Forløbsskabeloner';
+        this.message = 'Failed to load data';
       }
     },
     methods: {

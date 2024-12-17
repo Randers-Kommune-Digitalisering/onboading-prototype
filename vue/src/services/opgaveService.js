@@ -6,12 +6,16 @@ export const createOpgave = (data) => {
   return axios.post(`${API_URL}/opgave`, data);
 };
 
-export const getOpgaverByForloebID = (forloebID) => {
-    return axios.get(`${API_URL}/opgave/forloeb/${forloebID}`);
+export const getOpgaverByForloebIDAdmin = (forloebID) => {
+  return axios.get(`${API_URL}/opgave/forloeb/admin/${forloebID}`);
 };
-  
-  export const getOpgaverByForloebsskabelonID = (forloebsskabelonID) => {
-    return axios.get(`${API_URL}/opgave/forloebsskabelon/${forloebsskabelonID}`);
+
+export const getOpgaverByForloebID = (forloebID, config) => {
+  return axios.get(`${API_URL}/opgave/forloeb/${forloebID}`, config);
+};
+
+export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
+  return axios.get(`${API_URL}/opgave/forloebsskabelon/${forloebsskabelonID}`, config);
 };
   
   export const deleteOpgave = (opgaveID) => {

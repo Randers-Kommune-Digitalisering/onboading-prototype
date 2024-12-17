@@ -135,6 +135,47 @@ def create_opgave_with_opgaveskabelon():
 def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
     session = db_client.get_session()
     try:
+        usermail = request.headers.get('usermail')
+        if not usermail:
+            return jsonify({"error": "Usermail header is required"}), 400
+
+        opgave = session.query(Opgave).join(Forløb).filter(
+            Opgave.ForløbsskabelonID == forlobsskabelon_id,
+            Forløb.usermail == usermail
+        ).all()
+
+        if not opgave:
+            return jsonify({"error": "No opgave found for the specified ForløbsskabelonID and usermail"}), 404
+
+        opgave_data = [
+            {
+                'OpgaveID': opgave.OpgaveID,
+                'title': opgave.title,
+                'beskrivelse': opgave.beskrivelse,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
+                'ansvarlig': opgave.ansvarlig,
+                'startdato': opgave.startdato.isoformat(),
+                'slutdato': opgave.slutdato.isoformat(),
+                'result': opgave.result,
+                'timestamp': opgave.timestamp.isoformat()
+            } for opgave in opgave
+        ]
+        return jsonify(opgave_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
+    session = db_client.get_session()
+    try:
         opgave = session.query(Opgave).filter_by(ForløbsskabelonID=forlobsskabelon_id).all()
         if not opgave:
             return jsonify({"error": "No opgave found for the specified ForløbsskabelonID"}), 404
@@ -165,12 +206,53 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
         session.close()
 
 
-def get_opgave_by_forloeb_id(forlob_id):
+def get_opgave_by_forloeb_id_admin(forlob_id):
     session = db_client.get_session()
     try:
         opgave = session.query(Opgave).filter_by(ForløbID=forlob_id).all()
         if not opgave:
             return jsonify({"error": "No opgave found for the specified ForløbID"}), 404
+
+        opgave_data = [
+            {
+                'OpgaveID': opgave.OpgaveID,
+                'title': opgave.title,
+                'beskrivelse': opgave.beskrivelse,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
+                'ansvarlig': opgave.ansvarlig,
+                'startdato': opgave.startdato.isoformat(),
+                'slutdato': opgave.slutdato.isoformat(),
+                'result': opgave.result,
+                'timestamp': opgave.timestamp.isoformat()
+            } for opgave in opgave
+        ]
+        return jsonify(opgave_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_opgave_by_forloeb_id(forlob_id):
+    session = db_client.get_session()
+    try:
+        usermail = request.headers.get('usermail')
+        if not usermail:
+            return jsonify({"error": "Usermail header is required"}), 400
+
+        opgave = session.query(Opgave).join(Forløb).filter(
+            Opgave.ForløbID == forlob_id,
+            Forløb.usermail == usermail
+        ).all()
+
+        if not opgave:
+            return jsonify({"error": "No opgave found for the specified ForløbID and usermail"}), 404
 
         opgave_data = [
             {

@@ -2,18 +2,14 @@
   <div>
     <form @submit.prevent="fetchOpgaver">
       <div>
-        <label for="forloebID">ForløbID:</label>
-        <input type="text" v-model="forloebID" />
-      </div>
-      <div>
-        <label for="forloebsskabelonID">Forløbsskabelon:</label>
-        <select v-model="forloebsskabelonID">
-          <option v-for="skabelon in forloebsskabeloner" :key="skabelon.ForløbsskabelonID" :value="skabelon.ForløbsskabelonID">
-            {{ skabelon.name }}
+        <label for="forloebID">Forløb:</label>
+        <select v-model="forloebID">
+          <option v-for="forloeb in forloebs" :key="forloeb.ForløbID" :value="forloeb.ForløbID">
+            {{ forloeb.name }}
           </option>
         </select>
       </div>
-      <button class="button button-outline" type="submit">Fetch Opgaver</button>
+      <button class="button button-outline" type="submit">Hent opgaver</button>
     </form>
     <div v-if="message">{{ message }}</div>
     <div v-if="opgaver.length">
@@ -46,42 +42,43 @@
 </template>
 
 <script>
-// import { getForloebsskabelonerWithOpgavers } from '../apiService';
-import { getForloebsskabelonerWithOpgavers } from '../services/forløbsskabelonService';
-import { updateOpgave, getOpgaverByForloebsskabelonID, getOpgaverByForloebID } from '../services/opgaveService';
+import keycloak from '@/keycloak';
+import { getForloebWithOpgaver } from '../../services/forløbService';
+import { updateOpgave, getOpgaverByForloebID } from '../../services/opgaveService';
 
 export default {
   data() {
     return {
       forloebID: '',
-      forloebsskabelonID: '',
-      forloebsskabeloner: [],
+      forloebs: [],
       opgaver: [],
-      message: ''
+      message: '',
+      usermail: ''
     };
   },
   async created() {
+    if (keycloak.authenticated) {
+      this.usermail = keycloak.tokenParsed?.email || '';
+    }
     try {
-      const response = await getForloebsskabelonerWithOpgavers();
-      this.forloebsskabeloner = response.data;
+      const forloebResponse = await getForloebWithOpgaver();
+      this.forloebs = forloebResponse.data;
     } catch (error) {
-      this.message = 'Failed to load Forløbsskabeloner';
+      this.message = 'Failed to load data';
     }
   },
   methods: {
     async fetchOpgaver() {
       try {
-        let response;
+        const headers = { usermail: this.usermail };
         if (this.forloebID) {
-          response = await getOpgaverByForloebID(this.forloebID);
-        } else if (this.forloebsskabelonID) {
-          response = await getOpgaverByForloebsskabelonID(this.forloebsskabelonID);
+          const response = await getOpgaverByForloebID(this.forloebID, { headers });
+          this.opgaver = response.data.map(opgave => ({ ...opgave, showDetails: false }));
+          this.message = '';
         } else {
-          this.message = 'Please provide either ForløbID or ForløbsskabelonID';
-          return;
+          this.message = 'Please provide ForløbID';
+          this.opgaver = [];
         }
-        this.opgaver = response.data.map(opgave => ({ ...opgave, showDetails: false }));
-        this.message = '';
       } catch (error) {
         this.message = error.response.data.error;
         this.opgaver = [];
@@ -112,7 +109,7 @@ export default {
       return diffInHours.toFixed(2);
     },
     formatDate(date) {
-      return new Date(date).toLocaleDateString('en-GB'); // 'en-GB' giver 'DD/MM/YYYY' formattet
+      return new Date(date).toLocaleDateString('en-GB');
     }
   }
 };

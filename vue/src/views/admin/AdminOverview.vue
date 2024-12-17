@@ -30,7 +30,7 @@
   
   <script>
   import { getAllForloeb } from '../../services/forløbService';
-  import { getOpgaverByForloebID } from '../../services/opgaveService';
+  import { getOpgaverByForloebIDAdmin } from '../../services/opgaveService';
   import keycloak from '@/keycloak';
   
   export default {
@@ -49,7 +49,7 @@
           const response = await getAllForloeb();
           const filteredForloeb = response.data.filter(f => f.admin === this.userFullName);
           const forloeb = await Promise.all(filteredForloeb.map(async f => {
-            const opgaverResponse = await getOpgaverByForloebID(f.ForløbID);
+            const opgaverResponse = await getOpgaverByForloebIDAdmin(f.ForløbID);
             const opgaver = opgaverResponse.data;
             const totalTasks = opgaver.length;
             const completedTasks = opgaver.filter(opg => opg.result === true).length;
