@@ -180,14 +180,14 @@ def get_and_save_azure_ad_data():
         users = azure_client.get_all_users()
 
         if not users:
-            logger.error("Error retrieving full names from Azure AD")
-            return jsonify({"error": "Error retrieving full names from Azure AD"}), 500
+            logger.error("Error retrieving data from Azure AD")
+            return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
         df = pd.DataFrame(users)
         csv_filename = 'file'
         df_to_csv(df, csv_filename)
-        logger.info(f"Full names saved to {csv_filename}.csv")
-        return jsonify({"message": f"Full names saved to {csv_filename}.csv"}), 200
+        logger.info(f"Data saved to {csv_filename}.csv")
+        return jsonify({"message": f"Data saved to {csv_filename}.csv"}), 200
     except Exception as e:
-        logger.error(f"Error processing full names: {e}")
-        return jsonify({"error": "Error processing full names"}), 500
+        logger.error(f"Error processing data: {e}")
+        return jsonify({"error": "Error processing data"}), 500
