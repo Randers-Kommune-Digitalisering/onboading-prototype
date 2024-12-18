@@ -26,7 +26,11 @@ from controllers.forloeb_controller import (
     create_forloeb,
     get_all_forloeb,
     get_admin_names,
-    get_forloeb_with_opgaver
+    get_forloeb_with_opgaver,
+    get_email,
+    get_dq_numbers,
+    get_fullname,
+    get_and_save_azure_ad_data
 )
 
 from controllers.ressource_controller import (
@@ -181,3 +185,23 @@ def update_opgaveskabelon_endpoint(opgaveskabelon_id):
 @api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['DELETE'])
 def delete_opgaveskabelon_endpoint(opgaveskabelon_id):
     return delete_opgaveskabelon(opgaveskabelon_id)
+
+
+@api_endpoints.route('/users/email', methods=['GET'])
+def get_email_endpoint():
+    return get_email()
+
+
+@api_endpoints.route('/users/dq', methods=['GET'])
+def get_dq_numbers_endpoint():
+    return get_dq_numbers()
+
+
+@api_endpoints.route('/users/fullname', methods=['GET'])
+def get_fullname_endpoint():
+    return get_fullname()
+
+
+@api_endpoints.route('/users/azure', methods=['GET'])
+def get_and_save_azure_ad_data_endpoint():
+    return get_and_save_azure_ad_data()
