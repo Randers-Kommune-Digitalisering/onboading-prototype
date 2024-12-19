@@ -25,11 +25,21 @@
         </div>
         <div>
           <label for="usermail">User Mail:</label>
-          <input type="email" v-model="form.usermail" required />
+          <input type="text" v-model="emailSearch" placeholder="Search user emails" />
+          <select v-model="form.usermail" required>
+            <option v-for="email in filteredEmails" :key="email" :value="email">
+              {{ email }}
+            </option>
+          </select>
         </div>
         <div>
           <label for="userdq">User DQ:</label>
-          <input type="text" v-model="form.userdq" required />
+          <input type="text" v-model="dqSearch" placeholder="Search user DQ numbers" />
+          <select v-model="form.userdq" required>
+            <option v-for="dq in filteredDQs" :key="dq" :value="dq">
+              {{ dq }}
+            </option>
+          </select>
         </div>
         <div>
           <label for="ForløbsskabelonID">Forløbsskabelon Name: (optional)</label>
@@ -48,7 +58,8 @@
   
   <script>
   import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
-  import { createForloeb, getAdminNames } from '../../services/forløbService';
+  import { createForloeb } from '../../services/forløbService';
+  import { getAdminNames, getEmail, getDQ } from '../../services/userService';
   
   export default {
     data() {
@@ -65,6 +76,10 @@
         forloebsskabeloner: [],
         adminNames: [],
         adminSearch: '',
+        emails: [],
+        emailSearch: '',
+        dqNumbers: [],
+        dqSearch: '',
         message: ''
       };
     },
@@ -75,14 +90,30 @@
   
         const adminResponse = await getAdminNames();
         this.adminNames = adminResponse.data.admin_names;
+  
+        const emailResponse = await getEmail();
+        this.emails = emailResponse.data.emails;
+  
+        const dqResponse = await getDQ();
+        this.dqNumbers = dqResponse.data.dq_numbers;
       } catch (error) {
-        this.message = 'Failed to load admin name data';
+        this.message = 'Failed to load data';
       }
     },
     computed: {
       filteredAdminNames() {
         return this.adminNames.filter(admin =>
           admin.toLowerCase().includes(this.adminSearch.toLowerCase())
+        );
+      },
+      filteredEmails() {
+        return this.emails.filter(email =>
+          email.toLowerCase().includes(this.emailSearch.toLowerCase())
+        );
+      },
+      filteredDQs() {
+        return this.dqNumbers.filter(dq =>
+          dq.toLowerCase().includes(this.dqSearch.toLowerCase())
         );
       }
     },
