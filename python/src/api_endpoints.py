@@ -25,8 +25,12 @@ from controllers.forloebsskabelon_controller import (
 from controllers.forloeb_controller import (
     create_forloeb,
     get_all_forloeb,
+    get_forloeb_with_opgaver
+
+)
+
+from controllers.user_controller import (
     get_admin_names,
-    get_forloeb_with_opgaver,
     get_email,
     get_dq_numbers,
     get_fullname,
@@ -110,11 +114,6 @@ def create_forloeb_endpoint():
 @api_endpoints.route('/forloeb', methods=['GET'])
 def get_all_forloeb_endpoint():
     return get_all_forloeb()
-
-
-@api_endpoints.route('/forloeb/admin', methods=['GET'])
-def get_all_admin_names_endpoint():
-    return get_admin_names()
 
 
 @api_endpoints.route('/forloeb/opgaver', methods=['GET'])
@@ -205,3 +204,8 @@ def get_fullname_endpoint():
 @api_endpoints.route('/users/azure', methods=['GET'])
 def get_and_save_azure_ad_data_endpoint():
     return get_and_save_azure_ad_data()
+
+
+@api_endpoints.route('/users/admin', methods=['GET'])
+def get_all_admin_names_endpoint():
+    return get_admin_names()
