@@ -64,6 +64,12 @@ def transform_ad_fullname(file_path):
             df = pd.read_csv(io.StringIO(content), sep=",", header=0, na_filter=False, usecols=needed_cols)
 
             filtered_df = df[df['onPremisesSamAccountName'].str.startswith(('DQ', 'AP'))]
+
+            remove_values = ['Vikar', 'Distrikt Bakkegården', 'Afløser', 'Langå', 'Mobil', 'Vorup Plejecenter']
+
+            for value in remove_values:
+                filtered_df = filtered_df[~filtered_df['displayName'].str.contains(value, case=False, na=False)]
+
             fullnames = [name for name in filtered_df['displayName'].tolist() if name]
             logger.info(f"Full names with onPremisesSamAccountName starting with 'DQ' or 'AP': {fullnames}")
             return fullnames
