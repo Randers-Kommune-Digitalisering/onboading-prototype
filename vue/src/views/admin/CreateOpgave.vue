@@ -3,7 +3,7 @@
     <h2>Opret Opgave</h2>
     <form @submit.prevent="submitForm">
       <div>
-        <label for="title">Title:</label>
+        <label for="title">Opgave navn:</label>
         <input type="text" v-model="title" required />
       </div>
       <div>
@@ -28,7 +28,7 @@
         <input type="date" v-model="slutdato" required />
       </div>
       <div>
-        <label for="result">Result:</label>
+        <label for="result">Status på opgaven:</label>
         <input type="checkbox" v-model="result" />
       </div>
       <div>

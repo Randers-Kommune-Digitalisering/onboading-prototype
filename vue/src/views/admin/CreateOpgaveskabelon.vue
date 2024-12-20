@@ -3,7 +3,7 @@
       <h2>Opret Opgaveskabelon</h2>
       <form @submit.prevent="createOpgaveskabelon">
         <div>
-          <label for="title">Title:</label>
+          <label for="title">Opgaveskabelon Navn:</label>
           <input type="text" v-model="title" required />
         </div>
         <div>

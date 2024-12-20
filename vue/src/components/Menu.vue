@@ -8,11 +8,11 @@ defineExpose({ setAlert })
 
 const adminMenuItems = [
     {
-        "title": "Admin Introduktion",
+        "title": "Leder Introduktion",
         "url": "/admin-start"
     },
     {
-        "title": "Admin oversigt",
+        "title": "Leder oversigt",
         "url": "/admin-overview"
     },
     {

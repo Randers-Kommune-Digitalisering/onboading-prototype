@@ -3,7 +3,7 @@
     <h2>Opret Ressource</h2>
     <form @submit.prevent="submitForm">
       <div>
-        <label for="name">Name:</label>
+        <label for="name">Ressource Navn:</label>
         <input type="text" v-model="name" required />
       </div>
       <div>
@@ -28,16 +28,16 @@
           </option>
         </select>
       </div>
-      <button class="button button-outline" type="submit">Create Ressource</button>
+      <button class="button button-outline" type="submit">Opret Ressource</button>
     </form>
     <div v-if="message">{{ message }}</div>
   </div>
 </template>
 
 <script>
-import { createRessource } from '../services/ressourceService';
-import { getOpgaveskabeloner } from '../services/opgaveskabelonService';
-import { getOpgaver } from '../services/opgaveService';
+import { createRessource } from '../../services/ressourceService';
+import { getOpgaveskabeloner } from '../../services/opgaveskabelonService';
+import { getOpgaver } from '../../services/opgaveService';
 
 export default {
   data() {

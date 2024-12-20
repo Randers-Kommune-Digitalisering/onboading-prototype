@@ -1,14 +1,14 @@
   <template>
     <div>
-      <h1>Admin Oversigt</h1>
+      <h1>Leder Oversigt</h1>
       <h2>Igangværende Forløb</h2>
       <ul>
         <li v-for="forloeb in ongoingForloeb" :key="forloeb.ForløbID" @click="toggleDetails(forloeb.ForløbID)">
           {{ forloeb.name }} - {{ formatDate(forloeb.startdate) }} til {{ formatDate(forloeb.enddate) }}
           <div v-if="selectedForloebID === forloeb.ForløbID">
-            <p><strong>Admin:</strong> {{ forloeb.admin }}</p>
-            <p><strong>User DQ:</strong> {{ forloeb.userdq }}</p>
-            <p><strong>User Mail:</strong> {{ forloeb.usermail }}</p>
+            <p><strong>Leder:</strong> {{ forloeb.admin }}</p>
+            <p><strong>Medarbejder DQ-nummer:</strong> {{ forloeb.userdq }}</p>
+            <p><strong>Medarbejder Mail:</strong> {{ forloeb.usermail }}</p>
             <p><strong>Løsningsprocent:</strong> {{ forloeb.solutionPercentage }}%</p>
           </div>
         </li>
@@ -18,9 +18,9 @@
         <li v-for="forloeb in completedForloeb" :key="forloeb.ForløbID" @click="toggleDetails(forloeb.ForløbID)">
           {{ forloeb.name }} - {{ formatDate(forloeb.startdate) }} til {{ formatDate(forloeb.enddate) }}
           <div v-if="selectedForloebID === forloeb.ForløbID">
-            <p><strong>Admin:</strong> {{ forloeb.admin }}</p>
-            <p><strong>User DQ:</strong> {{ forloeb.userdq }}</p>
-            <p><strong>User Mail:</strong> {{ forloeb.usermail }}</p>
+            <p><strong>Leder:</strong> {{ forloeb.admin }}</p>
+            <p><strong>Medarbejder DQ-nummer:</strong> {{ forloeb.userdq }}</p>
+            <p><strong>Medarbejder Mail:</strong> {{ forloeb.usermail }}</p>
             <p><strong>Løsningsprocent:</strong> {{ forloeb.solutionPercentage }}%</p>
           </div>
         </li>

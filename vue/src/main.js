@@ -9,24 +9,18 @@ import keycloak from './keycloak'
 // Import af views til routing
 import CreateOpgave from './views/admin/CreateOpgave.vue'
 import CreateForløb from './views/admin/CreateForløb.vue'
-import CreateRessource from '@/views/CreateRessource.vue'
+import CreateRessource from '@/views/admin/CreateRessource.vue'
 import CreateForløbsskabelon from './views/admin/CreateForløbsskabelon.vue'
 import CreateOpgaveskabelon from './views/admin/CreateOpgaveskabelon.vue'
 import AdminOverview from './views/admin/AdminOverview.vue'
 import AnsvarligOverview from './views/ansvarlig/AnsvarligOverview.vue'
 import AnsvarligStart from './views/ansvarlig/AnsvarligStart.vue'
 import AdminStart from './views/admin/AdminStart.vue'
-import Start from '@/views/Start.vue'
 import MedarbejderStart from './views/ny_medarbejder/MedarbejderStart.vue'
 import MedarbejderOverview from './views/ny_medarbejder/MedarbejderOverview.vue'
 
 // Define routes
-const routes = [
-    {
-        path: '/', 
-        name: "Start",
-        component: Start
-    },   
+const routes = [ 
     {
         path: '/create-opgave',
         name: 'CreateOpgave',
@@ -100,25 +94,6 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
-})
-
-// Navigation guard to check roles
-router.beforeEach((to, from, next) => {
-    if (keycloak.authenticated) {
-        const userRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
-        if (to.meta.roles) {
-            const hasAccess = to.meta.roles.some(role => userRoles.includes(role))
-            if (hasAccess) {
-                next()
-            } else {
-                next('/') // Redirect to Start page if no access
-            }
-        } else {
-            next() // No roles required, allow access
-        }
-    } else {
-        next('/') // Redirect to Start page if not authenticated
-    }
 })
 
 // Initialize Keycloak and then create the Vue app

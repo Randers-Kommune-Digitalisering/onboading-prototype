@@ -3,7 +3,7 @@
       <h2>Opret Forløbsskabelon</h2>
       <form @submit.prevent="submitForm">
         <div>
-          <label for="name">Name:</label>
+          <label for="name">Forløbsskabelon Navn:</label>
           <input type="text" v-model="form.name" required />
         </div>
         <div>
