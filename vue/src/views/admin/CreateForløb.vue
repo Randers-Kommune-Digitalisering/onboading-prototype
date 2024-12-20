@@ -7,11 +7,11 @@
           <input type="text" v-model="form.name" required />
         </div>
         <div>
-          <label for="startdate">Start Dato:</label>
+          <label for="startdate">Startdato:</label>
           <input type="date" v-model="form.startdate" required />
         </div>
         <div>
-          <label for="enddate">End Dato:</label>
+          <label for="enddate">Slutdato:</label>
           <input type="date" v-model="form.enddate" required />
         </div>
         <div>
@@ -70,6 +70,7 @@
   <script>
   import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
   import { createForloeb } from '../../services/forløbService';
+  import keycloak from '@/keycloak';
   import { getAdminNames, getEmail, getDQ } from '../../services/userService';
   
   export default {
@@ -109,6 +110,10 @@
   
         const dqResponse = await getDQ();
         this.dqNumbers = dqResponse.data.dq_numbers;
+
+        if (keycloak.authenticated) {
+          this.form.admin = keycloak.tokenParsed?.name || 'No name';
+        }
       } catch (error) {
         this.message = 'Failed to load data';
       }
