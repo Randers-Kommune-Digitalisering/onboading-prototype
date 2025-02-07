@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import App from './App.vue'
-import keycloak from './keycloak'
+import keycloak from './keycloak.js'
 
 // Import af views til routing
 import CreateOpgave from './views/admin/CreateOpgave.vue'

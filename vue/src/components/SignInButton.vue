@@ -1,6 +1,6 @@
-  <script>
+<script>
   import keycloak from '../keycloak';
-  
+
   export default {
     methods: {
       login() {
@@ -8,4 +8,5 @@
       }
     }
   }
-  </script>
+</script>
+<template></template>

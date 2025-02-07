@@ -53,11 +53,14 @@ from controllers.opgaveskabelon_controller import (
     delete_opgaveskabelon
 )
 
-db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
-Base.metadata.create_all(db_client.engine)
-
-
 logger = logging.getLogger(__name__)
+db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
+try:
+    Base.metadata.create_all(db_client.engine)
+except Exception as e:
+    print(f"Error creating tables: {e}")
+
+
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 
 
