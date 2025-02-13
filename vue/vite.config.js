@@ -1,5 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 const path = require('path')
+require('dotenv').config() // loads from /vue/.env
 
 const VUE_PORT = process.env.VUE_PORT || 3000
 const BACKEND_PORT = process.env.BACKEND_PORT || 8080

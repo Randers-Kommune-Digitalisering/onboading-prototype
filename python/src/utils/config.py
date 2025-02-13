@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-DEBUG = os.getenv('DEBUG', 'False') in ['True', 'true']
+DEBUG = os.getenv('DEBUG', 'True')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
 
