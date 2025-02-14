@@ -1,11 +1,18 @@
 <script setup>
     import Card from './Card.vue'
+
+    defineProps({
+        taskList: {
+            type: Array,
+            required: false
+        }
+    })
 </script>
 
 <template>
 
     <p class="indent-tiny bold uppercase p-header-adjust-large">Dine opgaver</p>
-    <div class="card-list">
+    <div class="card-list" v-if="taskList && taskList.length > 0">
         <Card id="card1"
             title="Gennemfør IT-sikkerhedskursus"
             header="Lær om informationssikkerhed, GDPR og meget mere!"
@@ -18,5 +25,8 @@
             link=""
             isComplete="false" />
     </div><!-- /card-list -->
+    <div v-else>
+        <p class="indent-tiny">Ingen opgaver fundet.</p>
+    </div>
 
 </template>
