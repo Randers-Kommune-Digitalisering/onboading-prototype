@@ -3,7 +3,7 @@
   import keycloak from '@/keycloak'
   import { getForloebByEmail } from '../../services/forløbService'
   import { getOpgaverByForloebID } from '../../services/opgaveService'
-  import CardList from '@/components/CardList.vue'
+  import TaskList from '@/components/TaskList.vue'
 
   const userName = ref('')
   const userFullName = ref('')
@@ -58,5 +58,5 @@
 
 <template>
   {{ forloeb }}
-  <CardList :taskList="opgaver" />
+  <TaskList :tasks="opgaver" />
 </template>

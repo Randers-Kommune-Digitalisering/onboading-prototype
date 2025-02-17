@@ -3,7 +3,7 @@
     import Header from './components/Menu.vue'
     import Navbar from './components/Navbar.vue'
     import ProgressBar from './components/ProgressBar.vue'
-    import CardList from './components/CardList.vue'
+    import CardList from './components/TaskList.vue'
     import SignInButton from './components/SignInButton.vue'
 
     const currentComponent = ref(null)
