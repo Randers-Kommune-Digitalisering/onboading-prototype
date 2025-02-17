@@ -11,7 +11,7 @@
 
 <template>
 
-    <p class="indent-tiny bold uppercase p-header-adjust-large">Dine opgaver</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">Dine opgaver</p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="task in tasks"
             :id="'card_' + task.OpgaveID"

@@ -1,5 +1,6 @@
 <script setup>
     import { ref } from 'vue'
+    import ProgressBar from './ProgressBar.vue'
     var cardRef = ref(null)
 
     const expandCard = () => {
@@ -23,101 +24,69 @@
             type: String,
             required: true
         },
-        header:
+        name:
         {
             type: String,
             default: ''
         },
-        description: {
-            type: String,
-            default: ''
+        startDate : {
+            type: Date
         },
         deadline: {
             type: Date
         },
-        responsible: {
-            type: String
-        },
-        booking: {
-            type: Date
-        },
-        image: {
-            type: String,
-            default: ''
-        },
         color: {
             type: String,
             default: '000'
-        },
-        link: {
-            type: String
         }
     })
 </script>
 
 <template>
 
-    <div class="card expand-content" ref="cardRef">
-        <div class="card-header pointer" @click="expandCard">
+    <div class="card course expand-content" ref="cardRef">
+        <div class="card-header">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`">
-                    <div>i</div>
+                    <div>{{ name[0].toLowerCase() }}</div>
                 </div>
             </div>
 
-            <div>
+            <div class="card-titles">
                 <p class="card-title">
-                    {{ title }}
+                    {{ name }}
                 </p>
                 <p class="card-subtitle">
-                    {{ header }}
+                    {{ title }}
                 </p>
             </div>
 
-            <div class="card-separator"></div>
-
-            <div class="card-image" :style="`background-image: url('`+ image +`');`">
-                &nbsp;
-            </div>
-        </div>
-
-        <div class="card-large-image" :style="`background-image: url('`+ image +`');`">
-            &nbsp;
-        </div>
-
-        <div class="card-content">
             <div class="card-details">
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">Deadline</div>
-                        <div>{{ deadline ? returnTimeLeft(deadline) + ' timer' : 'Ingen deadline' }}</div>
+                        <div class="small faded">Opstart</div>
+                        <div>{{ startDate ? returnFormattedDate(startDate) : 'Ingen startdato' }}</div>
                     </div>
                 </div>
 
                 <div>
-                    <div class="icon"><i class="fa-solid fa-user"></i></div>
+                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">Ansvarlig</div>
-                        <div>{{ responsible ? responsible : 'Ingen ansvarlig' }}</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="icon"><i class="fa-solid fa-calendar"></i></div>
-                    <div class="text">
-                        <div class="small faded">Booking</div>
-                        <div>{{booking ? returnFormattedDate(booking) : 'Ingen kalenderbooking'}}</div>
+                        <div class="small faded">Afslutning</div>
+                        <div>{{ deadline ? returnFormattedDate(deadline) : 'Ingen deadline' }}</div>
                     </div>
                 </div>
             </div>
+            
+        </div>
 
-            <p>{{ description }}</p>
-
-            <div class="buttons">
+        <div class="card-content">
+            <ProgressBar :hideText="true" :percentage="5" />
+            <!--div class="buttons">
                 <div class="button" v-if="link">Gå til kursus</div>
                 <div class="button disabled">Markér gennemført</div>
-            </div>
+            </div-->
         </div>
     </div>
 
