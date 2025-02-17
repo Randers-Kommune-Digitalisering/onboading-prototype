@@ -41,7 +41,9 @@
 
         forloeb_id.value = forloeb.value.ForløbID
         const opgaver_response = await getOpgaverByForloebID(forloeb_id.value, { headers })
-        opgaver.value = opgaver_response ?? opgaver_response.data //response.data.map(opgave => ({ ...opgave, showDetails: false }))
+        opgaver.value = opgaver_response != null ? opgaver_response.data : null //response.data.map(opgave => ({ ...opgave, showDetails: false }))
+        if (!Array.isArray(opgaver.value))
+          opgaver.value = [opgaver.value]
 
       } else {
         console.log('Please provide user email')
@@ -56,6 +58,5 @@
 
 <template>
   {{ forloeb }}
-  
   <CardList :taskList="opgaver" />
 </template>
