@@ -6,6 +6,10 @@ export const createForloeb = (data) => {
   return axios.post(`${API_URL}/forloeb`, data);
 };
 
+export const getForloebByEmail = (config) => {
+  return axios.get(`${API_URL}/mitforloeb`, config);
+};
+
 export const getAllForloeb = () => {
   return axios.get(`${API_URL}/forloeb`);
 };

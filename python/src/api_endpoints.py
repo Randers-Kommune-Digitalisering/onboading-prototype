@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint
+from flask import Blueprint, request
 from utils.database import DatabaseClient
 from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 from models import Base
@@ -14,19 +14,19 @@ from controllers.opgave_controller import (
     get_opgave_by_forloebsskabelon_id_admin,
     get_opgave_by_forloeb_id_admin
 )
+
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
     get_all_forloebsskabeloner,
     update_forloebsskabelon,
     get_forloebsskabeloner_with_opgaver
-
 )
 
 from controllers.forloeb_controller import (
     create_forloeb,
     get_all_forloeb,
-    get_forloeb_with_opgaver
-
+    get_forloeb_with_opgaver,
+    get_forloeb_by_email
 )
 
 from controllers.user_controller import (
@@ -62,6 +62,12 @@ except Exception as e:
 
 
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
+
+
+@api_endpoints.route('/mitforloeb', methods=['GET'])
+def get_forloeb_by_email_endpoint():
+    mail = request.headers.get('usermail')
+    return get_forloeb_by_email(mail)
 
 
 @api_endpoints.route('/opgave', methods=['POST'])

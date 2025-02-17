@@ -1,141 +1,61 @@
-<template>
-  <div>
-    <form @submit.prevent="fetchOpgaver">
-      <div>
-        <label for="forloebID">Forløb:</label>
-        <select v-model="forloebID">
-          <option v-for="forloeb in forloebs" :key="forloeb.ForløbID" :value="forloeb.ForløbID">
-            {{ forloeb.name }}
-          </option>
-        </select>
-      </div>
-      <button class="button button-outline" type="submit">Hent opgaver</button>
-    </form>
-    <div v-if="message">{{ message }}</div>
-    <div v-if="opgaver.length">
-      <h2>Opgaver</h2>
-      <div class="opgaver-container">
-        <div v-for="(opgave, index) in opgaver" :key="opgave.OpgaveID" class="opgave-card" @click="toggleDetails(index)">
-          <h3>{{ opgave.title }}</h3>
-          <p>{{ opgave.beskrivelse }}</p>
-          <div v-if="opgave.showDetails" class="opgave-details">
-            <p><i class="fas fa-user"></i> Ansvarlig: {{ opgave.ansvarlig }}</p>
-            <p><i class="fas fa-calendar-alt"></i> Startdato: {{ formatDate(opgave.startdato) }}</p>
-            <p><i class="fas fa-calendar-check"></i> Slutdato: {{ formatDate(opgave.slutdato) }}</p>
-            <p><i class="fas fa-regular fa-hourglass-end"></i> Deadline: {{ calculateDeadline(opgave.startdato, opgave.slutdato) }} Timer</p>
-            <p>
-              <i class="fas fa-tasks"></i> Result:
-              <input type="checkbox" v-model="opgave.result" @change="updateResult(opgave)" @click.stop />
-            </p>
-            <p><i class="fas fa-clock"></i> Timestamp: {{ formatDate(opgave.timestamp) }}</p>
-            <h4>Resourcer:</h4>
-            <ul>
-              <li v-for="ressource in opgave.resourcer" :key="ressource.RessourceID">
-                <a :href="formatUrl(ressource.url)" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> {{ ressource.name }}</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
+<script setup>
+  import { ref, onMounted } from 'vue'
+  import keycloak from '@/keycloak'
+  import { getForloebByEmail } from '../../services/forløbService'
+  import { getOpgaverByForloebID } from '../../services/opgaveService'
+  import CardList from '@/components/CardList.vue'
 
-<script>
-import keycloak from '@/keycloak';
-import { getForloebWithOpgaver } from '../../services/forløbService';
-import { updateOpgave, getOpgaverByForloebID } from '../../services/opgaveService';
+  const userName = ref('')
+  const userFullName = ref('')
+  const userRole = ref('')
+  const userEmail = ref('')
 
-export default {
-  data() {
-    return {
-      forloebID: '',
-      forloebs: [],
-      opgaver: [],
-      message: '',
-      usermail: ''
-    };
-  },
-  async created() {
-    if (keycloak.authenticated) {
-      this.usermail = keycloak.tokenParsed?.email || '';
-    }
+  const message = ref('')
+
+  const forloeb = ref(null)
+  const forloeb_id = ref(null)
+  const opgaver = ref([])
+
+
+  onMounted(() => {
+      if (keycloak.authenticated) {
+        //console.log('User is authenticated: ', keycloak.tokenParsed)
+        userName.value = keycloak.tokenParsed?.preferred_username || 'User'
+        userFullName.value = keycloak.tokenParsed?.name || 'No name'
+        userEmail.value = keycloak.tokenParsed?.email || 'No email'
+        const clientRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
+        userRole.value = clientRoles.length > 0 ? clientRoles.join(', ') : 'No role'
+
+        fetchOpgaver()
+      }
+  })
+
+  const fetchOpgaver = async () => {
     try {
-      const forloebResponse = await getForloebWithOpgaver();
-      this.forloebs = forloebResponse.data;
+      const headers = { usermail: userEmail.value }
+
+      if (userEmail.value) {
+        
+        const forloeb_response = await getForloebByEmail({ headers })
+        forloeb.value = forloeb_response.data
+
+        forloeb_id.value = forloeb.value.ForløbID
+        const opgaver_response = await getOpgaverByForloebID(forloeb_id.value, { headers })
+        opgaver.value = opgaver_response ?? opgaver_response.data //response.data.map(opgave => ({ ...opgave, showDetails: false }))
+
+      } else {
+        console.log('Please provide user email')
+      }
+
     } catch (error) {
-      this.message = 'Failed to load data';
-    }
-  },
-  methods: {
-    async fetchOpgaver() {
-      try {
-        const headers = { usermail: this.usermail };
-        if (this.forloebID) {
-          const response = await getOpgaverByForloebID(this.forloebID, { headers });
-          this.opgaver = response.data.map(opgave => ({ ...opgave, showDetails: false }));
-          this.message = '';
-        } else {
-          this.message = 'Please provide ForløbID';
-          this.opgaver = [];
-        }
-      } catch (error) {
-        this.message = error.response.data.error;
-        this.opgaver = [];
-      }
-    },
-    toggleDetails(index) {
-      this.opgaver[index].showDetails = !this.opgaver[index].showDetails;
-    },
-    formatUrl(url) {
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        return `http://${url}`;
-      }
-      return url;
-    },
-    async updateResult(opgave) {
-      try {
-        await updateOpgave(opgave.OpgaveID, { result: opgave.result });
-        this.message = 'Result updated successfully';
-      } catch (error) {
-        this.message = 'Failed to update result';
-      }
-    },
-    calculateDeadline(startdato, slutdato) {
-      const start = new Date(startdato);
-      const end = new Date(slutdato);
-      const diffInMs = end - start;
-      const diffInHours = diffInMs / (1000 * 60 * 60);
-      return diffInHours.toFixed(2);
-    },
-    formatDate(date) {
-      return new Date(date).toLocaleDateString('en-GB');
+      message.value = error
+      opgaver.value = []
     }
   }
-};
 </script>
 
-<style scoped>
-.opgaver-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.opgave-card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  width: 200px;
-  cursor: pointer;
-  transition: box-shadow 0.3s;
-}
-
-.opgave-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.opgave-details {
-  margin-top: 16px;
-}
-</style>
+<template>
+  {{ forloeb }}
+  
+  <CardList :taskList="opgaver" />
+</template>
