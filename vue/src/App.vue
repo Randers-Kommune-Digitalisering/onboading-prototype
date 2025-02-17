@@ -1,14 +1,12 @@
 <script setup>
-    import { ref } from 'vue';
-    import Header from './components/Menu.vue';
-    import Navbar from './components/Navbar.vue';
-    import ProgressBar from './components/ProgressBar.vue';
-    import CardList from './components/CardList.vue';
-    import SignInButton from './components/SignInButton.vue';
+    import { ref } from 'vue'
+    import Header from './components/Menu.vue'
+    import Navbar from './components/Navbar.vue'
+    import ProgressBar from './components/ProgressBar.vue'
+    import CardList from './components/CardList.vue'
+    import SignInButton from './components/SignInButton.vue'
 
-    const headerComponent = ref(null);
-    const currentComponent = ref(null);
-
+    const currentComponent = ref(null)
 </script>
 
 <template>
@@ -29,13 +27,14 @@
 
                 <ProgressBar :percentage="5" />
 
-                <CardList :taskList="[1]" />
+                <!--CardList :taskList="[1]" /-->
+                
+                <router-view ref="currentComponent"></router-view>
                 
             </div>
         </div><!-- /flex -->
 
     </div><!-- /content -->
 
-    <!--router-view ref="currentComponent"></router-view-->
 
 </template>

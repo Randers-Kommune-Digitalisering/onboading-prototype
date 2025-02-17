@@ -104,11 +104,11 @@ keycloak.init({ onLoad: 'login-required' }).then(() => {
     // Check roles and redirect if necessary
     const userRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
     if (userRoles.includes('Admin')) {
-        router.push('/admin-start')
+        router.push('/admin-overview')
     } else if (userRoles.includes('Ansvarlig')) {
-        router.push('/ansvarlig-start')
+        router.push('/ansvarlig-overview')
     } else if (userRoles.includes('Ny medarbejder')) {
-        router.push('/medarbejder-start')
+        router.push('/medarbejder-overview')
     }
 
     app.mount('#app')

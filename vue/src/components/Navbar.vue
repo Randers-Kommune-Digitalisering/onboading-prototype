@@ -87,16 +87,21 @@
                 menuItems.value[landingPageIndex].selected = true
         }
     })
+
+    function select(item) {
+        menuItems.value.forEach(x => x.selected = false)
+        item.selected = true
+    }
 </script>
 
 <template>
 
     <div class="navbar">
 
-        <div v-for="item in menuItems" :key="item.title" class="item" :class="{ selected: item.selected }">
+        <router-link v-for="item in menuItems" :key="item.title" class="item" :class="{ selected: item.selected }" :to="item.url" @click="select(item)">
             <i :class="item.icon + ' fa-xl'"></i>
             <span>{{ item.title }}</span>
-        </div>
+        </router-link>
 
         <div class="divider"></div>
         <div class="mobile-only flex center" style="transform: translateY(0.3rem);margin-right: 0.5rem;">
