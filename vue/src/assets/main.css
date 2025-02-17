@@ -331,6 +331,10 @@ body {
         gap: 1rem;
         align-items: center;
     }
+
+.button {
+    text-decoration: none;
+}
 .card-content .buttons {
     display: flex;
     justify-content: flex-end;
@@ -357,7 +361,8 @@ body {
     .card-content .progression-bar {
         margin-left: 1rem;
         margin-right: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
+        margin-top: 0rem;
     }
 
 /* Progression bar */

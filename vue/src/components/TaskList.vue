@@ -1,5 +1,5 @@
 <script setup>
-    import Card from './Task.vue'
+    import Card from './TaskItem.vue'
 
     defineProps({
         tasks: {

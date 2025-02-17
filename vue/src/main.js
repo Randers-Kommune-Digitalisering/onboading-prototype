@@ -7,17 +7,18 @@ import App from './App.vue'
 import keycloak from './keycloak.js'
 
 // Import af views til routing
-import CreateOpgave from './views/admin/CreateOpgave.vue'
-import CreateForløb from './views/admin/CreateForløb.vue'
+import CreateOpgave from '@/views/admin/CreateOpgave.vue'
+import CreateForløb from '@/views/admin/CreateForløb.vue'
 import CreateRessource from '@/views/admin/CreateRessource.vue'
-import CreateForløbsskabelon from './views/admin/CreateForløbsskabelon.vue'
-import CreateOpgaveskabelon from './views/admin/CreateOpgaveskabelon.vue'
-import AdminOverview from './views/admin/AdminOverview.vue'
-import AnsvarligOverview from './views/ansvarlig/AnsvarligOverview.vue'
-import AnsvarligStart from './views/ansvarlig/AnsvarligStart.vue'
-import AdminStart from './views/admin/AdminStart.vue'
-import MedarbejderStart from './views/ny_medarbejder/MedarbejderStart.vue'
-import MedarbejderOverview from './views/ny_medarbejder/MedarbejderOverview.vue'
+import CreateForløbsskabelon from '@/views/admin/CreateForløbsskabelon.vue'
+import CreateOpgaveskabelon from '@/views/admin/CreateOpgaveskabelon.vue'
+import AdminOverview from '@/views/admin/AdminOverview.vue'
+import AnsvarligOverview from '@/views/ansvarlig/AnsvarligOverview.vue'
+import AnsvarligStart from '@/views/ansvarlig/AnsvarligStart.vue'
+import AdminStart from '@/views/admin/AdminStart.vue'
+import MedarbejderStart from '@/views/ny_medarbejder/MedarbejderStart.vue'
+import MedarbejderOverview from '@/views/ny_medarbejder/MedarbejderOverview.vue'
+import ForløbOverview from '@/views/ForløbOverview.vue'
 
 // Define routes
 const routes = [ 
@@ -87,6 +88,12 @@ const routes = [
         name: 'MedarbejderOverview',
         component: MedarbejderOverview,
         meta: { roles: ['Ny medarbejder'] }
+    },
+    {
+        path: '/forloeb-overview',
+        name: 'ForløbOverview',
+        component: ForløbOverview,
+        meta: { roles: ['Admin', 'Ansvarlig'] }
     }
 ]
 

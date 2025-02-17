@@ -1,5 +1,5 @@
 <script setup>
-    import Card from './Course.vue'
+    import Card from './CourseItem.vue'
 
     defineProps({
         courses: {
@@ -14,6 +14,7 @@
     <p class="indent-tiny bold uppercase p-header-adjust">Aktuelle forløb</p>
     <div class="card-list" v-if="courses && courses.length > 0">
         <Card v-for="course in courses"
+            :id="course.id"
             :title="course.title"
             :name="course.name"
             color="4c4980" />

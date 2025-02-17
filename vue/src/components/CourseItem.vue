@@ -3,23 +3,16 @@
     import ProgressBar from './ProgressBar.vue'
     var cardRef = ref(null)
 
-    const expandCard = () => {
-        cardRef.value.classList.toggle('expand-content')
-    }
-
-    const returnTimeLeft = (deadline) => {
-        const now = new Date()
-        const diff = deadline - now
-        const hours = Math.floor(diff / 1000 / 60 / 60)
-        return hours
-    }
-
     const returnFormattedDate = (date) => {
         const d = new Date(date)
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     }
 
     defineProps({
+        id: {
+            type: Number,
+            required: true
+        },
         title: {
             type: String,
             required: true
@@ -83,10 +76,10 @@
 
         <div class="card-content">
             <ProgressBar :hideText="true" :percentage="5" />
-            <!--div class="buttons">
-                <div class="button" v-if="link">Gå til kursus</div>
-                <div class="button disabled">Markér gennemført</div>
-            </div-->
+            <div class="buttons">
+                <div class="button disabled">+ Opret opgave</div>
+                <router-link :to="{ path: 'forloeb-overview', query: { id: id } }" class="button">Se detaljer</router-link>
+        </div>
         </div>
     </div>
 

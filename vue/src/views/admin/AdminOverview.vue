@@ -5,7 +5,7 @@
   import { getOpgaverByForloebID } from '../../services/opgaveService'
   import CourseList from '@/components/CourseList.vue'
 
-  const testData = [{'title': 'Demo forløb', 'name': 'Soren T'}]
+  const testData = [{'id': 1, 'title': 'Demo forløb 1', 'name': 'Soren T'}]
 </script>
 
 <template>
