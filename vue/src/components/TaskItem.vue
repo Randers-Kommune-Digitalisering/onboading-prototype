@@ -73,7 +73,7 @@
                     {{ header }}
                 </p>
             </div>
-
+            
             <div class="card-separator"></div>
 
             <div class="card-image" :style="`background-image: url('`+ image +`');`">

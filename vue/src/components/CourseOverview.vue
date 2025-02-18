@@ -4,8 +4,14 @@
     import { getForloebByEmail, getForloebById } from '@/services/forløbService'
     import { getOpgaverByForloebID } from '@/services/opgaveService'
     import TaskList from '@/components/TaskList.vue'
+    import CourseItem from '@/components/CourseItem.vue'
 
     const props = defineProps({
+        showDetails: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         userEmail: {
             type: String,
             required: false
@@ -27,6 +33,7 @@
             if (props.userEmail || props.id) {
                 const forloeb_response = props.userEmail ? await getForloebByEmail({ headers }) : await getForloebById(props.id, { headers })
                 forloeb.value = forloeb_response.data
+                console.log('Forløb: ', forloeb.value)
 
                 forloeb_id.value = forloeb.value.ForløbID
                 const opgaver_response = await getOpgaverByForloebID(forloeb_id.value, { headers })
@@ -57,5 +64,6 @@
     })
 </script>
 <template>
-    <TaskList :tasks="opgaver" />
+    <CourseItem v-if="forloeb != null" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="forloeb.startdate" :deadline="forloeb.enddate" />
+    <TaskList v-if="forloeb != null" :tasks="opgaver" :belongsToUser="forloeb ? false : true" />
 </template>

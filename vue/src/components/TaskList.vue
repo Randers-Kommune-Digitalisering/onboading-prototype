@@ -1,17 +1,21 @@
 <script setup>
     import Card from './TaskItem.vue'
 
-    defineProps({
+    const props = defineProps({
         tasks: {
             type: Array,
             required: false
+        },
+        belongsToUser: {
+            type: Boolean,
+            default: true
         }
     })
 </script>
 
 <template>
 
-    <p class="indent-tiny bold uppercase p-header-adjust">Dine opgaver</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ belongsToUser ? 'Dine' : 'Aktuelle' }} opgaver</p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="task in tasks"
             :id="'card_' + task.OpgaveID"

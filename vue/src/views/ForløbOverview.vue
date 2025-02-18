@@ -1,7 +1,7 @@
 
 <script setup>
     import { useRoute } from 'vue-router'
-    import ForloebOverview from '@/components/CourseOverview.vue'
+    import CourseOverview from '@/components/CourseOverview.vue'
 
     const route = useRoute()
     const id = route.query.id
@@ -9,7 +9,7 @@
 
 <template>
     <div>
-        <p>URL Parameter ID: {{ id }}</p>
-        <ForloebOverview :id="id" />
+        <!-- <p>URL Parameter ID: {{ id }}</p> -->
+        <CourseOverview :id="id" :showDetails="true" />
     </div>
 </template>
