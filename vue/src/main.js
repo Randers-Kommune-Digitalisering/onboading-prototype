@@ -110,11 +110,17 @@ keycloak.init({ onLoad: 'login-required' }).then(() => {
 
     // Check roles and redirect if necessary
     const userRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
-    if (userRoles.includes('Admin')) {
+
+    const currentPath = window.location.pathname
+    const currentRoute = window.location.pathname + window.location.search
+    router.addRoute({ path: currentRoute })
+
+    // TODO: Only push to overview if user is not on other accepted page
+    if (userRoles.includes('Admin') && currentPath === '/') {
         router.push('/admin-overview')
-    } else if (userRoles.includes('Ansvarlig')) {
+    } else if (userRoles.includes('Ansvarlig') && currentPath === '/') {
         router.push('/ansvarlig-overview')
-    } else if (userRoles.includes('Ny medarbejder')) {
+    } else if (userRoles.includes('Ny medarbejder') && currentPath === '/') {
         router.push('/medarbejder-overview')
     }
 
