@@ -6,18 +6,19 @@
             type: Array,
             required: false
         },
-        belongsToUser: {
+        adminView: {
             type: Boolean,
-            default: true
+            default: false
         }
     })
 </script>
 
 <template>
 
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ belongsToUser ? 'Dine' : 'Aktuelle' }} opgaver</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ adminView ? 'Aktuelle' : 'Dine' }} opgaver</p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="task in tasks"
+            :adminView="adminView"
             :id="'card_' + task.OpgaveID"
             :title="task.title"
             :header="task.header ?? task.beskrivelse"

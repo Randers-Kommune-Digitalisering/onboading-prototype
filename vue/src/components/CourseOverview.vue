@@ -19,6 +19,11 @@
         id: {
             type: Number,
             required: false
+        },
+        adminView: {
+            type: Boolean,
+            required: false,
+            default: false
         }
     })
 
@@ -64,6 +69,6 @@
     })
 </script>
 <template>
-    <CourseItem v-if="forloeb != null" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="forloeb.startdate" :deadline="forloeb.enddate" />
-    <TaskList v-if="forloeb != null" :tasks="opgaver" :belongsToUser="forloeb ? false : true" />
+    <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="forloeb.startdate" :deadline="forloeb.enddate" />
+    <TaskList v-if="forloeb != null" :tasks="opgaver" :adminView="adminView" />
 </template>

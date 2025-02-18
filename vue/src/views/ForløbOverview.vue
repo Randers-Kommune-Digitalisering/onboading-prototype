@@ -10,6 +10,6 @@
 <template>
     <div>
         <!-- <p>URL Parameter ID: {{ id }}</p> -->
-        <CourseOverview :id="id" :showDetails="true" />
+        <CourseOverview :id="id" :showDetails="true" :adminView="true" />
     </div>
 </template>

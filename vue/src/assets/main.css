@@ -188,20 +188,21 @@ body {
     transition: cubic-bezier(0.075, 0.82, 0.165, 1);
     transition-duration: 400ms;
 }
-.card.dark {
-    background-color: rgb(221, 213, 204);
-}
 @media only screen and (min-width: 768px) {
     .card {
         max-width: 38rem;
     }
+}
+
+.card.dark {
+    background-color: rgb(221, 213, 204);
 }
 .card * {
     transition: cubic-bezier(0.075, 0.82, 0.165, 1);
     transition-duration: 400ms;
 }
 .card.expand-content {
-    max-height: 90vh;
+    max-height: calc(auto);
     overflow: hidden;
 }
     .card .hidden {
@@ -294,14 +295,14 @@ body {
         opacity: 0;
     }
 .card-content, .card-details {
-    max-height: 15rem;
+    max-height: calc(auto);
     color: rgb(92, 89, 88);
-    transition-duration: 2000ms;
 }
     .card:not(.expand-content) .card-content:not(.always-show) {
-        max-height: 0rem;
+        max-height: calc(0rem);
         overflow: hidden;
         transition-duration: 400ms;
+        opacity: 0;
     }
 .card-content > p {
     padding-left: 1.2rem;
@@ -356,6 +357,9 @@ body {
         background-color: rgb(237, 229, 220);
         cursor: not-allowed;
     }
+        .button.disabled.dark {
+            background-color: rgb(221, 213, 204);
+        }
     .card-content .progression-bar {
         margin-left: 1rem;
         margin-right: 1rem;

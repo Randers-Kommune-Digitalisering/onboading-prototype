@@ -51,6 +51,10 @@
         },
         link: {
             type: String
+        },
+        adminView: {
+            type: Boolean,
+            default: false
         }
     })
 </script>
@@ -73,7 +77,7 @@
                     {{ header }}
                 </p>
             </div>
-            
+
             <div class="card-separator"></div>
 
             <div class="card-image" :style="`background-image: url('`+ image +`');`">
@@ -115,6 +119,8 @@
             <p>{{ description }}</p>
 
             <div class="buttons">
+                <div class="button" v-if="adminView">+ Tilføj ressource</div>
+                <div class="button" v-if="adminView">Redigér</div>
                 <div class="button" v-if="link">Gå til kursus</div>
                 <div class="button disabled">Markér gennemført</div>
             </div>

@@ -1,7 +1,7 @@
 <script setup>
   import { ref, onMounted } from 'vue'
   import keycloak from '@/keycloak'
-  import ForloebOverview from '@/components/CourseOverview.vue'
+  import CourseOverview from '@/components/CourseOverview.vue'
 
   const userName = ref('')
   const userFullName = ref('')
@@ -17,14 +17,12 @@
       userRole.value = clientRoles.length > 0 ? clientRoles.join(', ') : 'No role'
 
       console.log('User email: ', userEmail.value)
-
-      //fetchOpgaver()
     }
   })
 </script>
 
 <template>
   <div v-if="userEmail != null && userEmail != ''">
-    <ForloebOverview :userEmail="userEmail" />
+    <CourseOverview :userEmail="userEmail" />
   </div>
 </template>

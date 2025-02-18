@@ -89,10 +89,10 @@
         </div>
 
         <div class="card-content always-show"><ProgressBar :hideText="true" :percentage="5" /></div>
-        <div :class="'card-content ' + (props.disableInteraction ? 'hidden' : '')">
+        <div class="card-content">
             <div class="buttons">
-                <div class="button disabled">+ Opret opgave</div>
-                <router-link :to="{ path: 'forloeb-overview', query: { id: id } }" class="button">Se detaljer</router-link>
+                <div :class="'button disabled ' + (props.dark ? 'dark' : '')">+ Opret opgave</div>
+                <router-link v-if="!props.disableInteraction" :to="{ path: 'forloeb-overview', query: { id: id } }" class="button">Se detaljer</router-link>
             </div>
         </div>
     </div>
