@@ -10,6 +10,10 @@ export const getForloebByEmail = (config) => {
   return axios.get(`${API_URL}/mitforloeb`, config);
 };
 
+export const getForloebById = (id, config) => {
+  return axios.get(`${API_URL}/forloeb/${id}`, config);
+};
+
 export const getAllForloeb = () => {
   return axios.get(`${API_URL}/forloeb`);
 };

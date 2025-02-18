@@ -10,5 +10,6 @@
 <template>
     <div>
         <p>URL Parameter ID: {{ id }}</p>
+        <ForloebOverview :id="id" />
     </div>
 </template>

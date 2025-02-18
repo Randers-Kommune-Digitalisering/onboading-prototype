@@ -1,14 +1,18 @@
 <script setup>
     import { ref, onMounted } from 'vue'
     import keycloak from '@/keycloak'
-    import { getForloebByEmail } from '@/services/forløbService'
+    import { getForloebByEmail, getForloebById } from '@/services/forløbService'
     import { getOpgaverByForloebID } from '@/services/opgaveService'
     import TaskList from '@/components/TaskList.vue'
 
     const props = defineProps({
         userEmail: {
             type: String,
-            required: true
+            required: false
+        },
+        id: {
+            type: Number,
+            required: false
         }
     })
 
@@ -20,8 +24,8 @@
         try {
             const headers = { usermail: props.userEmail }
 
-            if (props.userEmail) {
-                const forloeb_response = await getForloebByEmail({ headers })
+            if (props.userEmail || props.id) {
+                const forloeb_response = props.userEmail ? await getForloebByEmail({ headers }) : await getForloebById(props.id, { headers })
                 forloeb.value = forloeb_response.data
 
                 forloeb_id.value = forloeb.value.ForløbID

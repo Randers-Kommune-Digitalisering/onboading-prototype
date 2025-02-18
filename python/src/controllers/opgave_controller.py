@@ -136,13 +136,12 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
     session = db_client.get_session()
     try:
         usermail = request.headers.get('usermail')
-        if not usermail:
-            return jsonify({"error": "Usermail header is required"}), 400
 
-        opgave = session.query(Opgave).join(Forløb).filter(
-            Opgave.ForløbsskabelonID == forlobsskabelon_id,
-            Forløb.usermail == usermail
-        ).all()
+        query = session.query(Opgave).join(Forløb).filter(Opgave.ForløbsskabelonID == forlobsskabelon_id)
+        if usermail:
+            query = query.filter(Forløb.usermail == usermail)
+
+        opgave = query.all()
 
         if not opgave:
             return jsonify({"error": "No opgave found for the specified ForløbsskabelonID and usermail"}), 404
@@ -243,13 +242,12 @@ def get_opgave_by_forloeb_id(forlob_id):
     session = db_client.get_session()
     try:
         usermail = request.headers.get('usermail')
-        if not usermail:
-            return jsonify({"error": "Usermail header is required"}), 400
 
-        opgave = session.query(Opgave).join(Forløb).filter(
-            Opgave.ForløbID == forlob_id,
-            Forløb.usermail == usermail
-        ).all()
+        query = session.query(Opgave).join(Forløb).filter(Opgave.ForløbID == forlob_id)
+        if usermail:
+            query = query.filter(Forløb.usermail == usermail)
+
+        opgave = query.all()
 
         if not opgave:
             return jsonify({"error": "No opgave found for the specified ForløbID and usermail"}), 404
