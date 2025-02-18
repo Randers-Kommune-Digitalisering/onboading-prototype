@@ -224,8 +224,10 @@ a.disabled {
     gap: 0.75rem;
     height: 4.5rem;
 }
-.card-icon {
+.card-header:first-child {
     margin-left: 1.2rem;
+}
+.card-icon {
     margin-right: 0.65rem;
 }
     .card-icon > div {

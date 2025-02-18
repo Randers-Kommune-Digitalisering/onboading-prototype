@@ -60,7 +60,6 @@
   }
   select {
     appearance: none;
-    padding-left: 0.55rem;
   }
   input[type=text]:focus, select:focus {
     outline:none;

@@ -50,11 +50,6 @@
 
     <div :class="'card course ' + (props.dark ? 'dark' : '')" ref="cardRef">
         <div :class="'card-header ' + (!props.disableInteraction ? 'pointer' : '')" @click="expandCard">
-            <div class="card-icon">
-                <div :style="`background-color: #`+ color +`;`">
-                    <div>{{ name[0].toLowerCase() }}</div>
-                </div>
-            </div>
 
             <div class="card-titles">
                 <p class="card-title">
