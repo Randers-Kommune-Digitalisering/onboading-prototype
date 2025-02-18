@@ -24,14 +24,11 @@
             
         <div class="flex">
             <div>
-
-                <!--ProgressBar :percentage="5" /-->
-                <!--CardList :taskList="[1]" /-->
                 <router-view ref="currentComponent"></router-view>
             </div>
-        </div><!-- /flex -->
+        </div>
 
-    </div><!-- /content -->
+    </div>
 
 
 </template>

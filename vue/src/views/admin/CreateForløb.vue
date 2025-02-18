@@ -1,161 +1,106 @@
-  <template>
-    <div>
-      <h2>Opret Forløb</h2>
-      <form @submit.prevent="submitForm">
-        <div>
-          <label for="name">Forløb Navn:</label>
-          <input type="text" v-model="form.name" required />
-        </div>
-        <div>
-          <label for="startdate">Startdato:</label>
-          <input type="date" v-model="form.startdate" required />
-        </div>
-        <div>
-          <label for="enddate">Slutdato:</label>
-          <input type="date" v-model="form.enddate" required />
-        </div>
-        <div>
-          <label for="admin">Leder:</label>
-          <input type="text" v-model="adminSearch" placeholder="Search admin names" />
-          <select v-model="form.admin" required>
-            <option v-for="admin in filteredAdminNames" :key="admin" :value="admin">
-              {{ admin }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label for="emailType">Email Type:</label>
-          <select v-model="emailType" @change="clearEmail">
-            <option value="randersmail">Randers Email</option>
-            <option value="private">Privat Email</option>
-          </select>
-        </div>
-        <div v-if="emailType === 'randersmail'">
-          <label for="usermail">Randers Mail:</label>
-          <input type="text" v-model="emailSearch" placeholder="Search user emails" />
-          <select v-model="form.usermail" required>
-            <option v-for="email in filteredEmails" :key="email" :value="email">
-              {{ email }}
-            </option>
-          </select>
-        </div>
-        <div v-if="emailType === 'private'">
-          <label for="privateEmail">Privat Email:</label>
-          <input type="email" v-model="form.privateEmail" placeholder="Enter private email" required />
-        </div>
-        <div>
-          <label for="userdq">Medarbejder DQ-Nummer:</label>
-          <input type="text" v-model="dqSearch" placeholder="Search user DQ numbers" />
-          <select v-model="form.userdq" required>
-            <option v-for="dq in filteredDQs" :key="dq" :value="dq">
-              {{ dq }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label for="ForløbsskabelonID">Forløbsskabelon: (optional)</label>
-          <select v-model="form.ForløbsskabelonID">
-            <option :value="null">None</option>
-            <option v-for="skabelon in forloebsskabeloner" :key="skabelon.ForløbsskabelonID" :value="skabelon.ForløbsskabelonID">
-              {{ skabelon.name }}
-            </option>
-          </select>
-        </div>
-        <button class="button button-outline" type="submit">Opret Forløb</button>
-      </form>
-      <div v-if="message">{{ message }}</div>
-    </div>
-  </template>
-  
-  <script>
-  import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
-  import { createForloeb } from '../../services/forløbService';
-  import keycloak from '@/keycloak';
-  import { getAdminNames, getEmail, getDQ } from '../../services/userService';
-  
-  export default {
-    data() {
-      return {
-        form: {
-          name: '',
-          startdate: '',
-          enddate: '',
-          admin: '',
-          usermail: '',
-          privateEmail: '',
-          userdq: '',
-          ForløbsskabelonID: null
-        },
-        emailType: '',
-        forloebsskabeloner: [],
-        adminNames: [],
-        adminSearch: '',
-        emails: [],
-        emailSearch: '',
-        dqNumbers: [],
-        dqSearch: '',
-        message: ''
-      };
-    },
-    async created() {
-      try {
-        const skabelonResponse = await getForloebsskabeloner();
-        this.forloebsskabeloner = skabelonResponse.data;
-  
-        const adminResponse = await getAdminNames();
-        this.adminNames = adminResponse.data.admin_names;
-  
-        const emailResponse = await getEmail();
-        this.emails = emailResponse.data.emails;
-  
-        const dqResponse = await getDQ();
-        this.dqNumbers = dqResponse.data.dq_numbers;
+<script setup>
+</script>
 
-        if (keycloak.authenticated) {
-          this.form.admin = keycloak.tokenParsed?.name || 'No name';
-        }
-      } catch (error) {
-        this.message = 'Failed to load data';
-      }
-    },
-    computed: {
-      filteredAdminNames() {
-        return this.adminNames.filter(admin =>
-          admin.toLowerCase().includes(this.adminSearch.toLowerCase())
-        );
-      },
-      filteredEmails() {
-        return this.emails.filter(email =>
-          email.toLowerCase().includes(this.emailSearch.toLowerCase())
-        );
-      },
-      filteredDQs() {
-        return this.dqNumbers.filter(dq =>
-          dq.toLowerCase().includes(this.dqSearch.toLowerCase())
-        );
-      }
-    },
-    methods: {
-      clearEmail() {
-        this.form.usermail = '';
-        this.form.privateEmail = '';
-      },
-      async submitForm() {
-        try {
-          const formData = { ...this.form };
-          if (!formData.ForløbsskabelonID) {
-            delete formData.ForløbsskabelonID;
-          }
-          if (this.emailType === 'private') {
-            formData.usermail = formData.privateEmail;
-          }
-          delete formData.privateEmail;
-          const response = await createForloeb(formData);
-          this.message = response.data.message;
-        } catch (error) {
-          this.message = error.response.data.error;
-        }
-      }
+<template>
+  <p class="indent-tiny bold uppercase p-header-adjust">Opret forløb</p>
+
+  <div class="formContainer">
+    <div class="inputContainer">
+      <input type="text" id="name" name="name" placeholder=" " required>
+      <label for="name" class="floating-label">Medarbejder</label>
+    </div>
+    <div class="inputContainer">
+      <input type="text" id="admin" name="admin" placeholder=" " value="Låst værdi" class="locked" required disabled>
+      <label for="admin" class="floating-label">Ansvarlig leder</label>
+      <div class="icon"><i class="fa-solid fa-lock"></i></div>
+    </div>
+    <div class="inputContainer">
+      <select id="department" name="department" required>
+        <option value="" disabled selected hidden></option>
+        <option value="HR">HR</option>
+        <option value="IT">IT</option>
+        <option value="Finance">Finance</option>
+        <option value="Marketing">Marketing</option>
+      </select>
+      <label for="department" class="floating-label">Afdeling</label>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+  .formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .inputContainer {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+  .floating-label {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.8rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    color: #787878;
+    font-size: 1em;
+  }
+  /* select {
+    appearance: none;
+  } */
+  input[type=text], select {
+    width: 100%;
+    padding: 1.6rem 0.8rem 0.6rem 0.8rem;
+    box-sizing: border-box;
+    border-radius: 0.2rem;
+    border: 0rem;
+  }
+  select {
+    padding-left: 0.55rem;
+  }
+  input:disabled {
+    background-color: #e3e3e3;
+    color: #4b8049;
+    font-weight: 600;
+  }
+  .icon {
+    position: absolute;
+    right: 0rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.2rem;
+    padding: 1.1rem;
+    height: 100%;
+    transition: 150ms;
+  }
+  .icon:hover {
+    color: #4b8049;
+    cursor: pointer;
+  }
+  @media only screen and (min-width: 768px) {
+    .floating-label {
+      top: 0.9rem;
+      left: 0.8rem;
     }
-  };
-  </script>
+    input[type=text], select  {
+      width: 30rem;
+    }
+    .icon {
+      right: auto;
+      left: 27rem;
+    }
+  }
+
+  input[type=text]:focus + .floating-label,
+  input[type=text]:not(:placeholder-shown) + .floating-label,
+  select:valid + .floating-label {
+    top: 0.5rem;
+    left: 0.8rem;
+    color: #8b8b8b;
+    font-size: 0.8em;
+  }
+</style>
