@@ -23,6 +23,7 @@
         <option value="Marketing">Marketing</option>
       </select>
       <label for="department" class="floating-label">Afdeling</label>
+      <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
     </div>
   </div>
 </template>
@@ -48,21 +49,25 @@
     color: #787878;
     font-size: 1em;
   }
-  /* select {
-    appearance: none;
-  } */
   input[type=text], select {
+    background-color: rgb(241, 237, 232);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
     box-sizing: border-box;
     border-radius: 0.2rem;
     border: 0rem;
+    transition-duration: 200ms;
   }
   select {
+    appearance: none;
     padding-left: 0.55rem;
   }
+  input[type=text]:focus, select:focus {
+    outline:none;
+    background-color: rgb(248, 246, 244);
+  }
   input:disabled {
-    background-color: #e3e3e3;
+    background-color: rgb(230, 224, 216);
     color: #4b8049;
     font-weight: 600;
   }
@@ -77,9 +82,12 @@
     height: 100%;
     transition: 150ms;
   }
-  .icon:hover {
+  .icon:hover:not(.nohover) {
     color: #4b8049;
     cursor: pointer;
+  }
+  .icon.nohover {
+    pointer-events: none;
   }
   @media only screen and (min-width: 768px) {
     .floating-label {

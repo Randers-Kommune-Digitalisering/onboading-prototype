@@ -3,11 +3,6 @@
     import ProgressBar from './ProgressBar.vue'
     var cardRef = ref(null)
 
-    const expandCard = () => {
-        if (!props.disableInteraction)
-            cardRef.value.classList.toggle('expand-content')
-    }
-
     const returnFormattedDate = (date) => {
         const d = new Date(date)
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
@@ -51,6 +46,8 @@
 
 <template>
 
+    <router-link :to="{ path: 'forloeb-overview', query: { id: id } }" :class="{ 'disabled': props.disableInteraction }">
+
     <div :class="'card course ' + (props.dark ? 'dark' : '')" ref="cardRef">
         <div :class="'card-header ' + (!props.disableInteraction ? 'pointer' : '')" @click="expandCard">
             <div class="card-icon">
@@ -89,12 +86,8 @@
         </div>
 
         <div class="card-content always-show"><ProgressBar :hideText="true" :percentage="5" /></div>
-        <div class="card-content">
-            <div class="buttons">
-                <div :class="'button disabled ' + (props.dark ? 'dark' : '')">+ Opret opgave</div>
-                <router-link v-if="!props.disableInteraction" :to="{ path: 'forloeb-overview', query: { id: id } }" class="button">Se detaljer</router-link>
-            </div>
-        </div>
     </div>
+
+    </router-link>
 
 </template>

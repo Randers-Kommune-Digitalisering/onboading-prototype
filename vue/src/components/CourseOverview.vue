@@ -69,6 +69,12 @@
     })
 </script>
 <template>
+    <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">Oversigt</p>
     <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="forloeb.startdate" :deadline="forloeb.enddate" />
+    <div class="buttons" v-if="adminView">
+        <router-link to="/create-task" class="button">+ Tilføj opgave</router-link>
+        <router-link to="/create-task" class="button">Redigér forløb</router-link>
+        <router-link to="/create-task" class="button red">Afslut forløb</router-link>
+    </div>
     <TaskList v-if="forloeb != null" :tasks="opgaver" :adminView="adminView" />
 </template>

@@ -15,7 +15,7 @@
 
 <template>
 
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ adminView ? 'Aktuelle' : 'Dine' }} opgaver</p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + (adminView ? '-large' : '')">{{ adminView ? 'Aktuelle' : 'Dine' }} opgaver</p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="task in tasks"
             :adminView="adminView"

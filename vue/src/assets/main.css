@@ -69,9 +69,13 @@ body {
 
     z-index: 100;
 }
-.navbar a {
+a {
     text-decoration: none;
     color: rgb(65, 63, 62);
+}
+a.disabled {
+    cursor: default;
+    pointer-events: none;
 }
 
 @media only screen and (min-width: 768px) {
@@ -330,18 +334,19 @@ body {
         gap: 1rem;
         align-items: center;
     }
-.button {
-    text-decoration: none;
-}
-.card-content .buttons {
+.buttons {
     display: flex;
-    justify-content: flex-end;
+    flex-wrap: wrap;
     margin: 1rem 0.8rem;
-    margin-top: 0rem;
     border: 0;
     gap: 0.5rem;
 }
-.card-content .button {
+.card-content .buttons {
+    justify-content: flex-end;
+    margin-top: 0rem;
+}
+.button {
+    text-decoration: none;
     padding: 0.6rem 1rem;
     border-radius: 1.5rem;
     background-color: #4c4980;
