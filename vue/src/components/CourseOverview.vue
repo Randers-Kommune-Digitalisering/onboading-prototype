@@ -5,6 +5,7 @@
     import { getOpgaverByForloebID } from '@/services/opgaveService'
     import TaskList from '@/components/TaskList.vue'
     import CourseItem from '@/components/CourseItem.vue'
+    import Placeholder from './Placeholder.vue'
 
     const props = defineProps({
         showDetails: {
@@ -71,6 +72,7 @@
 <template>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">Oversigt</p>
     <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="forloeb.startdate" :deadline="forloeb.enddate" />
+    <Placeholder v-if="forloeb == null && showDetails" :dark="true" />
     <div class="buttons" v-if="adminView">
         <router-link to="/create-task" class="button">+ Tilføj opgave</router-link>
         <router-link to="/create-task" class="button">Redigér forløb</router-link>
