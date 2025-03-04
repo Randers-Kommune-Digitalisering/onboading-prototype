@@ -176,7 +176,7 @@ a.disabled {
 .card-list {
     display:flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 .card {
     background-color: rgb(237, 229, 220);
@@ -345,7 +345,13 @@ a.disabled {
 }
 .card-content .buttons {
     justify-content: flex-end;
-    margin-top: 0rem;
+    margin-top: 2rem;
+}
+button[type="submit"] {    
+    font-family: "Open Sans", sans-serif;
+    border: 0rem;
+    font-size: 1em;
+    font-weight: 500;
 }
 .button {
     text-decoration: none;
@@ -355,10 +361,10 @@ a.disabled {
     color:rgb(237, 229, 220);
     cursor: pointer;
 }
-    .card-content .button:hover {
+    .button:hover {
         background-color: #3b386d;
     }
-    .card-content .button.disabled {
+    .button.disabled {
         border: 0.1rem solid #4c4980;
         color: #4c4980;
         background-color: rgb(237, 229, 220);
