@@ -48,8 +48,8 @@
 
     <router-link :to="{ path: 'forloeb-overview', query: { id: id } }" :class="{ 'disabled': props.disableInteraction }">
 
-    <div :class="'card course ' + (props.dark ? 'dark' : '')" ref="cardRef">
-        <div :class="'card-header ' + (!props.disableInteraction ? 'pointer' : '')" @click="expandCard">
+    <div :class="['card', 'course', {'dark': props.dark}]" ref="cardRef">
+        <div :class="['card-header', {'pointer': !props.disableInteraction}]" @click="expandCard">
 
             <div class="card-titles">
                 <p class="card-title">

@@ -14,7 +14,7 @@
 </script>
 
 <template>
-    <div :class="'card ' + (props.dark ? 'dark' : '')" :style="'height:' + height + 'rem'">
+    <div :class="['card', {'dark': props.dark}]" :style="'height:' + height + 'rem'">
         <div class="card-header">
             <p class="placeholderText"></p>
         </div>

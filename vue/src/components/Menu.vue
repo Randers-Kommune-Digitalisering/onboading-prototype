@@ -110,7 +110,7 @@ function toggleDarkMode() {
     <div class="header">
         <div class="randers-logo"></div>
         
-        <router-link v-for="item in menuItems" :key="item.url" :to="item.url" :class="item.selected ? 'selected' : ''" @click="select(item)">
+        <router-link v-for="item in menuItems" :key="item.url" :to="item.url" :class="{'selected': item.selected}" @click="select(item)">
             <span v-if="item.alert" class="alert">{{item.alert}}</span>
             <span>{{item.title}}</span>
         </router-link>
