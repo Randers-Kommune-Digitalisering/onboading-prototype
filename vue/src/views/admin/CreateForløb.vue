@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
 
     import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
     import { createForloeb } from '../../services/forløbService';
@@ -56,6 +56,7 @@
     }
 
     /* Admin search */
+    const loggedInAdmin = ref('')
     const isAdminLocked = ref(true)
     const adminList = ref([])
     const adminSearchResults = ref([])
@@ -110,6 +111,9 @@
 
         getAdminNames().then(data => {
             adminList.value = data.data.admin_names
+            // Add admin name to list if not already present
+            if (!adminList.value.includes(loggedInAdmin.value))
+                adminList.value.push(loggedInAdmin.value)
         }).catch(error => {
             console.error('Error fetching admin names:', error)
         })
@@ -120,6 +124,14 @@
             console.error('Error fetching emails:', error)
         })
 
+        if (keycloak.authenticated) {
+            if(keycloak.tokenParsed?.name) {
+                console.log('Admin name:', keycloak.tokenParsed?.name)
+                loggedInAdmin.value = keycloak.tokenParsed?.name
+                selectAdmin(loggedInAdmin.value)
+            }
+        }
+
         // getDQ().then(data => {
         //     dqList.value = data.data.dq_numbers
         //     console.log('DQs:', data.data)
@@ -127,6 +139,19 @@
         //     console.error('Error fetching DQs:', error)
         // })
     })
+
+    /* Watchers */
+    // watch(() => inputFields.value.ForløbsskabelonID, (newVal, oldVal) => {
+    //     console.log('Uid changed:', newVal)
+    // })
+
+    // watch(() => inputFields.value.startdate, (newVal, oldVal) => {
+    //     console.log('Start date changed:', newVal)
+    // })
+
+    // watch(() => inputFields.value.enddate, (newVal, oldVal) => {
+    //     console.log('End date changed:', newVal)
+    // })
 
     /* Submit */
 
@@ -146,12 +171,11 @@
                 delete formData.privateEmail
 
             const response = await createForloeb(formData)
-            console.log('Response:', response.data.message)
+            console.log('Response:', response.data)
         } catch (error) {
             console.log('Error:', response.data.error)
         }
-}
-
+    }
 </script>
 
 <template>
@@ -184,10 +208,10 @@
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isadminSearchOpen }]">
-            <select id="template" name="template" v-model="inputFields.ForløbsskabelonID">
-                <option :value="null" disabled selected hidden></option>
+            <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
+                <option value="" disabled selected hidden></option>
+                <option :value="null">Ingen skabelon</option>
                 <option v-for="template in templates" :value="template.ForløbsskabelonID">{{template.name}}</option>
-                <option v-if="templates.length == 0" disabled>Ingen skabeloner</option>
             </select>
             <label for="template" class="floating-label">Skabelon</label>
             <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
