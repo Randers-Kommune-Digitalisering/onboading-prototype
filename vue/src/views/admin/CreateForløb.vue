@@ -1,10 +1,14 @@
 <script setup>
     import { ref, onMounted, watch } from 'vue'
+    import { useRouter } from 'vue-router'
 
-    import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
-    import { createForloeb } from '../../services/forløbService';
-    import keycloak from '@/keycloak';
-    import { getAdminNames, getEmail, getDQ } from '../../services/userService';
+    import { getForloebsskabeloner } from '../../services/forløbsskabelonService'
+    import { createForloeb } from '../../services/forløbService'
+    import keycloak from '@/keycloak'
+    import { getAdminNames, getEmail, getDQ } from '../../services/userService'
+
+    const router = useRouter()
+    const isSubmitting = ref(false)
 
     const templates = ref([])
     const inputFields = ref({
@@ -21,13 +25,14 @@
     // const dqList = ref([])
 
     /* User mail search */
+    const isUserMailValid = ref(true)
     const userMailList = ref([])
     const userMailSearchResults = ref([])
     const isUserMailSearchOpen = ref(false)
 
     const searchUserMails = (searchString) => {
-        if (isadminSearchOpen) {
-            isadminSearchOpen.value = false
+        if (isAdminSearchOpen) {
+            isAdminSearchOpen.value = false
         }
         if (searchString.length < 3) {
             isUserMailSearchOpen.value = false
@@ -44,8 +49,9 @@
     }
 
     const selectUserMail = (userMail) => {
-        inputFields.value.userMail = userMail
+        inputFields.value.usermail = userMail
         isUserMailSearchOpen.value = false
+        evaluateEmail()
     }
 
     const getEmailType = () => {
@@ -55,22 +61,32 @@
         return 'private'
     }
 
+    const evaluateEmail = () => {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailPattern.test(inputFields.value.usermail)) {
+            console.error('Invalid email format')
+            return isUserMailValid.value = false
+        }
+        console.log('Valid email format')
+        return isUserMailValid.value = true
+    }
+
     /* Admin search */
     const loggedInAdmin = ref('')
     const isAdminLocked = ref(true)
     const adminList = ref([])
     const adminSearchResults = ref([])
-    const isadminSearchOpen = ref(false)
+    const isAdminSearchOpen = ref(false)
 
     const searchAdmins = (searchString) => {
         if (isUserMailSearchOpen) {
             isUserMailSearchOpen.value = false
         }
         if (searchString.length < 3) {
-            isadminSearchOpen.value = false
+            isAdminSearchOpen.value = false
             return adminSearchResults.value = []
         }
-        isadminSearchOpen.value = true
+        isAdminSearchOpen.value = true
         return adminSearchResults.value = adminList.value
             .filter(admin => admin.toLowerCase().includes(searchString.toLowerCase()))
             .slice(0, 8)
@@ -79,14 +95,14 @@
     const selectAdmin = (admin) => {
         inputFields.value.admin = admin
         isAdminLocked.value = true
-        isadminSearchOpen.value = false
+        isAdminSearchOpen.value = false
     }
 
     const toggleadminSearch = () => {
         if(adminList.value.includes(inputFields.value.admin))
         {
             isAdminLocked.value = !isAdminLocked.value
-            isadminSearchOpen.value = false
+            isAdminSearchOpen.value = false
         }
         else
             isAdminLocked.value = false
@@ -97,7 +113,7 @@
         {
             inputFields.value.admin = ""
             isAdminLocked.value = false
-            isadminSearchOpen.value = false
+            isAdminSearchOpen.value = false
         }
     }
 
@@ -157,6 +173,11 @@
 
     const submitForm = async () =>
     {
+        evaluateEmail()
+        if (!isUserMailValid.value)
+            return
+        
+        isSubmitting.value = true
         try {
             const formData = { ...inputFields.value }
             if (!formData.ForløbsskabelonID)
@@ -172,9 +193,16 @@
 
             const response = await createForloeb(formData)
             console.log('Response:', response.data)
+
+            if(response.data.uid)
+            {
+                console.log('Redirecting to:', `/forloeb-overview?id=${response.data.uid}`)
+                router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
+            }
         } catch (error) {
             console.log('Error:', response.data.error)
         }
+        isSubmitting.value = false
     }
 </script>
 
@@ -185,7 +213,7 @@
     <div class="formContainer">
 
         <div class="inputContainer">
-            <input type="text" id="mail" name="mail" placeholder=" " @input="searchUserMails(inputFields.usermail)" v-model="inputFields.usermail" required>
+            <input type="text" id="mail" name="mail" placeholder=" " @input="searchUserMails(inputFields.usermail)" v-model="inputFields.usermail" :class="{'invalid': !isUserMailValid}" required>
             <label for="mail" class="floating-label">Medarbejder mailadresse</label>
 
             <div class="itemSelector float-right" v-if="isUserMailSearchOpen">
@@ -200,14 +228,14 @@
             <label for="admin" class="floating-label">Ansvarlig leder</label>
             <div class="icon" @click="toggleadminSearch()"><i :class="'fa-solid fa-lock' + (isAdminLocked ? '' : '-open')"></i></div>
             
-            <div class="itemSelector float-right" v-if="isadminSearchOpen">
+            <div class="itemSelector float-right" v-if="isAdminSearchOpen">
                 <span class="float-header small uppercase">Vælg en ansvarlig leder ...</span>
                 <div v-for="result in adminSearchResults" @click="selectAdmin(result)">{{result}}</div>
                 <div v-if="adminSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isadminSearchOpen }]">
+        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
             <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
                 <option value="" disabled selected hidden></option>
                 <option :value="null">Ingen skabelon</option>
@@ -217,7 +245,7 @@
             <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
         </div>
         
-        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isadminSearchOpen }]">
+        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
             <div class="flex-item">
                 <input type="date" id="startdate" name="startdate" v-model="inputFields.startdate" required>
                 <label for="startdate" class="floating-label">Startdato</label>
@@ -228,166 +256,16 @@
             </div>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isadminSearchOpen  }]">
-            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.courseName" required>
+        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen  }]">
+            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required>
             <label for="name" class="floating-label">Forløbets navn</label>
 
         </div>
 
         <div class="inputContainer submit">
-            <button class="button button-outline" @click="clearAdminIfNotSelected()" type="submit">Opret forløb</button>
+            <button :class="['button', 'button-outline', {'disabled': isSubmitting}]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opret forløb</button>
         </div>
 
     </div>
     </form>
 </template>
-
-<style scoped>
-    .formContainer {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .inputContainer {
-        position: relative;
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-    }
-    .inputContainer > .flex-item {
-        flex-grow: 1;
-        position: relative;
-    }
-    .inputContainer.submit {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-    }
-
-    .float-right {
-        position: absolute;
-        margin-top: 5rem; /*4.16rem;*/
-        z-index: 10;
-        width: 100%;
-    }
-    @media only screen and (min-width: 768px) {
-        .float-right {
-            margin-top: 0rem;
-            position: absolute;
-            margin-left: calc(100% + 1.5rem);
-            max-width: 18rem;
-        }
-    }
-    .itemSelector {
-        display: block;
-
-        background-color: rgb(230, 224, 216);
-        border-radius: 0.2rem;
-    }
-    .itemSelector div {
-        padding-left: 1rem;
-        padding-right: 1rem;
-        line-height: 3.15rem;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .itemSelector div:first-of-type {
-        border-top-left-radius: 0.2rem;
-        border-top-right-radius: 0.2rem;
-    }
-    .itemSelector div:last-of-type {
-        border-bottom-left-radius: 0.2rem;
-        border-bottom-right-radius: 0.2rem;
-    }
-    .itemSelector div:not(.nohover):hover {
-        background-color: rgb(241, 237, 232);
-        cursor: pointer;
-    }
-    .float-header {
-        position: absolute;
-        transform: translateY(calc(-100% - 0.5rem));
-        padding-left: 0.5rem;
-    }
-
-    .floating-label {
-        position: absolute;
-        top: 0.9rem;
-        left: 0.8rem;
-        pointer-events: none;
-        transition: 0.2s ease all;
-        color: #787878;
-        font-size: 1em;
-    }
-    input[type=text], input[type=date], select {
-        background-color: rgb(241, 237, 232);
-        width: 100%;
-        padding: 1.6rem 0.8rem 0.6rem 0.8rem;
-        box-sizing: border-box;
-        border-radius: 0.2rem;
-        border: 0rem;
-        transition-duration: 200ms;
-    }
-    select {
-        appearance: none;
-    }
-    input[type=text]:focus, input[type=date]:focus, select:focus {
-        outline:none;
-        background-color: rgb(248, 246, 244);
-    }
-    input:disabled {
-        background-color: rgb(230, 224, 216);
-        color: #4b8049;
-        font-weight: 600;
-    }
-    .icon {
-        position: absolute;
-        right: 0rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.2rem;
-        padding: 1.1rem;
-        height: 100%;
-        transition: 150ms;
-    }
-    .icon:hover:not(.nohover) {
-        color: #4b8049;
-        cursor: pointer;
-    }
-    .icon.nohover {
-        pointer-events: none;
-    }
-    @media only screen and (min-width: 768px) {
-        .floating-label {
-        top: 0.9rem;
-        left: 0.8rem;
-        }
-        .inputContainer  {
-        width: 30rem;
-        }
-        .icon {
-        right: auto;
-        left: 27rem;
-        }
-    }
-
-    input[type=text]:focus + .floating-label,
-    input[type=text]:not(:placeholder-shown) + .floating-label,
-    input[type=date] + .floating-label, /* :valid for date, if selection is required */
-    select:valid + .floating-label {
-        top: 0.5rem;
-        left: 0.8rem;
-        color: #8b8b8b;
-        font-size: 0.8em;
-    }
-
-    @media only screen and (max-width: 768px) {
-        .hideOnMobile {
-            opacity: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-    }
-</style>
