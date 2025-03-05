@@ -48,7 +48,7 @@ def create_forloeb():
                 session.add(new_opgave)
             session.commit()
 
-        return jsonify({"message": "Forløb created successfully"}), 201
+        return jsonify({"message": "Forløb created successfully", "uid": forloeb.ForløbID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
