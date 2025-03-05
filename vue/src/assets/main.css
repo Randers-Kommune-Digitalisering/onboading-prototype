@@ -535,7 +535,7 @@ button[type="submit"] {
     font-size: 1em;
 }
 
-input[type=text], input[type=date], select {
+input[type=text], input[type=date], select, textarea {
     background-color: var(--color-input-bg);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
@@ -545,11 +545,16 @@ input[type=text], input[type=date], select {
     transition-duration: 200ms;
 }
 
+textarea {
+    font-family: 'Arial', sans-serif;
+    resize: none;
+}
+
 select {
     appearance: none;
 }
 
-input[type=text]:focus, input[type=date]:focus, select:focus {
+input[type=text]:focus, input[type=date]:focus, select:focus, textarea:focus {
     outline:none;
     background-color: var(--color-input-focus-bg);
 }
@@ -586,22 +591,24 @@ input.invalid {
 
 @media only screen and (min-width: 768px) {
     .floating-label {
-    top: 0.93rem;
-    left: 0.8rem;
+        top: 0.93rem;
+        left: 0.8rem;
     }
     .inputContainer  {
-    width: 30rem;
+        width: 30rem;
     }
     .icon {
-    right: auto;
-    left: 27rem;
+        right: auto;
+        left: 27rem;
     }
 }
 
 input[type=text]:focus + .floating-label,
 input[type=text]:not(:placeholder-shown) + .floating-label,
 input[type=date] + .floating-label, /* :valid for date, if selection is required */
-select:valid + .floating-label {
+select:valid + .floating-label,
+textarea:focus + .floating-label,
+textarea:not(:placeholder-shown) + .floating-label {
     top: 0.5rem;
     left: 0.8rem;
     color: #8b8b8b;

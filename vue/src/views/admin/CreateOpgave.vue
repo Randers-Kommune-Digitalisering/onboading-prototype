@@ -11,6 +11,7 @@
     const inputFields = ref({
         name: '',
         ansvarlig: '',
+        beskrivelse: ''
     })
 
     /* Assistant search */
@@ -55,6 +56,19 @@
         }
     }
 
+    /* Textarea */
+
+    const textarea = ref(null)
+
+    const resizeTextareToFitContent = () => {
+        console.log('resizeTextareToFitContent')
+        const lineHeight = parseFloat(getComputedStyle(textarea.value).lineHeight)
+        const lines = textarea.value.value.split('\n').length
+        console.log('lines:', lines)
+        textarea.value.style.height = 'auto'
+        textarea.value.style.height = (textarea.value.scrollHeight) + 'px'
+    }
+
     /* Instantiate */
     onMounted(() => {
 
@@ -95,6 +109,11 @@
                 <div v-for="result in assistantSearchResults" @click="selectAssistant(result)">{{result}}</div>
                 <div v-if="assistantSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
+        </div>
+
+        <div class="inputContainer">
+            <textarea id="description" name="description" ref="textarea" @input="resizeTextareToFitContent()" placeholder=" " v-model="inputFields.beskrivelse" required></textarea>
+            <label for="description" class="floating-label">Beskrivelse</label>
         </div>
 
         <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
