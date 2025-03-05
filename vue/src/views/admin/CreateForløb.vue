@@ -1,10 +1,10 @@
 <script setup>
     import { ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
+    import keycloak from '@/keycloak'
 
     import { getForloebsskabeloner } from '../../services/forløbsskabelonService'
     import { createForloeb } from '../../services/forløbService'
-    import keycloak from '@/keycloak'
     import { getAdminNames, getEmail, getDQ } from '../../services/userService'
 
     const router = useRouter()
@@ -142,7 +142,7 @@
 
         if (keycloak.authenticated) {
             if(keycloak.tokenParsed?.name) {
-                console.log('Admin name:', keycloak.tokenParsed?.name)
+                // Automatically select logged in admin
                 loggedInAdmin.value = keycloak.tokenParsed?.name
                 selectAdmin(loggedInAdmin.value)
             }
@@ -155,19 +155,6 @@
         //     console.error('Error fetching DQs:', error)
         // })
     })
-
-    /* Watchers */
-    // watch(() => inputFields.value.ForløbsskabelonID, (newVal, oldVal) => {
-    //     console.log('Uid changed:', newVal)
-    // })
-
-    // watch(() => inputFields.value.startdate, (newVal, oldVal) => {
-    //     console.log('Start date changed:', newVal)
-    // })
-
-    // watch(() => inputFields.value.enddate, (newVal, oldVal) => {
-    //     console.log('End date changed:', newVal)
-    // })
 
     /* Submit */
 
