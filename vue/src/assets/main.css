@@ -4,12 +4,14 @@
 {
     box-sizing: border-box;
 }
+
 html, body, #app, main
 {
     width: 100%;
     height: 100vh;
     margin:0;
 }
+
 body {
     background-color: rgb(203, 194, 184);
     margin: 0;
@@ -25,6 +27,7 @@ body {
     color: rgb(48, 46, 45);
     min-width: 10rem;
 }
+
 .logo-subtext {
     font-size:0.82em;
     color: rgb(164, 158, 154);
@@ -39,6 +42,7 @@ body {
         color: rgb(48, 46, 45);
         max-width: 25rem;
     }
+
     .logo-subtext {
         font-size:0.86em;
         color: rgb(130, 124, 120);
@@ -69,10 +73,12 @@ body {
 
     z-index: 100;
 }
+
 a {
     text-decoration: none;
     color: rgb(65, 63, 62);
 }
+
 a.disabled {
     cursor: default;
     pointer-events: none;
@@ -119,14 +125,17 @@ a.disabled {
     .navbar .item.selected {
         background-color: rgb(221, 213, 204);
     }
+
     .navbar .item > i {
         transform: translateY(0.6rem);
     }
+
     .navbar .item > span {
         font-size: 0.8em;
         font-weight: 600;
         padding-top: 1.5rem;
     }
+
     .navbar .item:hover:not(.selected) {
         cursor: pointer;
         /*background-color: rgb(221, 213, 204);*/
@@ -170,14 +179,15 @@ a.disabled {
     }
 }
 
-/* Card */
 
+/* Card */
 
 .card-list {
     display:flex;
     flex-direction: column;
     gap: 1rem;
 }
+
 .card {
     background-color: rgb(237, 229, 220);
 
@@ -192,6 +202,7 @@ a.disabled {
     transition: cubic-bezier(0.075, 0.82, 0.165, 1);
     transition-duration: 400ms;
 }
+
 @media only screen and (min-width: 768px) {
     .card {
         max-width: 38rem;
@@ -201,35 +212,43 @@ a.disabled {
 .card.dark {
     background-color: rgb(221, 213, 204);
 }
+
 .card * {
     transition: cubic-bezier(0.075, 0.82, 0.165, 1);
     transition-duration: 400ms;
 }
+
 .card.expand-content {
     max-height: calc(auto);
     overflow: hidden;
 }
+
     .card .hidden {
         max-height: 0;
         overflow: hidden;
         display: none;
     }
+
 .card-faded {
     background-color: rgb(221, 213, 204);
     opacity: 0.85;
 }
+
 .card-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     height: 4.5rem;
 }
+
 .card-header:first-child {
     margin-left: 1.2rem;
 }
+
 .card-icon {
     margin-right: 0.65rem;
 }
+
     .card-icon > div {
         color:rgb(237, 229, 220);
         border-radius: 1.5rem;
@@ -241,15 +260,18 @@ a.disabled {
         justify-content: center;
         align-items: center;
     }
+
     .card-icon > div > div {
         font-family: 'Frank Ruhl Libre';
     }
+
 .card-title {
     font-weight: 600;
 
     margin-top:0;
     margin-bottom: 0.4rem;
 }
+
 .card-subtitle {
     font-size:0.85em;
     color: rgb(119, 115, 113);
@@ -257,9 +279,11 @@ a.disabled {
     margin-top: 0;
     margin-bottom: 0;
 }
+
 .card-separator {
     flex-grow: 1;
 }
+
 .card-image {
     justify-self: end;
     min-width: 4.5rem;
@@ -274,12 +298,14 @@ a.disabled {
     border-top-right-radius: 0.35rem;
     border-bottom-right-radius: 0.35rem;
 }
+
 @media only screen and (min-width: 768px) {
     .card-image {
         min-width: 5rem;
         width: 5rem;
     }
 }
+
     .card.expand-content .card-image {
         min-width: 0rem;
         width: 0rem;
@@ -287,6 +313,7 @@ a.disabled {
         opacity: 0.1;
         border-bottom-right-radius: 0rem;
     }
+
 .card-large-image {
     width: 100%;
     height: 10rem;
@@ -295,21 +322,25 @@ a.disabled {
     background-repeat: no-repeat;
     background-position: center;
 }
+
     .card:not(.expand-content) .card-large-image {
         height: 0rem;
         overflow: hidden;
         opacity: 0;
     }
+
 .card-content, .card-details {
     max-height: calc(auto);
     color: rgb(92, 89, 88);
 }
+
     .card:not(.expand-content) .card-content:not(.always-show) {
         max-height: calc(0rem);
         overflow: hidden;
         transition-duration: 400ms;
         opacity: 0;
     }
+
 .card-content > p {
     margin-left: 1.2rem;
     margin-right: 1.2rem;
@@ -317,25 +348,30 @@ a.disabled {
     margin-bottom: 0.8rem;
     font-family: 'Lato', sans-serif;
 }
+
 .card-titles {
     flex-grow: 1;
 }
+
 .card-header .card-details {
     display: flex;
     flex-direction: row;
     gap: 1rem;
     margin: 1.5rem;
 }
+
 .card-content .card-details {
     display: flex;
     gap: 3rem;
     margin: 1.5rem;
 }
+
     .card-content .card-details > div, .card-header .card-details > div {
         display: flex;
         gap: 1rem;
         align-items: center;
     }
+
 .buttons {
     display: flex;
     flex-wrap: wrap;
@@ -343,16 +379,22 @@ a.disabled {
     border: 0;
     gap: 0.5rem;
 }
+
 .card-content .buttons {
     justify-content: flex-end;
     margin-top: 2rem;
 }
+
+
+/* Buttons + Inputs */
+
 button[type="submit"] {    
     font-family: "Open Sans", sans-serif;
     border: 0rem;
     font-size: 1em;
     font-weight: 500;
 }
+
 .button {
     text-decoration: none;
     padding: 0.6rem 1rem;
@@ -361,26 +403,200 @@ button[type="submit"] {
     color:rgb(237, 229, 220);
     cursor: pointer;
 }
+
     .button:hover {
         background-color: #3b386d;
     }
+
     .button.disabled {
         border: 0.1rem solid #4c4980;
         color: #4c4980;
         background-color: rgb(237, 229, 220);
         cursor: not-allowed;
     }
+
         .button.disabled.dark {
             background-color: rgb(221, 213, 204);
         }
-    .card-content .progression-bar {
-        margin-left: 1rem;
-        margin-right: 1rem;
+
+.formContainer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.inputContainer {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.inputContainer > .flex-item {
+    flex-grow: 1;
+    position: relative;
+}
+
+.inputContainer.submit {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.float-right {
+    position: absolute;
+    margin-top: 5rem; /*4.16rem;*/
+    z-index: 10;
+    width: 100%;
+}
+
+@media only screen and (min-width: 768px) {
+    .float-right {
         margin-top: 0rem;
-        margin-bottom: 1.2rem;
+        position: absolute;
+        margin-left: calc(100% + 1.5rem);
+        max-width: 18rem;
     }
-    
+}
+
+.itemSelector {
+    display: block;
+
+    background-color: rgb(230, 224, 216);
+    border-radius: 0.2rem;
+}
+
+.itemSelector div {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    line-height: 3.15rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itemSelector div:first-of-type {
+    border-top-left-radius: 0.2rem;
+    border-top-right-radius: 0.2rem;
+}
+
+.itemSelector div:last-of-type {
+    border-bottom-left-radius: 0.2rem;
+    border-bottom-right-radius: 0.2rem;
+}
+
+.itemSelector div:not(.nohover):hover {
+    background-color: rgb(241, 237, 232);
+    cursor: pointer;
+}
+
+.float-header {
+    position: absolute;
+    transform: translateY(calc(-100% - 0.5rem));
+    padding-left: 0.5rem;
+}
+
+.floating-label {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.8rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    color: #787878;
+    font-size: 1em;
+}
+
+input[type=text], input[type=date], select {
+    background-color: rgb(241, 237, 232);
+    width: 100%;
+    padding: 1.6rem 0.8rem 0.6rem 0.8rem;
+    box-sizing: border-box;
+    border-radius: 0.2rem;
+    border: 0rem;
+    transition-duration: 200ms;
+}
+
+select {
+    appearance: none;
+}
+
+input[type=text]:focus, input[type=date]:focus, select:focus {
+    outline:none;
+    background-color: rgb(248, 246, 244);
+}
+
+input:disabled {
+    background-color: rgb(230, 224, 216);
+    color: #4b8049;
+    font-weight: 600;
+}
+
+input.invalid {
+    background-color: rgb(255, 204, 204)!important;
+}
+
+.inputContainer .icon {
+    position: absolute;
+    right: 0rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.2rem;
+    padding: 1.1rem;
+    height: 100%;
+    transition: 150ms;
+}
+.inputContainer .icon:hover:not(.nohover) {
+    color: #4b8049;
+    cursor: pointer;
+}
+
+.inputContainer .icon.nohover {
+    pointer-events: none;
+}
+
+@media only screen and (min-width: 768px) {
+    .floating-label {
+    top: 0.93rem;
+    left: 0.8rem;
+    }
+    .inputContainer  {
+    width: 30rem;
+    }
+    .icon {
+    right: auto;
+    left: 27rem;
+    }
+}
+
+input[type=text]:focus + .floating-label,
+input[type=text]:not(:placeholder-shown) + .floating-label,
+input[type=date] + .floating-label, /* :valid for date, if selection is required */
+select:valid + .floating-label {
+    top: 0.5rem;
+    left: 0.8rem;
+    color: #8b8b8b;
+    font-size: 0.8em;
+}
+
+@media only screen and (max-width: 768px) {
+    .hideOnMobile {
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+}
+
+
 /* Progression bar */
+
+.card-content .progression-bar {
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-top: 0rem;
+    margin-bottom: 1.2rem;
+}
 
 .progression-bar {
     background-color: rgb(180, 173, 165);
@@ -390,11 +606,13 @@ button[type="submit"] {
     margin-bottom: 0.5rem;
     overflow: hidden;
 }
+
 @media only screen and (min-width: 768px) {
     .progression-bar {
         max-width: 38rem;
     }
 }
+
 .progression-bar .progression {
     background-color: #4b8049;
     border-radius: 0.35rem;
@@ -407,6 +625,7 @@ button[type="submit"] {
     padding-left: 1.8rem;
     color:rgb(237, 229, 220);
 }
+
 
 /* Achievements */
 
@@ -426,6 +645,7 @@ button[type="submit"] {
     border-radius: 0.35rem;
     padding: 0.6rem;
 }
+
 @media only screen and (min-width: 768px) and (max-width: 960px)  {
     .achievement-box {
         max-width: 9.7rem;
@@ -437,6 +657,7 @@ button[type="submit"] {
     flex-wrap: wrap;
     gap: 0.5rem;
 }
+
 @media only screen and (min-width: 768px) {
     .achievement-box > .achievement-list {
         display: grid;
@@ -444,12 +665,14 @@ button[type="submit"] {
         gap: 0.5rem;
     }
 }
+
 @media only screen and (min-width: 960px) {
     .achievement-box > .achievement-list {
         grid-template-columns: repeat(3, auto); /* 3 items per row */
         max-width:100%;
     }
 }
+
 @media only screen and (min-width: 1150px) {
     .achievement-box > .achievement-list {
         display: grid;
