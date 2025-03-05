@@ -7,6 +7,7 @@ from utils.admin_names import handle_files
 from utils.transform_azure_data import transform_ad_email, transform_ad_dq_number, transform_ad_fullname
 from utils.config import AZURE_CLIENTID, AZURE_TENANTID, AZURE_CLIENTSECRET, CSV_PATH, SFTP_HOST, SFTP_USER, SFTP_PASS
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +86,28 @@ def get_and_save_azure_ad_data():
 
 
 def get_admin_names():
-    logger.info("Retrieving admin names...")
+    local_file_path = r'C:\Users\DQA8932\Desktop\Onboarding\Brugeradministration-da.csv'
+
+    if os.path.exists(local_file_path):
+        logger.info(f"Local file {local_file_path} exists. Reading admin names from local file...")
+        try:
+            df = pd.read_csv(local_file_path, encoding='utf-16', delimiter=';')
+            logger.info(f"Columns in the CSV file: {df.columns.tolist()}")
+            admin_names = df['Navn'].tolist() if 'Navn' in df.columns else []
+            logger.info(f"Retrieved admin names from local file")
+
+            admin_names = list(set(admin_names))
+            return jsonify({"admin_names": admin_names}), 200
+
+        except Exception as e:
+            logger.error(f"Error reading local file: {e}")
+            return jsonify({"error": "Error reading local file"}), 500
+        
+        
+    logger.info("Retrieving admin names from SFTP...")
     sftp_client = SFTPClient(SFTP_HOST, SFTP_USER, SFTP_PASS)
     conn = sftp_client.get_connection()
+
     if conn:
         admin_names = handle_files(conn)
         if not admin_names:
@@ -97,5 +117,5 @@ def get_admin_names():
         logger.error("Error establishing SFTP connection")
         return jsonify({"error": "Error establishing SFTP connection"}), 500
 
-    logger.info(f"Retrieved admin names: {admin_names}")
+    admin_names = list(set(admin_names))
     return jsonify({"admin_names": admin_names}), 200
