@@ -63,11 +63,8 @@
 
     const evaluateEmail = () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailPattern.test(inputFields.value.usermail)) {
-            console.error('Invalid email format')
+        if (!emailPattern.test(inputFields.value.usermail))
             return isUserMailValid.value = false
-        }
-        console.log('Valid email format')
         return isUserMailValid.value = true
     }
 
@@ -246,11 +243,10 @@
         <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen  }]">
             <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required>
             <label for="name" class="floating-label">Forløbets navn</label>
-
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', {'disabled': isSubmitting}]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opret forløb</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opret forløb</button>
         </div>
 
     </div>
