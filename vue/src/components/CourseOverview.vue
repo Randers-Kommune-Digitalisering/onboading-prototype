@@ -74,9 +74,9 @@
     <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="new Date(forloeb.startdate)" :deadline="new Date(forloeb.enddate)" />
     <Placeholder v-if="forloeb == null && showDetails" :dark="true" />
     <div class="buttons" v-if="adminView">
-        <router-link to="/create-task" class="button">+ Tilføj opgave</router-link>
-        <router-link to="/create-task" class="button">Redigér forløb</router-link>
-        <router-link to="/create-task" class="button red">Afslut forløb</router-link>
+        <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button">+ Tilføj opgave</router-link>
+        <router-link to="/" class="button disabled">Redigér forløb</router-link>
+        <router-link to="/" class="button red disabled">Afslut forløb</router-link>
     </div>
     <TaskList v-if="forloeb != null" :tasks="opgaver" :adminView="adminView" />
 </template>
