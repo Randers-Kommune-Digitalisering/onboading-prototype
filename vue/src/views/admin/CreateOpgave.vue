@@ -1,147 +1,106 @@
-<template>
-  <div>
-    <h2>Opret Opgave</h2>
-    <form @submit.prevent="submitForm">
-      <div>
-        <label for="title">Opgave navn:</label>
-        <input type="text" v-model="title" required />
-      </div>
-      <div>
-        <label for="beskrivelse">Beskrivelse:</label>
-        <input type="text" v-model="beskrivelse" required />
-      </div>
-      <div>
-        <label for="ansvarlig">Ansvarlig:</label>
-        <input type="text" v-model="ansvarligSearch" placeholder="Search ansvarlig names" />
-        <select v-model="ansvarlig" required>
-          <option v-for="ansvarlig in filteredAnsvarligNames" :key="ansvarlig" :value="ansvarlig">
-            {{ ansvarlig }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label for="startdato">Startdato:</label>
-        <input type="date" v-model="startdato" required />
-      </div>
-      <div>
-        <label for="slutdato">Slutdato:</label>
-        <input type="date" v-model="slutdato" required />
-      </div>
-      <div>
-        <label for="result">Status på opgaven:</label>
-        <input type="checkbox" v-model="result" />
-      </div>
-      <div>
-        <label for="timestamp">Timestamp:</label>
-        <input type="datetime-local" v-model="timestamp" required />
-      </div>
-      <div>
-        <label for="ForløbID">Forløb:</label>
-        <select v-model="ForløbID">
-          <option v-for="forloeb in forloebs" :key="forloeb.ForløbID" :value="forloeb.ForløbID">
-            {{ forloeb.name }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label for="ForløbsskabelonID">Forløbsskabelon:</label>
-        <select v-model="ForløbsskabelonID">
-          <option v-for="skabelon in forloebsskabeloner" :key="skabelon.ForløbsskabelonID" :value="skabelon.ForløbsskabelonID">
-            {{ skabelon.name }}
-          </option>
-        </select>
-      </div>
-      <button class="button button-outline" type="submit">Create Opgave</button>
-    </form>
-    <div v-if="message">{{ message }}</div>
-  </div>
-</template>
+<script setup>
+    import { ref, onMounted } from 'vue'
+    import { useRoute } from 'vue-router'
 
-<script>
-import { getForloebsskabeloner } from '../../services/forløbsskabelonService';
-import { getAllForloeb } from '../../services/forløbService';
-import { createOpgave } from '../../services/opgaveService';
-import { getAnvarligNames } from '../../services/userService';
+    import { getAnvarligNames } from '@/services/userService'
 
-export default {
-  data() {
-    return {
-      title: '',
-      beskrivelse: '',
-      ansvarlig: '',
-      ansvarligSearch: '',
-      startdato: '',
-      slutdato: '',
-      result: false,
-      timestamp: '',
-      ForløbID: '',
-      ForløbsskabelonID: '',
-      forloebsskabeloner: [],
-      forloebs: [],
-      ansvarligNames: [],
-      message: ''
-    };
-  },
-  async created() {
-    try {
-      const skabelonResponse = await getForloebsskabeloner();
-      this.forloebsskabeloner = skabelonResponse.data;
+    const route = useRoute()
+    const id = parseInt(route.query.id, 10)
+    const isSubmitting = ref(false)
 
-      const ansvarligResponse = await getAnvarligNames();
-      this.ansvarligNames = ansvarligResponse.data.fullnames;
+    const inputFields = ref({
+        name: '',
+        ansvarlig: '',
+    })
 
-      const forloebResponse = await getAllForloeb();
-      this.forloebs = forloebResponse.data;
-    } catch (error) {
-      this.message = 'Failed to load data';
+    /* Assistant search */
+    const isAssistantLocked = ref(false)
+    const assistantList = ref([])
+    const assistantSearchResults = ref([])
+    const isAssistantSearchOpen = ref(false)
+
+    const searchAssistants = (searchString) => {
+        if (searchString.length < 3) {
+            isAssistantSearchOpen.value = false
+            return assistantSearchResults.value = []
+        }
+        isAssistantSearchOpen.value = true
+        return assistantSearchResults.value = assistantList.value
+            .filter(assistant => assistant.toLowerCase().includes(searchString.toLowerCase()))
+            .slice(0, 8)
     }
-  },
-  computed: {
-    filteredAnsvarligNames() {
-      return this.ansvarligNames.filter(ansvarlig =>
-        ansvarlig.toLowerCase().includes(this.ansvarligSearch.toLowerCase())
-      );
+
+    const selectAssistant = (assistant) => {
+        inputFields.value.ansvarlig = assistant
+        isAssistantLocked.value = true
+        isAssistantSearchOpen.value = false
     }
-  },
-  methods: {
-    async submitForm() {
-      if (!this.ForløbID && !this.ForløbsskabelonID) {
-        this.message = 'Either ForløbID or ForløbsskabelonID is required';
-        return;
-      }
 
-      const data = {
-        title: this.title,
-        beskrivelse: this.beskrivelse,
-        ansvarlig: this.ansvarlig,
-        startdato: this.startdato,
-        slutdato: this.slutdato,
-        result: this.result,
-        timestamp: this.timestamp
-      };
-
-      if (this.ForløbID) {
-        data.ForløbID = this.ForløbID;
-      } else if (this.ForløbsskabelonID) {
-        data.ForløbsskabelonID = this.ForløbsskabelonID;
-      }
-
-      try {
-        const response = await createOpgave(data);
-        this.message = response.data.message;
-        this.title = '';
-        this.beskrivelse = '';
-        this.ansvarlig = '';
-        this.startdato = '';
-        this.slutdato = '';
-        this.result = false;
-        this.timestamp = '';
-        this.ForløbID = '';
-        this.ForløbsskabelonID = '';
-      } catch (error) {
-        this.message = error.response.data.error;
-      }
+    const toggleassistantSearch = () => {
+        if(assistantList.value.includes(inputFields.value.ansvarlig))
+        {
+            isAssistantLocked.value = !isAssistantLocked.value
+            isAssistantSearchOpen.value = false
+        }
+        else
+            isAssistantLocked.value = false
     }
-  }
-};
+
+    const clearAssistantIfNotSelected = () => {
+        if(!assistantList.value.includes(inputFields.value.ansvarlig))
+        {
+            inputFields.value.ansvarlig = ""
+            isAssistantLocked.value = false
+            isAssistantSearchOpen.value = false
+        }
+    }
+
+    /* Instantiate */
+    onMounted(() => {
+
+        getAnvarligNames().then(data => {
+            assistantList.value = data.data.fullnames
+        }).catch(error => {
+            console.error('Error fetching assistant names:', error)
+        })
+
+        // if (keycloak.authenticated) {
+        //     if(keycloak.tokenParsed?.name) {
+        //         // Automatically select logged in admin
+        //         loggedInAdmin.value = keycloak.tokenParsed?.name
+        //         selectAdmin(loggedInAdmin.value)
+        //     }
+        // }
+    })
 </script>
+
+<template>
+    <p class="indent-tiny bold uppercase p-header-adjust">Opret opgave (#{{ id }})</p>
+
+    <form @submit.prevent="submitForm">
+    <div class="formContainer">
+
+        <div class="inputContainer">
+            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required>
+            <label for="name" class="floating-label">Opgavens navn</label>
+        </div>
+        
+        <div class="inputContainer">
+            <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" required :disabled="isAssistantLocked">
+            <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
+            <div class="icon" @click="toggleassistantSearch()"><i :class="'fa-solid fa-lock' + (isAssistantLocked ? '' : '-open')"></i></div>
+            
+            <div class="itemSelector float-right" v-if="isAssistantSearchOpen">
+                <span class="float-header small uppercase">Vælg en ansvarlig medarbejder ...</span>
+                <div v-for="result in assistantSearchResults" @click="selectAssistant(result)">{{result}}</div>
+                <div v-if="assistantSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
+            </div>
+        </div>
+
+        <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" :disabled="isSubmitting">Opret opgave</button>
+        </div>
+
+    </div>
+    </form>
+</template>
