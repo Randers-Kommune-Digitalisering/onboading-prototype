@@ -15,10 +15,10 @@
     <div class="card-list" v-if="courses && courses.length > 0">
         <Card v-for="course in courses"
             :id="course.ForløbID"
-            :title="course.title"
+            :title="course.usermail ?? course.privateEmail"
             :name="course.name"
-            :startDate="course.startdate"
-            :deadline="course.enddate"
+            :startDate="new Date(course.startdate)"
+            :deadline="new Date(course.enddate)"
             color="4c4980" />
     </div>
     <div v-else>

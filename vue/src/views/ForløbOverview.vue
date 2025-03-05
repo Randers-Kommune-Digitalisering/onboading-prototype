@@ -4,7 +4,7 @@
     import CourseOverview from '@/components/CourseOverview.vue'
 
     const route = useRoute()
-    const id = route.query.id
+    const id = parseInt(route.query.id, 10)
 </script>
 
 <template>
