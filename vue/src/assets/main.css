@@ -1,5 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
+:root {
+    --color-background: rgb(203, 194, 184);
+    --color-text: rgb(65, 63, 62);
+    --color-logo: rgb(48, 46, 45);
+    --color-logo-subtext: rgb(164, 158, 154);
+    --color-logo-subtext-hover: rgb(130, 124, 120);
+    --color-navbar: rgb(237, 229, 220);
+    --color-navbar-item-selected: rgb(221, 213, 204);
+    --color-navbar-item-hover: rgb(119, 115, 113);
+    --color-card: rgb(237, 229, 220);
+    --color-card-dark: rgb(221, 213, 204);
+    --color-card-faded: rgb(221, 213, 204);
+    --color-card-text: rgb(92, 89, 88);
+    --color-button: #4c4980;
+    --color-button-text: rgb(237, 229, 220);
+    --color-button-hover: #3b386d;
+    --color-button-disabled: rgb(237, 229, 220, 0);
+    --color-button-disabled-text: #4c4980;
+    --color-input-bg: rgb(241, 237, 232);
+    --color-input-focus-bg: rgb(248, 246, 244);
+    --color-input-disabled-bg: rgb(230, 224, 216);
+    --color-input-invalid-bg: rgb(255, 204, 204);
+    --color-progression-bar: rgb(180, 173, 165);
+    --color-progression: #4b8049;
+    --color-achievement-box: rgb(221, 213, 204);
+    --color-achievement-item: rgb(221, 213, 204);
+    --color-achievement-item-text: rgb(221, 213, 204);
+}
+
 *
 {
     box-sizing: border-box;
@@ -13,24 +42,23 @@ html, body, #app, main
 }
 
 body {
-    background-color: rgb(203, 194, 184);
+    background-color: var(--color-background);
     margin: 0;
 
     font-family: "Open Sans", sans-serif;
     font-weight: 500;
     font-style: normal;
     font-size: 0.9rem;
-    color: rgb(65, 63, 62);
+    color: var(--color-text);
 }
 
 #logo {
-    color: rgb(48, 46, 45);
-    min-width: 10rem;
+    color: var(--color-logo);
 }
 
 .logo-subtext {
     font-size:0.82em;
-    color: rgb(164, 158, 154);
+    color: var(--color-logo-subtext);
     display: block;
     margin-bottom: 0.8rem;
     transform: translateY(-0.1rem);
@@ -39,13 +67,13 @@ body {
 
 @media only screen and (min-width: 768px) {
     #logo {
-        color: rgb(48, 46, 45);
+        color: var(--color-logo);
         max-width: 25rem;
     }
 
     .logo-subtext {
         font-size:0.86em;
-        color: rgb(130, 124, 120);
+        color: var(--color-logo-subtext-hover);
         margin-bottom: 0.75rem;
         transform: translateY(-0.9rem);
     }
@@ -54,7 +82,7 @@ body {
 /* Navbar */
 
 .navbar {
-    background-color: rgb(237, 229, 220);
+    background-color: var(--color-navbar);
 
     position: absolute;
     top: 0;
@@ -76,7 +104,7 @@ body {
 
 a {
     text-decoration: none;
-    color: rgb(65, 63, 62);
+    color: var(--color-text);
 }
 
 a.disabled {
@@ -123,7 +151,7 @@ a.disabled {
     }
 
     .navbar .item.selected {
-        background-color: rgb(221, 213, 204);
+        background-color: var(--color-navbar-item-selected);
     }
 
     .navbar .item > i {
@@ -139,7 +167,7 @@ a.disabled {
     .navbar .item:hover:not(.selected) {
         cursor: pointer;
         /*background-color: rgb(221, 213, 204);*/
-        color: rgb(119, 115, 113);
+        color: var(--color-navbar-item-hover);
     }
 
 
@@ -189,7 +217,7 @@ a.disabled {
 }
 
 .card {
-    background-color: rgb(237, 229, 220);
+    background-color: var(--color-card);
 
     min-height: 4.5rem;
     border-radius: 0.35rem;
@@ -210,7 +238,7 @@ a.disabled {
 }
 
 .card.dark {
-    background-color: rgb(221, 213, 204);
+    background-color: var(--color-card-dark);
 }
 
 .card * {
@@ -230,7 +258,7 @@ a.disabled {
     }
 
 .card-faded {
-    background-color: rgb(221, 213, 204);
+    background-color: var(--color-card-faded);
     opacity: 0.85;
 }
 
@@ -250,7 +278,7 @@ a.disabled {
 }
 
     .card-icon > div {
-        color:rgb(237, 229, 220);
+        color:var(--color-card);
         border-radius: 1.5rem;
 
         width:1.5rem;
@@ -274,7 +302,7 @@ a.disabled {
 
 .card-subtitle {
     font-size:0.85em;
-    color: rgb(119, 115, 113);
+    color: var(--color-navbar-item-hover);
 
     margin-top: 0;
     margin-bottom: 0;
@@ -331,7 +359,7 @@ a.disabled {
 
 .card-content, .card-details {
     max-height: calc(auto);
-    color: rgb(92, 89, 88);
+    color: var(--color-card-text);
 }
 
     .card:not(.expand-content) .card-content:not(.always-show) {
@@ -399,24 +427,24 @@ button[type="submit"] {
     text-decoration: none;
     padding: 0.6rem 1rem;
     border-radius: 1.5rem;
-    background-color: #4c4980;
-    color:rgb(237, 229, 220);
+    background-color: var(--color-button);
+    color:var(--color-button-text);
     cursor: pointer;
 }
 
     .button:hover {
-        background-color: #3b386d;
+        background-color: var(--color-button-hover);
     }
 
     .button.disabled {
-        border: 0.1rem solid #4c4980;
-        color: #4c4980;
-        background-color: rgb(237, 229, 220);
+        border: 0.1rem solid var(--color-button-disabled-text);
+        color: var(--color-button-disabled-text);
+        background-color: var(--color-button-disabled);
         cursor: not-allowed;
     }
 
         .button.disabled.dark {
-            background-color: rgb(221, 213, 204);
+            background-color: var(--color-card-dark);
         }
 
 .formContainer {
@@ -463,7 +491,7 @@ button[type="submit"] {
 .itemSelector {
     display: block;
 
-    background-color: rgb(230, 224, 216);
+    background-color: var(--color-input-disabled-bg);
     border-radius: 0.2rem;
 }
 
@@ -487,7 +515,7 @@ button[type="submit"] {
 }
 
 .itemSelector div:not(.nohover):hover {
-    background-color: rgb(241, 237, 232);
+    background-color: var(--color-input-focus-bg);
     cursor: pointer;
 }
 
@@ -508,7 +536,7 @@ button[type="submit"] {
 }
 
 input[type=text], input[type=date], select {
-    background-color: rgb(241, 237, 232);
+    background-color: var(--color-input-bg);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
     box-sizing: border-box;
@@ -523,17 +551,17 @@ select {
 
 input[type=text]:focus, input[type=date]:focus, select:focus {
     outline:none;
-    background-color: rgb(248, 246, 244);
+    background-color: var(--color-input-focus-bg);
 }
 
 input:disabled {
-    background-color: rgb(230, 224, 216);
-    color: #4b8049;
+    background-color: var(--color-input-disabled-bg);
+    color: var(--color-progression);
     font-weight: 600;
 }
 
 input.invalid {
-    background-color: rgb(255, 204, 204)!important;
+    background-color: var(--color-input-invalid-bg)!important;
 }
 
 .inputContainer .icon {
@@ -548,7 +576,7 @@ input.invalid {
     transition: 150ms;
 }
 .inputContainer .icon:hover:not(.nohover) {
-    color: #4b8049;
+    color: var(--color-progression);
     cursor: pointer;
 }
 
@@ -599,7 +627,7 @@ select:valid + .floating-label {
 }
 
 .progression-bar {
-    background-color: rgb(180, 173, 165);
+    background-color: var(--color-progression-bar);
     border-radius: 0.35rem;
     height: 1.5rem;
     margin-top: 0.5rem;
@@ -614,7 +642,7 @@ select:valid + .floating-label {
 }
 
 .progression-bar .progression {
-    background-color: #4b8049;
+    background-color: var(--color-progression);
     border-radius: 0.35rem;
     height: 100%;
     transition: width 1s;
@@ -623,7 +651,7 @@ select:valid + .floating-label {
     align-items: center;
     padding-right: 0.5rem;
     padding-left: 1.8rem;
-    color:rgb(237, 229, 220);
+    color:var(--color-card);
 }
 
 
@@ -641,7 +669,7 @@ select:valid + .floating-label {
 }
 
 .achievement-box {
-    background-color: rgb(221, 213, 204);
+    background-color: var(--color-achievement-box);
     border-radius: 0.35rem;
     padding: 0.6rem;
 }
@@ -698,7 +726,7 @@ select:valid + .floating-label {
         padding-bottom: 0.6rem;
         overflow: hidden;
 
-        color: rgb(221, 213, 204);
+        color: var(--color-achievement-item);
     }
 
     .achievements .item > i {
@@ -711,6 +739,7 @@ select:valid + .floating-label {
         padding-top: 1.5rem;
         text-overflow: ellipsis;
         text-align: center;
+        color: var(--color-achievement-item-text);
     }
 
 /* Flex */
@@ -747,7 +776,7 @@ select:valid + .floating-label {
     text-transform: uppercase;
 }
 .faded {
-    color: rgb(119, 115, 113);
+    color: var(--color-navbar-item-hover);
 }
 .center {
     text-align: center;
