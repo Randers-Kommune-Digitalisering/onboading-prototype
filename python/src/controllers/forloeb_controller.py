@@ -140,3 +140,26 @@ def get_forloeb_by_email(mail):
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def get_forloeb_by_admin(admin_name):
+    session = db_client.get_session()
+    try:
+        forloeb_list = session.query(Forløb).filter_by(admin=admin_name).all()
+        result = [
+            {
+                "ForløbID": forloeb.ForløbID,
+                "name": forloeb.name,
+                "startdate": forloeb.startdate.isoformat(),
+                "enddate": forloeb.enddate.isoformat(),
+                "admin": forloeb.admin,
+                "usermail": forloeb.usermail,
+                "userdq": forloeb.userdq
+            }
+            for forloeb in forloeb_list
+        ]
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()

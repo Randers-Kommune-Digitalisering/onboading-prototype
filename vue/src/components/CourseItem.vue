@@ -5,7 +5,7 @@
 
     const returnFormattedDate = (date) => {
         const d = new Date(date)
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) // + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     }
 
     const props = defineProps({
@@ -19,8 +19,7 @@
         },
         name:
         {
-            type: String,
-            default: ''
+            type: String
         },
         startDate : {
             type: Date
@@ -53,7 +52,7 @@
 
             <div class="card-titles">
                 <p class="card-title">
-                    {{ name }}
+                    {{ name != '' ? name :  'Forløb uden titel' }}
                 </p>
                 <p class="card-subtitle">
                     {{ title }}

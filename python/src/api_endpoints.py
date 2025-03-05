@@ -27,7 +27,8 @@ from controllers.forloeb_controller import (
     get_forloeb,
     get_all_forloeb,
     get_forloeb_with_opgaver,
-    get_forloeb_by_email
+    get_forloeb_by_email,
+    get_forloeb_by_admin
 )
 
 from controllers.user_controller import (
@@ -123,6 +124,11 @@ def create_forloeb_endpoint():
 
 @api_endpoints.route('/forloeb', methods=['GET'])
 def get_all_forloeb_endpoint():
+    logger.info("Headers", request.headers)
+    admin_name = request.headers.get('adminname')
+    logger.info("Adminname", request.headers.get('adminname'))
+    if admin_name:
+        return get_forloeb_by_admin(admin_name)
     return get_all_forloeb()
 
 
