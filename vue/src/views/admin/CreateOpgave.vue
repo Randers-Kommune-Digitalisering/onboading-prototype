@@ -72,10 +72,8 @@
     const textarea = ref(null)
 
     const resizeTextareToFitContent = () => {
-        console.log('resizeTextareToFitContent')
-        const lineHeight = parseFloat(getComputedStyle(textarea.value).lineHeight)
-        const lines = textarea.value.value.split('\n').length
-        console.log('lines:', lines)
+        // const lineHeight = parseFloat(getComputedStyle(textarea.value).lineHeight)
+        // const lines = textarea.value.value.split('\n').length
         textarea.value.style.height = 'auto'
         textarea.value.style.height = (textarea.value.scrollHeight) + 'px'
     }
