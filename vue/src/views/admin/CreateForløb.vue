@@ -113,6 +113,13 @@
             isAdminSearchOpen.value = false
         }
     }
+    
+    const selectNoTemplateIfNotSelected = () => {
+        if(inputFields.value.ForløbsskabelonID == "")
+        {
+            inputFields.value.ForløbsskabelonID = null
+        }
+    }
 
     /* Instantiate */
     onMounted(() => {
@@ -250,7 +257,7 @@
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opret forløb</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">+ Opret forløb</button>
         </div>
 
     </div>

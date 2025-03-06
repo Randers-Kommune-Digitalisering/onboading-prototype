@@ -9,16 +9,27 @@
     const returnTimeLeft = (deadline) => {
         const now = new Date()
         const diff = deadline - now
-        const hours = Math.floor(diff / 1000 / 60 / 60)
-        return hours
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const daysText = days > 0 ? days + ' dag' + (days > 1 ? 'e' : '') : ''
+        const hoursText = hours > 0 ? hours + ' time' + (hours > 1 ? 'r' : '') : ''
+        const minutesText = minutes > 0 ? minutes + ' minut' + (minutes > 1 ? 'ter' : '') : ''
+        return `${days > 0 ? daysText : ''} ${hours > 0 ? hoursText : ''} ${minutes > 0 && hours === 0 ? (minutesText) : ''}`
     }
 
     const returnFormattedDate = (date) => {
         const d = new Date(date)
 
         if(d == 'Invalid Date')
-            return 'Ingen'
+            return null
+
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    }
+
+    const returnFirstAndLastName = (name) => {
+        const names = name.split(' ')
+        return names.length > 1 ? names[0] + ' ' + names[names.length - 1] : names[0]
     }
 
     defineProps({
@@ -102,7 +113,7 @@
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Deadline</div>
-                        <div>{{ deadline ? returnTimeLeft(deadline) + ' timer' : 'Ingen deadline' }}</div>
+                        <div>{{ deadline ? returnTimeLeft(deadline) : 'Ingen deadline' }}</div>
                     </div>
                 </div>
 
@@ -110,7 +121,7 @@
                     <div class="icon"><i class="fa-solid fa-user"></i></div>
                     <div class="text">
                         <div class="small faded">Ansvarlig</div>
-                        <div>{{ responsible ? responsible : 'Ingen ansvarlig' }}</div>
+                        <div>{{ responsible ? returnFirstAndLastName(responsible) : 'Ingen ansvarlig' }}</div>
                     </div>
                 </div>
 
@@ -118,7 +129,7 @@
                     <div class="icon"><i class="fa-solid fa-calendar"></i></div>
                     <div class="text">
                         <div class="small faded">Booking</div>
-                        <div>{{booking ? returnFormattedDate(booking) : 'Ingen kalenderbooking'}}</div>
+                        <div>{{booking && returnFormattedDate(booking) != null ? returnFormattedDate(booking) : 'Ingen kalenderbooking'}}</div>
                     </div>
                 </div>
             </div>

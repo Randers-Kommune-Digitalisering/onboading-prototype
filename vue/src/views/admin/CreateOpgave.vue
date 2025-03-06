@@ -127,18 +127,14 @@
             console.log('Response:', response.data)
 
         } catch (error) {            
-            if (error.response?.data?.error) {
-                console.log('Error:', error.response.data.error)
-            } else {
-                console.log('Error:', error)
-            }
+            console.log('Error:', error.response?.data?.error ?? error)
         }
         isSubmitting.value = false
     }
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">Opret opgave (#{{ forloeb_id }})</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">Tilføj opgave til {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -177,7 +173,7 @@
         </div>
 
         <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">Opret opgave</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">+ Tilføj opgave</button>
         </div>
 
     </div>
