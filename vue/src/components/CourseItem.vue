@@ -1,7 +1,11 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, onMounted } from 'vue'
     import ProgressBar from './ProgressBar.vue'
-    var cardRef = ref(null)
+
+    import { getOpgaverByForloebID } from '@/services/opgaveService'
+
+    const cardRef = ref(null)
+    const completedPercentage = ref(0)
 
     const returnFormattedDate = (date) => {
         const d = new Date(date)
@@ -39,8 +43,34 @@
             type: Boolean,
             required: false,
             default: false
+        },
+        tasks: {
+            type: Array,
+            required: false
         }
     })
+
+    const opgaver = ref([])
+
+    onMounted(() => {
+        try {
+            getOpgaverByForloebID(props.id)
+            .then(response => {
+                if (response?.data != null)
+                {
+                    opgaver.value = response.data
+                    completedPercentage.value = opgaver.value.length > 0 ? Math.round((opgaver.value.filter(opgave => opgave.result).length / opgaver.value.length) * 100) : 0
+                }
+                else
+                    opgaver.value = []
+            })
+        }
+        catch (error) {
+            console.log(error)
+            opgaver.value = []
+        }
+    })
+
 </script>
 
 <template>
@@ -79,7 +109,7 @@
             
         </div>
 
-        <div class="card-content always-show"><ProgressBar :hideText="true" :percentage="5" /></div>
+        <div class="card-content always-show"><ProgressBar :hideText="true" :percentage="completedPercentage" /></div>
     </div>
 
     </router-link>
