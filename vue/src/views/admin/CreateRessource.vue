@@ -25,7 +25,7 @@
 	}
 
 	const evaluateUrl = (url) => {
-		const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
+		const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?.*$/
 		isUrlValid.value = regex.test(url)
 		return isUrlValid.value
 	}
