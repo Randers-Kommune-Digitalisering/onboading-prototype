@@ -696,6 +696,10 @@ textarea:not(:placeholder-shown) + .floating-label {
     color:var(--color-card);
 }
 
+.progression-bar .progression.gray {
+    background-color: var(--color-progression-bar);
+}
+
 
 /* Achievements */
 

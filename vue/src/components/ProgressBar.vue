@@ -15,7 +15,7 @@ defineProps({
 
     <p v-if="!hideText" class="indent-tiny bold uppercase p-header-adjust">Fremskridt</p>
     <div class="progression-bar">
-        <div class="progression" :style="`width: `+ percentage +`%`">{{ percentage }}%</div>
+        <div :class="['progression', { 'gray': percentage == 0}]" :style="`width: `+ percentage +`%`">{{ percentage }}%</div>
     </div>
     <p v-if="!hideText" class="indent-tiny">{{ percentage == 100 ? 'Du har gennemført alle opgaver, godt arbejde!' :
                               percentage >= 80  ? 'Du har snart gennemført alle opgaver!' :
