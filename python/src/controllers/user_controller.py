@@ -94,7 +94,7 @@ def get_admin_names():
             df = pd.read_csv(local_file_path, encoding='utf-16', delimiter=';')
             logger.info(f"Columns in the CSV file: {df.columns.tolist()}")
             admin_names = df['Navn'].tolist() if 'Navn' in df.columns else []
-            logger.info(f"Retrieved admin names from local file")
+            logger.info("Retrieved admin names from local file")
 
             admin_names = list(set(admin_names))
             return jsonify({"admin_names": admin_names}), 200
@@ -102,8 +102,7 @@ def get_admin_names():
         except Exception as e:
             logger.error(f"Error reading local file: {e}")
             return jsonify({"error": "Error reading local file"}), 500
-        
-        
+
     logger.info("Retrieving admin names from SFTP...")
     sftp_client = SFTPClient(SFTP_HOST, SFTP_USER, SFTP_PASS)
     conn = sftp_client.get_connection()
