@@ -21,7 +21,7 @@ def create_opgave():
             startdato=datetime.fromisoformat(data['startdato']),
             slutdato=datetime.fromisoformat(data['slutdato']),
             result=data['result'],
-            timestamp=datetime.fromisoformat(data['timestamp'])
+            timestamp=datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
         )
 
         if 'ForløbID' in data:

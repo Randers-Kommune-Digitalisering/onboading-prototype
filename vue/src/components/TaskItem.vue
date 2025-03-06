@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <div>
+            <div class="no-overflow">
                 <p class="card-title">
                     {{ title }}
                 </p>

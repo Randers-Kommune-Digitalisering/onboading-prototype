@@ -8,11 +8,11 @@
             "url": "/admin-overview",
             "icon": "fa-solid fa-list-check"
         },
-        {
-            "title": "Opret opgave",
-            "url": "/create-opgave",
-            "icon": "fa-solid fa-plus"
-        },
+        // {
+        //     "title": "Opret opgave",
+        //     "url": "/create-opgave",
+        //     "icon": "fa-solid fa-plus"
+        // },
         {
             "title": "Opret forløb",
             "url": "/create-forloeb",

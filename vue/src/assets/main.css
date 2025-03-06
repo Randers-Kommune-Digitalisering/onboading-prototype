@@ -107,7 +107,7 @@ a {
     color: var(--color-text);
 }
 
-a.disabled {
+a.disabled, .button.disabled {
     cursor: default;
     pointer-events: none;
 }
@@ -303,9 +303,14 @@ a.disabled {
 .card-subtitle {
     font-size:0.85em;
     color: var(--color-navbar-item-hover);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-height: 1rem;
 
     margin-top: 0;
     margin-bottom: 0;
+    width: 100%;
 }
 
 .card-separator {
@@ -390,6 +395,7 @@ a.disabled {
 
 .card-content .card-details {
     display: flex;
+    justify-content: space-between;
     gap: 3rem;
     margin: 1.5rem;
 }
@@ -440,7 +446,6 @@ button[type="submit"] {
         border: 0.1rem solid var(--color-button-disabled-text);
         color: var(--color-button-disabled-text);
         background-color: var(--color-button-disabled);
-        cursor: not-allowed;
     }
 
         .button.disabled.dark {
@@ -543,11 +548,13 @@ input[type=text], input[type=date], select, textarea {
     border-radius: 0.2rem;
     border: 0rem;
     transition-duration: 200ms;
+    transition: opacity 0s;
 }
 
 textarea {
     font-family: 'Arial', sans-serif;
     resize: none;
+    transition: opacity 0s;
 }
 
 select {
@@ -878,4 +885,8 @@ textarea:not(:placeholder-shown) + .floating-label {
 
 .pointer {
     cursor: pointer;
+}
+
+.no-overflow {
+    overflow: hidden;
 }

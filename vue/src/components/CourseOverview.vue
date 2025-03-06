@@ -61,7 +61,7 @@
     onMounted(() => {
         try {
             if (keycloak.authenticated) {
-                console.log('User email: ', props.userEmail)
+                //console.log('User email: ', props.userEmail)
                 fetchOpgaver()
             }
         } catch (error) {

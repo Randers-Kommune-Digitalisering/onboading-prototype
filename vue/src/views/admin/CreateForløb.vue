@@ -184,7 +184,11 @@
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
             }
         } catch (error) {
-            console.log('Error:', response.data.error)
+            if (error.response?.data?.error) {
+                console.log('Error:', error.response.data.error)
+            } else {
+                console.log('Error:', error)
+            }
         }
         isSubmitting.value = false
     }
