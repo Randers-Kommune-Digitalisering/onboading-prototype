@@ -87,23 +87,23 @@
             return
         }
 
-        getAnvarligNames().then(data => {
-            assistantList.value = data.data.fullnames
+        getAnvarligNames().then(response => {
+            assistantList.value = response.data.fullnames
         }).catch(error => {
             console.error('Error fetching assistant names:', error)
         })
 
         if(isTemplate)
-            getForloebsskabeloner().then(data => {
-                forloeb.value = data.data.filter(skabelon => skabelon.ForløbsskabelonID == forloeb_id)[0]
-                console.log('Forløbsskabelon:', forloeb.value)
+            getForloebsskabeloner().then(response => {
+                forloeb.value = response.data.filter(skabelon => skabelon.ForløbsskabelonID == forloeb_id)[0]
+                //console.log('Forløbsskabelon:', forloeb.value)
             }).catch(error => {
                 console.error('Error fetching forløbsskabelon:', error)
             })
         else
-            getForloebById(forloeb_id).then(data => {
-                forloeb.value = data.data
-                console.log('Forløb:', forloeb.value)
+            getForloebById(forloeb_id).then(response => {
+                forloeb.value = response.data
+                //console.log('Forløb:', forloeb.value)
             }).catch(error => {
                 console.error('Error fetching forløb:', error)
             })
