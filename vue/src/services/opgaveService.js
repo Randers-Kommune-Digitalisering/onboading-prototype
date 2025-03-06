@@ -10,9 +10,17 @@ export const getOpgaverByForloebIDAdmin = (forloebID) => {
   return axios.get(`${API_URL}/opgave/forloeb/admin/${forloebID}`);
 };
 
-export const getOpgaverByForloebID = (forloebID, config) => {
-  return axios.get(`${API_URL}/opgave/forloeb/${forloebID}`, config);
-};
+export const getOpgaverByForloebID = async (forloebID, config) => {
+  try {
+    const response = await axios.get(`${API_URL}/opgave/forloeb/${forloebID}`, config);
+    return response;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return { data: [] }; // Return an empty array or any other custom response
+    }
+    throw error; // Re-throw the error if it's not a 404
+  }
+}
 
 export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
   return axios.get(`${API_URL}/opgave/forloebsskabelon/${forloebsskabelonID}`, config);

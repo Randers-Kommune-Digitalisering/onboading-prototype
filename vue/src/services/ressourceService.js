@@ -6,8 +6,16 @@ export const createRessource = (data) => {
     return axios.post(`${API_URL}/ressource`, data);
 };
 
-export const getRessourcesByOpgaveID = (opgaveID) => {
-    return axios.get(`${API_URL}/ressource/opgave/${opgaveID}`);
+export const getRessourcesByOpgaveID = async (opgaveID) => {
+    try {
+        const response = await axios.get(`${API_URL}/ressource/opgave/${opgaveID}`);
+        return response;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          return { data: [] }; // Return an empty array or any other custom response
+        }
+        throw error; // Re-throw the error if it's not a 404
+      }
 };
 
 export const deleteRessource = (ressourceID) => {
