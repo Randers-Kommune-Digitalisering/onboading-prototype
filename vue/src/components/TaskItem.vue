@@ -15,6 +15,9 @@
 
     const returnFormattedDate = (date) => {
         const d = new Date(date)
+
+        if(d == 'Invalid Date')
+            return 'Ingen'
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     }
 
@@ -55,13 +58,17 @@
         adminView: {
             type: Boolean,
             default: false
+        },
+        expandByDefault: {
+            type: Boolean,
+            default: false
         }
     })
 </script>
 
 <template>
 
-    <div class="card expand-content" ref="cardRef">
+    <div :class="['card', { 'expand-content': expandByDefault }]" ref="cardRef">
         <div class="card-header pointer" @click="expandCard">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`">

@@ -17,7 +17,7 @@
 
     <p :class="'indent-tiny bold uppercase p-header-adjust' + (adminView ? '-large' : '')">{{ adminView ? 'Aktuelle' : 'Dine' }} opgaver</p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
-        <Card v-for="task in tasks"
+        <Card v-for="(task, index) in tasks"
             :adminView="adminView"
             :id="'card_' + task.OpgaveID"
             :title="task.title"
@@ -29,7 +29,8 @@
             image="https://www.teknologisk.dk/_/media/67761&w=1460&h=808&r=cover&_filename=67761_7-gode-rr%C3%A5d-til-IT-sikkerhed.jpg"
             color="4c4980"
             link=""
-            isComplete="false" />
+            isComplete="false"
+            :expandByDefault="index == 0" />
     </div><!-- /card-list -->
     <div v-else>
         <p class="indent-tiny">Ingen opgaver fundet.</p>
