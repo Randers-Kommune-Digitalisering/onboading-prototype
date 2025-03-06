@@ -1,6 +1,10 @@
 <script setup>
-    import { ref } from 'vue'
-    var cardRef = ref(null)
+    import { ref, onMounted } from 'vue'
+
+    import { getRessourcesByOpgaveID  } from '@/services/ressourceService'
+
+    const cardRef = ref(null)
+    const ressourceList = ref([])
 
     const expandCard = () => {
         cardRef.value.classList.toggle('expand-content')
@@ -32,7 +36,11 @@
         return names.length > 1 ? names[0] + ' ' + names[names.length - 1] : names[0]
     }
 
-    defineProps({
+    var props = defineProps({
+        id: {
+            type: Number,
+            required: true
+        },
         title: {
             type: String,
             required: true
@@ -74,6 +82,16 @@
             type: Boolean,
             default: false
         }
+    })
+
+    /* Instantiate */
+
+    onMounted(() => {
+        getRessourcesByOpgaveID(props.id).then(response => {
+            ressourceList.value = response.data
+        }).catch(error => {
+            console.error('Error fetching ressources:', error)
+        })
     })
 </script>
 
@@ -136,10 +154,17 @@
 
             <p>{{ description }}</p>
 
+            <div class="ressources" v-if="ressourceList.length > 0">
+                <span class="faded uppercase">Ressourcer</span>
+                <a v-for="ressource in ressourceList" :href="ressource.url" target="_blank" class="link">
+                    <i class="fa-solid fa-link"></i>{{ ressource.name }}</a>
+            </div>
+
             <div class="buttons">
-                <div class="button" v-if="adminView">+ Tilføj ressource</div>
-                <div class="button" v-if="adminView">Redigér</div>
-                <div class="button" v-if="link">Gå til kursus</div>
+                
+                <router-link v-if="adminView" :to="`/create-ressource?id=${id}`" class="button">+ Tilføj ressource</router-link>
+                <div class="button disabled" v-if="adminView">Redigér</div>
+                <!--div class="button" v-if="link">Gå til kursus</div-->
                 <div class="button disabled">Markér gennemført</div>
             </div>
         </div>

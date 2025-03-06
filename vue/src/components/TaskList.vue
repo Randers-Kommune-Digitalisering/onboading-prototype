@@ -19,7 +19,7 @@
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
             :adminView="adminView"
-            :id="'card_' + task.OpgaveID"
+            :id="task.OpgaveID"
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"

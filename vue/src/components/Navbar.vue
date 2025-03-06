@@ -18,11 +18,11 @@
             "url": "/create-forloeb",
             "icon": "fa-solid fa-plus"
         },
-        {
-            "title": "Opret ressource",
-            "url": "/create-ressource",
-            "icon": "fa-solid fa-plus"
-        },
+        // {
+        //     "title": "Opret ressource",
+        //     "url": "/create-ressource",
+        //     "icon": "fa-solid fa-plus"
+        // },
         {
             "title": "Opret forløbsskabelon",
             "url": "/create-forloebsskabelon",

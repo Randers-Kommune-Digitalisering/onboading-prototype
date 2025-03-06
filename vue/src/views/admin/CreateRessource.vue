@@ -1,97 +1,100 @@
-<template>
-  <div>
-    <h2>Opret Ressource</h2>
-    <form @submit.prevent="submitForm">
-      <div>
-        <label for="name">Ressource Navn:</label>
-        <input type="text" v-model="name" required />
-      </div>
-      <div>
-        <label for="url">URL:</label>
-        <input type="text" v-model="url" required />
-      </div>
-      <div>
-        <label for="opgaveID">Opgave:</label>
-        <select v-model="opgaveID">
-          <option :value="null">None</option>
-          <option v-for="opgave in opgaver" :key="opgave.OpgaveID" :value="opgave.OpgaveID">
-            {{ opgave.title }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label for="opgaveskabelonID">Opgaveskabelon:</label>
-        <select v-model="opgaveskabelonID">
-          <option :value="null">None</option>
-          <option v-for="skabelon in opgaveskabeloner" :key="skabelon.OpgaveskabelonID" :value="skabelon.OpgaveskabelonID">
-            {{ skabelon.title }}
-          </option>
-        </select>
-      </div>
-      <button class="button button-outline" type="submit">Opret Ressource</button>
-    </form>
-    <div v-if="message">{{ message }}</div>
-  </div>
-</template>
+<script setup>
+    import { ref, onMounted } from 'vue'
+    import { useRoute, useRouter } from 'vue-router'
+	
+    import { createRessource } from '@/services/ressourceService'
 
-<script>
-import { createRessource } from '../../services/ressourceService';
-import { getOpgaveskabeloner } from '../../services/opgaveskabelonService';
-import { getOpgaver } from '../../services/opgaveService';
+    const route = useRoute()
+	const router = useRouter()
 
-export default {
-  data() {
-    return {
-      name: '',
-      url: '',
-      opgaveID: null,
-      opgaveskabelonID: null,
-      opgaver: [],
-      opgaveskabeloner: [],
-      message: ''
-    };
-  },
-  async created() {
-    try {
-      const [opgaverResponse, opgaveskabelonerResponse] = await Promise.all([
-        getOpgaver(),
-        getOpgaveskabeloner()
-      ]);
-      this.opgaver = opgaverResponse.data;
-      this.opgaveskabeloner = opgaveskabelonerResponse.data;
-    } catch (error) {
-      this.message = 'Failed to load Opgaver or Opgaveskabeloner';
+	const opgave_id = parseInt(route.query.id ?? route.query.tid, 10)
+    const isTemplate = route.query.id == null
+    const isSubmitting = ref(false)
+	const isUrlValid = ref(true)
+
+	const inputFields = ref({
+        name: "",
+        url: ""
+    })
+
+	const addHttp = () => {
+		if (!inputFields.value.url.startsWith('http://') && !inputFields.value.url.startsWith('https://')) {
+			inputFields.value.url = 'https://' + inputFields.value.url
+		}
+		return url
+	}
+
+	const evaluateUrl = (url) => {
+		const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
+		isUrlValid.value = regex.test(url)
+		return isUrlValid.value
+	}
+
+	/* Instantiate */
+
+	onMounted(() => {
+        if(!opgave_id) {
+            console.error('No ID provided')
+            router.back()
+            return
+        }
+    })
+
+	/* Submit */
+
+	const submitForm = async () =>
+    {
+		evaluateUrl(inputFields.value.url)
+		if (!isUrlValid.value)
+			return;
+
+        isSubmitting.value = true
+        try {
+			if (isTemplate)
+				inputFields.value.OpgaveskabelonID = opgave_id
+			else
+				inputFields.value.OpgaveID = opgave_id
+
+            const formData = { ...inputFields.value }
+
+            const response = await createRessource(formData)
+            if(response !== null)
+            {
+                if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
+                    router.back()
+                // else
+                //     router.replace({ path: '/forloeb-overview', query: { id: forloeb_id } })
+            }
+            else
+                console.log('Response:', response)
+
+        } catch (error) {            
+            console.log('Error:', error.response?.data?.error ?? error)
+        }
+        isSubmitting.value = false
     }
-  },
-  methods: {
-    async submitForm() {
-      if (!this.opgaveID && !this.opgaveskabelonID) {
-        this.message = 'Either OpgaveID or OpgaveskabelonID is required';
-        return;
-      }
-
-      const data = {
-        name: this.name,
-        url: this.url
-      };
-
-      if (this.opgaveID) {
-        data.OpgaveID = this.opgaveID;
-      } else if (this.opgaveskabelonID) {
-        data.OpgaveskabelonID = this.opgaveskabelonID;
-      }
-
-      try {
-        const response = await createRessource(data);
-        this.message = response.data.message;
-        this.name = '';
-        this.url = '';
-        this.opgaveID = null;
-        this.opgaveskabelonID = null;
-      } catch (error) {
-        this.message = error.response.data.error;
-      }
-    }
-  }
-};
 </script>
+
+<template>
+	<p class="indent-tiny bold uppercase p-header-adjust">Tilføj ressource til opgaven</p>
+
+	<form @submit.prevent="submitForm">
+	<div class="formContainer">
+
+		<div class="inputContainer">
+			<input type="text" id="title" name="title" placeholder=" " v-model="inputFields.name" required>
+			<label for="title" class="floating-label">Ressourcens navn</label>
+		</div>
+
+		<div class="inputContainer">
+			<input type="text" id="url" name="url" placeholder=" " v-model="inputFields.url" :class="{'invalid': !isUrlValid}" @change="addHttp()" required>
+			<label for="url" class="floating-label">Link til ressource</label>
+		</div>
+
+		<div class="inputContainer submit">
+			<button class="button button-outline" type="submit" :disabled="isSubmitting">+ Tilføj ressource</button>
+		</div>
+
+	</div>
+	</form>
+</template>
