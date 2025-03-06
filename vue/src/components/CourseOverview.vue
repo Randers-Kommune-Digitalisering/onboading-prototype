@@ -39,11 +39,11 @@
             if (props.userEmail || props.id) {
                 const forloeb_response = props.userEmail ? await getForloebByEmail({ headers }) : await getForloebById(props.id, { headers })
                 forloeb.value = forloeb_response.data
-                console.log('Forløb: ', forloeb.value)
+                //console.log('Forløb: ', forloeb.value)
 
                 forloeb_id.value = forloeb.value.ForløbID
                 const opgaver_response = await getOpgaverByForloebID(forloeb_id.value, { headers })
-                opgaver.value = opgaver_response != null ? opgaver_response.data : null //response.data.map(opgave => ({ ...opgave, showDetails: false }))
+                opgaver.value = opgaver_response != null ? opgaver_response.data : [] //response.data.map(opgave => ({ ...opgave, showDetails: false }))
                 
                 if (!Array.isArray(opgaver.value))
                     opgaver.value = [opgaver.value]

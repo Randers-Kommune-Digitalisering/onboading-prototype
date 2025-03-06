@@ -3,9 +3,9 @@
     import { useRouter } from 'vue-router'
     import keycloak from '@/keycloak'
 
-    import { getForloebsskabeloner } from '../../services/forløbsskabelonService'
-    import { createForloeb } from '../../services/forløbService'
-    import { getAdminNames, getEmail, getDQ } from '../../services/userService'
+    import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
+    import { createForloeb } from '@/services/forløbService'
+    import { getAdminNames, getEmail, getDQ } from '@/services/userService'
 
     const router = useRouter()
     const isSubmitting = ref(false)
@@ -183,8 +183,6 @@
                 delete formData.privateEmail
 
             const response = await createForloeb(formData)
-            console.log('Response:', response.data)
-
             if(response.data.uid)
             {
                 console.log('Redirecting to:', `/forloeb-overview?id=${response.data.uid}`)
