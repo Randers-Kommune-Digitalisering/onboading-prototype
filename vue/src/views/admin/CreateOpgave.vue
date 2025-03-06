@@ -26,6 +26,7 @@
     })
 
     /* Assistant search */
+
     const isAssistantLocked = ref(false)
     const assistantList = ref([])
     const assistantSearchResults = ref([])
@@ -124,7 +125,15 @@
             const formData = { ...inputFields.value }
 
             const response = await createOpgave(formData)
-            console.log('Response:', response.data)
+            if(response !== null)
+            {
+                if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
+                    router.back()
+                else
+                    router.replace({ path: '/forloeb-overview', query: { id: forloeb_id } })
+            }
+            else
+                console.log('Response:', response)
 
         } catch (error) {            
             console.log('Error:', error.response?.data?.error ?? error)
