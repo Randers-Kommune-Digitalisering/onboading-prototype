@@ -116,13 +116,15 @@
 
             <div class="card-separator"></div>
 
-            <div class="card-image" :style="`background-image: url('`+ image +`');`">
+            <!-- <div class="card-image" :style="`background-image: url('`+ image +`');`">
                 &nbsp;
-            </div>
+            </div> -->
         </div>
 
-        <div class="card-large-image" :style="`background-image: url('`+ image +`');`">
+        <!-- <div class="card-large-image" :style="`background-image: url('`+ image +`');`">
             &nbsp;
+        </div> -->
+        <div class="card-color-seperator" :style="`background-color: #`+ color +`;`">
         </div>
 
         <div class="card-content">

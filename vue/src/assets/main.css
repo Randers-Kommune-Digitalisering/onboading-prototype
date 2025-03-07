@@ -219,6 +219,7 @@ a.disabled, .button.disabled {
 .card {
     background-color: var(--color-card);
 
+    max-height: calc(auto);
     min-height: 4.5rem;
     border-radius: 0.35rem;
 
@@ -241,7 +242,7 @@ a.disabled, .button.disabled {
     background-color: var(--color-card-dark);
 }
 
-.card * {
+.card, .card * {
     transition: cubic-bezier(0.075, 0.82, 0.165, 1);
     transition-duration: 400ms;
 }
@@ -355,8 +356,19 @@ a.disabled, .button.disabled {
     background-repeat: no-repeat;
     background-position: center;
 }
-
     .card:not(.expand-content) .card-large-image {
+        height: 0rem;
+        overflow: hidden;
+        opacity: 0;
+    }
+
+.card-color-seperator { /* Alternative to image */
+    width: 100%;
+    height: 0.5rem;
+    transition: 0ms;
+    opacity: 0.8;
+}
+    .card:not(.expand-content) .card-color-seperator {
         height: 0rem;
         overflow: hidden;
         opacity: 0;
@@ -778,6 +790,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     .achievements .item > i {
         transform: translateY(0.6rem);
     }
+
     .achievements .item > span {
         font-size: 0.8em;
         font-weight: 600;
@@ -924,4 +937,10 @@ textarea:not(:placeholder-shown) + .floating-label {
 
 .no-overflow {
     overflow: hidden;
+}
+
+.prevent-select {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }
