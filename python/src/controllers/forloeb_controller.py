@@ -163,3 +163,43 @@ def get_forloeb_by_admin(admin_name):
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def update_forloeb(id, data):
+    session = db_client.get_session()
+    try:
+        forloeb = session.query(Forløb).filter_by(ForløbID=id).first()
+        if not forloeb:
+            return jsonify({"error": "Forløb not found"}), 404
+
+        forloeb.name = data.get('name', forloeb.name)
+        forloeb.startdate = data.get('startdate', forloeb.startdate)
+        forloeb.enddate = data.get('enddate', forloeb.enddate)
+        forloeb.admin = data.get('admin', forloeb.admin)
+        forloeb.usermail = data.get('usermail', forloeb.usermail)
+        forloeb.userdq = data.get('userdq', forloeb.userdq)
+
+        session.commit()
+        return jsonify({"message": "Forløb updated successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def complete_forloeb(id):
+    session = db_client.get_session()
+    try:
+        forloeb = session.query(Forløb).filter_by(ForløbID=id).first()
+        if not forloeb:
+            return jsonify({"error": "Forløb not found"}), 404
+
+        forloeb.enddate = datetime.now()
+        session.commit()
+        return jsonify({"message": "Forløb completed successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()

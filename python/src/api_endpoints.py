@@ -28,7 +28,9 @@ from controllers.forloeb_controller import (
     get_all_forloeb,
     get_forloeb_with_opgaver,
     get_forloeb_by_email,
-    get_forloeb_by_admin
+    get_forloeb_by_admin,
+    complete_forloeb,
+    update_forloeb
 )
 
 from controllers.user_controller import (
@@ -130,6 +132,16 @@ def get_all_forloeb_endpoint():
     if admin_name:
         return get_forloeb_by_admin(admin_name)
     return get_all_forloeb()
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['DELETE'])
+def delete_forloeb_endpoint(forloeb_id):
+    return complete_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['PUT'])
+def update_forloeb_endpoint(forloeb_id):
+    return update_forloeb(forloeb_id)
 
 
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['GET'])

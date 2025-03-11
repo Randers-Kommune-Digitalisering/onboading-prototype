@@ -20,7 +20,11 @@ export const getOpgaverByForloebID = async (forloebID, config) => {
     }
     throw error; // Re-throw the error if it's not a 404
   }
-}
+};
+
+export const getOpgaverByAnsvarligEmail = (config) => {
+  return axios.get(`${API_URL}/opgave/admin`, config);
+};
 
 export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
   return axios.get(`${API_URL}/opgave/forloebsskabelon/${forloebsskabelonID}`, config);
