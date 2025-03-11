@@ -98,7 +98,7 @@
 <template>
 
     <div :class="['card', { 'expand-content': expandByDefault }]" ref="cardRef">
-        <div class="card-header pointer" @click="expandCard">
+        <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`">
                     <div>i</div>
@@ -159,7 +159,7 @@
             <div class="ressources" v-if="ressourceList.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
                 <a v-for="ressource in ressourceList" :href="ressource.url" target="_blank" class="link">
-                    <i class="fa-solid fa-link"></i>{{ ressource.name }}</a>
+                    <i class="fa-solid fa-up-right-from-square"></i>{{ ressource.name }}</a>
             </div>
 
             <div class="buttons">
