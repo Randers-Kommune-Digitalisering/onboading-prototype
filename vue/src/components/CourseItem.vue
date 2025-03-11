@@ -21,9 +21,11 @@
             type: String,
             required: true
         },
-        name:
-        {
+        name: {
             type: String
+        },
+        duration: {
+            type: Number
         },
         startDate : {
             type: Date
@@ -89,7 +91,7 @@
                 </p>
             </div>
 
-            <div class="card-details">
+            <div class="card-details" v-if="props.duration == null">
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
@@ -103,6 +105,15 @@
                     <div class="text">
                         <div class="small faded">Afslutning</div>
                         <div>{{ deadline ? returnFormattedDate(deadline) : 'Ingen deadline' }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-details" v-else>
+                <div>
+                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="text">
+                        <div class="small faded">Varighed</div>
+                        <div>{{ duration }}</div>
                     </div>
                 </div>
             </div>

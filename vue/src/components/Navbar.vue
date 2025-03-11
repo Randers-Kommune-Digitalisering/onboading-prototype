@@ -16,7 +16,7 @@
         {
             "title": "Opret forløb",
             "url": "/create-forloeb",
-            "icon": "fa-solid fa-plus"
+            "icon": "fa-solid fa-square-plus"
         },
         // {
         //     "title": "Opret ressource",
@@ -24,15 +24,15 @@
         //     "icon": "fa-solid fa-plus"
         // },
         {
-            "title": "Opret forløbsskabelon",
-            "url": "/create-forloebsskabelon",
-            "icon": "fa-solid fa-plus"
+            "title": "Skabeloner",
+            "url": "/template-overview",
+            "icon": "fa-solid fa-folder"
         },
-        {
-            "title": "Opret opgaveskabelon",
-            "url": "/create-opgaveskabelon",
-            "icon": "fa-solid fa-plus"
-        },
+        // {
+        //     "title": "Opret opgaveskabelon",
+        //     "url": "/create-opgaveskabelon",
+        //     "icon": "fa-solid fa-plus"
+        // },
         {
             "title": "Hjælp",
             "url": "/admin-start",

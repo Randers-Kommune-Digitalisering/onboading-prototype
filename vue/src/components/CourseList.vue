@@ -5,13 +5,18 @@
         courses: {
             type: Array,
             required: false
+        },
+        title:
+        {
+            type: String,
+            default: "Aktuelle forløb"
         }
     })
 </script>
 
 <template>
 
-    <p class="indent-tiny bold uppercase p-header-adjust">Aktuelle forløb</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ title }}</p>
     <div class="card-list" v-if="courses && courses.length > 0">
         <Card v-for="course in courses"
             :id="course.ForløbID"
@@ -19,6 +24,7 @@
             :name="course.name"
             :startDate="new Date(course.startdate)"
             :deadline="new Date(course.enddate)"
+            :duration="course.duration"
             color="4c4980" />
     </div>
     <div v-else>

@@ -153,7 +153,7 @@
             <label for="title" class="floating-label">Opgavens navn</label>
         </div>
         
-        <div class="inputContainer">
+        <div class="inputContainer" v-if="!isTemplate">
             <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" :disabled="isAssistantLocked">
             <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
             <div class="icon" @click="toggleassistantSearch()"><i :class="'fa-solid fa-lock' + (isAssistantLocked ? '' : '-open')"></i></div>
@@ -170,7 +170,7 @@
             <label for="description" class="floating-label">Beskrivelse</label>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
             <div class="flex-item">
                 <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" required>
                 <label for="startdate" class="floating-label">Startdato</label>
@@ -178,6 +178,17 @@
             <div class="flex-item">
                 <input type="date" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
                 <label for="enddate" class="floating-label">Slutdato</label>
+            </div>
+        </div>
+
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate">
+            <div class="flex-item">
+                <input type="text" id="startdate" name="startdate" v-model="inputFields.startdato" required>
+                <label for="startdate" class="floating-label">Startdag (0 = ved forløbets start)</label>
+            </div>
+            <div class="flex-item">
+                <input type="text" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
+                <label for="enddate" class="floating-label">Varighed</label>
             </div>
         </div>
 

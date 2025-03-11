@@ -19,6 +19,7 @@ import AdminStart from '@/views/admin/AdminStart.vue'
 import MedarbejderStart from '@/views/ny_medarbejder/MedarbejderStart.vue'
 import MedarbejderOverview from '@/views/ny_medarbejder/MedarbejderOverview.vue'
 import ForløbOverview from '@/views/ForløbOverview.vue'
+import TemplateOverview from '@/views/admin/TemplateOverview.vue'
 
 // Define routes
 const routes = [ 
@@ -70,6 +71,12 @@ const routes = [
         component: AdminStart,
         meta: { roles: ['Admin'] }
     },
+    {
+        path: '/template-overview',
+        name: 'TemplateOverview',
+        component: TemplateOverview,
+        meta: { roles: ['Admin'] }
+    },
     
     {
         path: '/ansvarlig-start',
@@ -89,6 +96,7 @@ const routes = [
         component: MedarbejderOverview,
         meta: { roles: ['Ny medarbejder'] }
     },
+    
     {
         path: '/forloeb-overview',
         name: 'ForløbOverview',
