@@ -14,13 +14,15 @@
     const returnTimeLeft = (deadline) => {
         const now = new Date()
         const diff = deadline - now
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const absDiff = Math.abs(diff)
+        const days = Math.floor(absDiff / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60))
         const daysText = days > 0 ? days + ' dag' + (days > 1 ? 'e' : '') : ''
         const hoursText = hours > 0 ? hours + ' time' + (hours > 1 ? 'r' : '') : ''
         const minutesText = minutes > 0 ? minutes + ' minut' + (minutes > 1 ? 'ter' : '') : ''
-        return `${days > 0 ? daysText : ''} ${hours > 0 ? hoursText : ''} ${minutes > 0 && hours === 0 ? (minutesText) : ''}`
+        const timeLeft = `${days > 0 ? daysText : ''} ${hours > 0 ? hoursText : ''} ${minutes > 0 && hours === 0 ? (minutesText) : ''}`
+        return diff < 0 ? `${timeLeft} siden` : timeLeft
     }
 
     const returnFormattedDate = (date) => {

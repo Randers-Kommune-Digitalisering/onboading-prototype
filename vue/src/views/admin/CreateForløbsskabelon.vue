@@ -1,10 +1,9 @@
 <script setup>
     import { ref, onMounted } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
+    import { useRouter } from 'vue-router'
 	
     import { createForloebsskabelon } from '@/services/forløbsskabelonService'
 
-    const route = useRoute()
 	const router = useRouter()
 
     const isSubmitting = ref(false)
@@ -26,10 +25,7 @@
             const response = await createForloebsskabelon(formData)
             if(response !== null)
             {
-                if (router.getRoutes()[router.getRoutes().length-1].name == "TemplateOverview")
-                    router.back()
-                else
-                    router.replace({ path: '/template-overview' })
+                router.push({ path: 'forloeb-overview', query: { tid: response.data.uid } })
             }
             else
                 console.log('Response:', response)

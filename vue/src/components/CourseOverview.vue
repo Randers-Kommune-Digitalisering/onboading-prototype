@@ -70,7 +70,8 @@
                 if (!Array.isArray(opgaver_response.data))
                     opgaver_response.data = [opgaver_response.data]
 
-                console.log('Opgaver: ', opgaver_response.data)
+                opgaver_response.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+                opgaver_response.data.reverse()
 
                 // Store opgaver in different arrays based on their status
                 if(props.isTemplate)
@@ -80,11 +81,12 @@
                         if (new Date(item.startdato) > new Date())
                             opgaver_future.value.push(item)
                         else
-                        if (new Date(item.slutdato) < new Date())
+                        if (item.result)
                             opgaver_completed.value.push(item)
                         else 
                             opgaver_ongoing.value.push(item)
                     }
+
 
             } else {
                 console.log('Please provide user email')

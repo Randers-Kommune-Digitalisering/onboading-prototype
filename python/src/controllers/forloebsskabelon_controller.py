@@ -18,7 +18,7 @@ def create_forloebsskabelon():
         )
         session.add(forloebsskabelon)
         session.commit()
-        return jsonify({"message": "Forløbsskabelon created successfully"}), 201
+        return jsonify({"message": "Forløbsskabelon created successfully", "uid": forloebsskabelon.ForløbsskabelonID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
