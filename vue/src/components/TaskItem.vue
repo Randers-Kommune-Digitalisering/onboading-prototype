@@ -133,7 +133,7 @@
         <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`">
-                    <div>i</div>
+                    <div>{{ title.slice(0,1).toLocaleLowerCase() }}</div>
                 </div>
             </div>
 
@@ -208,7 +208,7 @@
                 
                 <router-link v-if="adminView" :to="`/create-ressource?id=${id}`" class="button">+ Tilføj ressource</router-link>
                 <div class="button disabled" v-if="adminView">Redigér</div>
-                <div class="button" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
+                <div class="button" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
             </div>
         </div>
     </div>
