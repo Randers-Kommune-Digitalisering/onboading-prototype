@@ -709,6 +709,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     padding-right: 0.5rem;
     padding-left: 1.8rem;
     color:var(--color-card);
+    transition-duration: 250ms;
 }
 
 .progression-bar .progression.gray {

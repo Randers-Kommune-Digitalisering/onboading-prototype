@@ -1,7 +1,11 @@
 <script setup>
     import { ref, onMounted } from 'vue'
+    import { useRouter } from 'vue-router'
 
     import { getRessourcesByOpgaveID  } from '@/services/ressourceService'
+    import { updateOpgave } from '@/services/opgaveService'
+
+    const router = useRouter()
 
     const cardRef = ref(null)
     const ressourceList = ref([])
@@ -72,9 +76,9 @@
         booking: {
             type: Date
         },
-        image: {
-            type: String,
-            default: ''
+        result: {
+            type: Boolean,
+            default: false
         },
         color: {
             type: String,
@@ -99,6 +103,18 @@
         }
     })
 
+    /* Complete task */
+    const completeTask = (result = true) => {
+        updateOpgave(props.id, { result: result }).then(response => {
+            const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
+            router.replace({ path: '/reload' }).then(() => {
+                router.replace(currentPath)
+            });
+        }).catch(error => {
+            console.error('Error completing task:', error)
+        })
+    }
+
     /* Instantiate */
 
     onMounted(() => {
@@ -113,7 +129,6 @@
 </script>
 
 <template>
-
     <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" ref="cardRef">
         <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
@@ -193,7 +208,7 @@
                 
                 <router-link v-if="adminView" :to="`/create-ressource?id=${id}`" class="button">+ Tilføj ressource</router-link>
                 <div class="button disabled" v-if="adminView">Redigér</div>
-                <div class="button disabled">Markér gennemført</div>
+                <div class="button" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
             </div>
         </div>
     </div>

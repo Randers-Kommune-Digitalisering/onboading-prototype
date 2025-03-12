@@ -121,6 +121,6 @@
     </div>
     <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
     <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" />
-    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_future" :adminView="adminView" title="Kommende opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" />
-    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_completed" :adminView="adminView" title="Afsluttede opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" :dark="true" />
+    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_future" :adminView="adminView" title="Kommende opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" itemColor="777371" />
+    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_completed" :adminView="adminView" title="Afsluttede opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" :dark="true" itemColor="617a5d" />
 </template>
