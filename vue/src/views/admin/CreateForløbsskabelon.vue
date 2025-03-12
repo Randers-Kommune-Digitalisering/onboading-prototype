@@ -8,38 +8,19 @@
 	const router = useRouter()
 
     const isSubmitting = ref(false)
-	const isUrlValid = ref(true)
 
 	const inputFields = ref({
         name: "",
         varighed: ""
     })
-
-	/* Instantiate */
-
-	onMounted(() => {
-        if(!opgave_id) {
-            console.error('No ID provided')
-            router.back()
-            return
-        }
-    })
+    const varighed = ref(null)
 
 	/* Submit */
 
 	const submitForm = async () =>
     {
-		evaluateUrl(inputFields.value.url)
-		if (!isUrlValid.value)
-			return;
-
         isSubmitting.value = true
         try {
-			if (isTemplate)
-				inputFields.value.OpgaveskabelonID = opgave_id
-			else
-				inputFields.value.OpgaveID = opgave_id
-
             const formData = { ...inputFields.value }
 
             const response = await createForloebsskabelon(formData)
@@ -72,8 +53,8 @@
 		</div>
 
 		<div class="inputContainer">
-			<input type="datetime-local" id="duration" name="duration" placeholder=" " v-model="inputFields.varighed" required>
-			<label for="duration" class="floating-label">Forløbets varighed</label>
+			<input type="text" id="duration" name="duration" placeholder=" " ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 2)" required>
+			<label for="duration" class="floating-label">Forløbets varighed (dage)</label>
 		</div>
 
 		<div class="inputContainer submit">

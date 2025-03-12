@@ -81,6 +81,11 @@
         expandByDefault: {
             type: Boolean,
             default: false
+        },
+        dark: {
+            type: Boolean,
+            required: false,
+            default: false
         }
     })
 
@@ -97,7 +102,7 @@
 
 <template>
 
-    <div :class="['card', { 'expand-content': expandByDefault }]" ref="cardRef">
+    <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" ref="cardRef">
         <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`">

@@ -10,13 +10,23 @@
         {
             type: String,
             default: "Aktuelle forløb"
+        },
+        largeHeaderAdjust:
+        {
+            type: Boolean,
+            default: false
+        },
+        dark:
+        {
+            type: Boolean,
+            default: false
         }
     })
 </script>
 
 <template>
 
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ title }}</p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ title }}</p>
     <div class="card-list" v-if="courses && courses.length > 0">
         <Card v-for="course in courses"
             :id="course.ForløbID"
@@ -25,6 +35,7 @@
             :startDate="new Date(course.startdate)"
             :deadline="new Date(course.enddate)"
             :duration="course.duration"
+            :dark="dark"
             color="4c4980" />
     </div>
     <div v-else>

@@ -6,6 +6,7 @@
 	import CourseList from '@/components/CourseList.vue'
 
 	const forloeb_ongoing = ref([])
+	const forloeb_future = ref([])
 	const forloeb_completed = ref([])
 
 	onMounted(async () => {
@@ -27,7 +28,10 @@
 				response.data = [response.data]
 
 			for (const item of response.data) {
-				if (item.enddate < new Date())
+				if (new Date(item.startdate) > new Date())
+					forloeb_future.value.push(item)
+				else
+				if (new Date(item.enddate) < new Date())
 					forloeb_completed.value.push(item)
 				else 
 					forloeb_ongoing.value.push(item)
@@ -42,5 +46,6 @@
 
 <template>
   <CourseList :courses="forloeb_ongoing" />
-  <CourseList :courses="forloeb_completed" title="Afsluttede forløb" />
+  <CourseList :courses="forloeb_future" title="Kommende forløb" :largeHeaderAdjust="true" />
+  <CourseList :courses="forloeb_completed" title="Afsluttede forløb" :largeHeaderAdjust="true" :dark="true" />
 </template>

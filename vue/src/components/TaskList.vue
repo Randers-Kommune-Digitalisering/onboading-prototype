@@ -9,13 +9,33 @@
         adminView: {
             type: Boolean,
             default: false
+        },
+        title:
+        {
+            type: String,
+            required: false
+        },
+        largeHeaderAdjust:
+        {
+            type: Boolean,
+            default: false
+        },
+        expandFirstItem:
+        {
+            type: Boolean,
+            default: true
+        },
+        dark:
+        {
+            type: Boolean,
+            default: false
         }
     })
 </script>
 
 <template>
 
-    <p :class="'indent-tiny bold uppercase p-header-adjust' + (adminView ? '-large' : '')">{{ adminView ? 'Aktuelle' : 'Dine' }} opgaver</p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + (adminView || largeHeaderAdjust ? '-large' : '')">{{ (title ? title : ( adminView ? 'Aktuelle' : 'Dine') + ' opgaver' ) }} </p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
             :adminView="adminView"
@@ -30,7 +50,8 @@
             color="4c4980"
             link=""
             isComplete="false"
-            :expandByDefault="index == 0" />
+            :expandByDefault="expandFirstItem && index == 0"
+            :dark="dark" />
     </div><!-- /card-list -->
     <div v-else>
         <p class="indent-tiny">Ingen opgaver fundet.</p>

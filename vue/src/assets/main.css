@@ -389,7 +389,7 @@ a.disabled, .button.disabled {
 .card-content > p, .card-content > .ressources {
     margin-left: 1.2rem;
     margin-right: 1.2rem;
-    margin-top: 0.4rem;
+    margin-top: 0.8rem;
     margin-bottom: 0.8rem;
     font-family: 'Lato', sans-serif;
 }
@@ -438,6 +438,7 @@ a.disabled, .button.disabled {
     display: flex;
     gap: 3rem;
     margin: 1.5rem;
+    margin-top: 1.2rem;
 }
 
     .card-content .card-details > div, .card-header .card-details > div {
@@ -580,7 +581,7 @@ button[type="submit"] {
     font-size: 1em;
 }
 
-input[type=text], input[type=date], select, textarea {
+input[type=text], input[type=date], input[type=datetime-local], select, textarea {
     background-color: var(--color-input-bg);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
@@ -601,7 +602,7 @@ select {
     appearance: none;
 }
 
-input[type=text]:focus, input[type=date]:focus, select:focus, textarea:focus {
+input[type=text]:focus, input[type=date]:focus, input[type=datetime-local]:focus, select:focus, textarea:focus {
     outline:none;
     background-color: var(--color-input-focus-bg);
 }
@@ -653,6 +654,7 @@ input.invalid {
 input[type=text]:focus + .floating-label,
 input[type=text]:not(:placeholder-shown) + .floating-label,
 input[type=date] + .floating-label, /* :valid for date, if selection is required */
+input[type=datetime-local] + .floating-label,
 select:valid + .floating-label,
 textarea:focus + .floating-label,
 textarea:not(:placeholder-shown) + .floating-label {
