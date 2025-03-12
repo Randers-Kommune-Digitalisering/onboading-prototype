@@ -1,5 +1,4 @@
 from flask import request, jsonify
-from datetime import datetime
 from models import Forløbsskabelon, Opgave
 from utils.db_connection import get_db_client
 
@@ -15,7 +14,7 @@ def create_forloebsskabelon():
 
         forloebsskabelon = Forløbsskabelon(
             name=data['name'],
-            varighed=datetime.fromisoformat(data['varighed'])
+            varighed=data['varighed']
         )
         session.add(forloebsskabelon)
         session.commit()
@@ -35,10 +34,29 @@ def get_all_forloebsskabeloner():
             {
                 'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
                 'name': forloebsskabelon.name,
-                'varighed': forloebsskabelon.varighed.isoformat()
+                'varighed': forloebsskabelon.varighed
             } for forloebsskabelon in forloebsskabeloner
         ]
         return jsonify(forloebsskabeloner_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_forloebsskabelon_by_id(forloebsskabelon_id):
+    session = db_client.get_session()
+    try:
+        forloebsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=forloebsskabelon_id).first()
+        if not forloebsskabelon:
+            return jsonify({"error": "Forløbsskabelon not found"}), 404
+
+        forloebsskabelon_data = {
+            'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
+            'name': forloebsskabelon.name,
+            'varighed': forloebsskabelon.varighed
+        }
+        return jsonify(forloebsskabelon_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -55,7 +73,7 @@ def update_forloebsskabelon(forloebsskabelon_id):
             return jsonify({"error": "Forløbsskabelon not found"}), 404
 
         forloebsskabelon.name = data.get('name', forloebsskabelon.name)
-        forloebsskabelon.varighed = datetime.fromisoformat(data['varighed']) if 'varighed' in data else forloebsskabelon.varighed
+        forloebsskabelon.varighed = data.get('varighed', forloebsskabelon.varighed)
 
         session.commit()
         return jsonify({"message": "Forløbsskabelon updated successfully"}), 200

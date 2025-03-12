@@ -18,7 +18,7 @@
         <div class="card-header">
             <p class="placeholderText"></p>
         </div>
-        <div class="card-content always-show">
+        <div class="card-content always-show" v-if="height > 5">
             <p class="placeholderText bodyPlaceholder"></p>
         </div>
     </div>

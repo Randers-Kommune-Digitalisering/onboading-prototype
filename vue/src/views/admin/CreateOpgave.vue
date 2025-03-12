@@ -4,6 +4,7 @@
 
     import { getAnvarligNames } from '@/services/userService'
     import { createOpgave } from '@/services/opgaveService'
+    import { createOpgaveskabelon } from '@/services/opgaveSkabelonService'
     import { getForloebById } from '@/services/forløbService'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
 
@@ -12,7 +13,8 @@
 
     const forloeb = ref(null)
     const forloeb_id = parseInt(route.query.id ?? route.query.tid, 10)
-    const isTemplate = route.query.id == null
+    const addToTemplate = route.query.id == null // Whether we are adding an opgave to a forløbsskabelon
+    const isTemplate = false  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
     const isSubmitting = ref(false)
 
     const inputFields = ref({
@@ -88,13 +90,14 @@
             return
         }
 
-        getAnvarligNames().then(response => {
-            assistantList.value = response.data.fullnames
-        }).catch(error => {
-            console.error('Error fetching assistant names:', error)
-        })
+        if(!isTemplate && !addToTemplate)
+            getAnvarligNames().then(response => {
+                assistantList.value = response.data.fullnames
+            }).catch(error => {
+                console.error('Error fetching assistant names:', error)
+            })
 
-        if(isTemplate)
+        if(addToTemplate) // In case we are adding an opgave to a forløbsskabelon
             getForloebsskabeloner().then(response => {
                 forloeb.value = response.data.filter(skabelon => skabelon.ForløbsskabelonID == forloeb_id)[0]
                 //console.log('Forløbsskabelon:', forloeb.value)
@@ -117,14 +120,14 @@
         isSubmitting.value = true
         try {
             inputFields.value.timestamp = new Date().toISOString()
-            if(isTemplate)
+            if(addToTemplate)
                 inputFields.value.ForløbsskabelonID = forloeb_id
             else
                 inputFields.value.ForløbID = forloeb_id
 
             const formData = { ...inputFields.value }
 
-            const response = await createOpgave(formData)
+            const response = isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData)
             if(response !== null)
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
@@ -153,7 +156,7 @@
             <label for="title" class="floating-label">Opgavens navn</label>
         </div>
         
-        <div class="inputContainer" v-if="!isTemplate">
+        <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
             <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" :disabled="isAssistantLocked">
             <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
             <div class="icon" @click="toggleassistantSearch()"><i :class="'fa-solid fa-lock' + (isAssistantLocked ? '' : '-open')"></i></div>

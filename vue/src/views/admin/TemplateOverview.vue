@@ -2,7 +2,7 @@
 	import { ref, onMounted } from 'vue'
 	import keycloak from '@/keycloak'
 
-	import { getForloebsskabeloner } from '@/services/forløbskabelonService'
+	import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
 	import CourseList from '@/components/CourseList.vue'
 
 	const templates = ref([])
@@ -31,8 +31,9 @@
 </script>
 
 <template>
+    <p class="indent-tiny bold uppercase p-header-adjust">Funktioner</p>
 	<div class="buttons">
         <router-link :to="`/create-forloebsskabelon`" class="button">+ Opret forløbsskabelon</router-link>
     </div>
-  <CourseList :courses="templates" title="Skabeloner" />
+  <CourseList :courses="templates" title="Skabeloner" :largeHeaderAdjust="true" />
 </template>

@@ -5,6 +5,7 @@
 
     const cardRef = ref(null)
     const ressourceList = ref([])
+    const isFutureTask = ref(false)
 
     const expandCard = () => {
         cardRef.value.classList.toggle('expand-content')
@@ -54,6 +55,12 @@
             type: String,
             default: ''
         },
+        relativeStartdate: {
+            type: Number
+        },
+        startdate: {
+            type: Date
+        },
         deadline: {
             type: Date
         },
@@ -71,9 +78,6 @@
             type: String,
             default: '000'
         },
-        link: {
-            type: String
-        },
         adminView: {
             type: Boolean,
             default: false
@@ -86,6 +90,10 @@
             type: Boolean,
             required: false,
             default: false
+        },
+        templateView: {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -97,6 +105,8 @@
         }).catch(error => {
             console.error('Error fetching ressources:', error)
         })
+
+        isFutureTask.value = new Date(props.startdate) > new Date()
     })
 </script>
 
@@ -134,15 +144,24 @@
 
         <div class="card-content">
             <div class="card-details">
-                <div>
+
+                <div v-if="templateView">
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">Deadline</div>
-                        <div>{{ deadline ? returnTimeLeft(deadline) : 'Ingen deadline' }}</div>
+                        <div class="small faded">Startdag</div>
+                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : relativeStartdate + ' dage efter opstart' }}</div>
                     </div>
                 </div>
 
                 <div>
+                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="text">
+                        <div class="small faded">{{ isFutureTask ? 'Starter om' : 'Deadline' }}</div>
+                        <div>{{ returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                    </div>
+                </div>
+
+                <div v-if="!templateView">
                     <div class="icon"><i class="fa-solid fa-user"></i></div>
                     <div class="text">
                         <div class="small faded">Ansvarlig</div>
@@ -150,13 +169,14 @@
                     </div>
                 </div>
 
-                <div>
+                <div v-if="!templateView">
                     <div class="icon"><i class="fa-solid fa-calendar"></i></div>
                     <div class="text">
                         <div class="small faded">Booking</div>
                         <div>{{booking && returnFormattedDate(booking) != null ? returnFormattedDate(booking) : 'Ingen kalenderbooking'}}</div>
                     </div>
                 </div>
+
             </div>
 
             <p>{{ description }}</p>
@@ -171,7 +191,6 @@
                 
                 <router-link v-if="adminView" :to="`/create-ressource?id=${id}`" class="button">+ Tilføj ressource</router-link>
                 <div class="button disabled" v-if="adminView">Redigér</div>
-                <!--div class="button" v-if="link">Gå til kursus</div-->
                 <div class="button disabled">Markér gennemført</div>
             </div>
         </div>

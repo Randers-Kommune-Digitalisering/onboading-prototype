@@ -29,6 +29,11 @@
         {
             type: Boolean,
             default: false
+        },
+        templateView:
+        {
+            type: Boolean,
+            default: false
         }
     })
 </script>
@@ -43,15 +48,17 @@
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"
+            :relativeStartdate="0"
+            :startdate="new Date(new Date(task.startdato).getTime() + 6 * 60 * 60 * 1000)"
             :deadline="new Date(new Date(task.slutdato).getTime() + 8 * 60 * 60 * 1000)"
             :responsible="task.ansvarlig"
             :booking="new Date(new Date(task.booking).getTime() + 6 * 60 * 60 * 1000)"
             image="https://www.teknologisk.dk/_/media/67761&w=1460&h=808&r=cover&_filename=67761_7-gode-rr%C3%A5d-til-IT-sikkerhed.jpg"
             color="4c4980"
-            link=""
             isComplete="false"
             :expandByDefault="expandFirstItem && index == 0"
-            :dark="dark" />
+            :dark="dark"
+            :templateView="templateView" />
     </div><!-- /card-list -->
     <div v-else>
         <p class="indent-tiny">Ingen opgaver fundet.</p>

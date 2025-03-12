@@ -1,5 +1,4 @@
 from flask import request, jsonify
-from datetime import datetime
 from models import Opgaveskabelon
 from utils.db_connection import get_db_client
 
@@ -18,8 +17,8 @@ def create_opgaveskabelon():
         new_opgaveskabelon = Opgaveskabelon(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
-            startdato=datetime.fromisoformat(data['startdato']),
-            slutdato=datetime.fromisoformat(data['slutdato']),
+            startdato=data['startdato'],
+            slutdato=data['slutdato'],
         )
         session.add(new_opgaveskabelon)
         session.commit()
@@ -40,8 +39,8 @@ def get_all_opgaveskabeloner():
                 'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
                 'title': opgaveskabelon.title,
                 'beskrivelse': opgaveskabelon.beskrivelse,
-                'startdato': opgaveskabelon.startdato.isoformat(),
-                'slutdato': opgaveskabelon.slutdato.isoformat()
+                'startdato': opgaveskabelon.startdato,
+                'slutdato': opgaveskabelon.slutdato
             } for opgaveskabelon in opgaveskabeloner
         ]
         return jsonify(opgaveskabeloner_data), 200
@@ -66,8 +65,8 @@ def update_opgaveskabelon(opgaveskabelon_id):
 
         opgaveskabelon.title = data['title']
         opgaveskabelon.beskrivelse = data['beskrivelse']
-        opgaveskabelon.startdato = datetime.fromisoformat(data['startdato'])
-        opgaveskabelon.slutdato = datetime.fromisoformat(data['slutdato'])
+        opgaveskabelon.startdato = data['startdato']
+        opgaveskabelon.slutdato = data['slutdato']
 
         session.commit()
         return jsonify({"message": "Opgaveskabelon updated successfully"}), 200
