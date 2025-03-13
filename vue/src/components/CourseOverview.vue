@@ -70,8 +70,13 @@
                 if (!Array.isArray(opgaver_response.data))
                     opgaver_response.data = [opgaver_response.data]
 
-                opgaver_response.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-                opgaver_response.data.reverse()
+                if(props.isTemplate)
+                    opgaver_response.data.sort((a, b) => a.relativ_startdag - b.relativ_startdag)
+                else
+                {
+                    opgaver_response.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+                    opgaver_response.data.reverse()
+                }
 
                 // Store opgaver in different arrays based on their status
                 if(props.isTemplate)

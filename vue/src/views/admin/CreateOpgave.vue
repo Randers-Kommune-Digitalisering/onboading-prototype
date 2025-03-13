@@ -23,6 +23,8 @@
         beskrivelse: "",
         startdato: "",
         slutdato: "",
+        relativ_startdag: 0,
+        relativ_slutdag: 1,
         result: false,
         timestamp: ""
     })
@@ -33,6 +35,11 @@
     const assistantList = ref([])
     const assistantSearchResults = ref([])
     const isAssistantSearchOpen = ref(false)
+
+    const relativStartday = ref(null)
+    const relativEndday = ref(null)
+    const relativStartdayAtZero = ref(inputFields.value.relativ_startdag == 0)
+    const relativEnddayAtOne = ref(inputFields.value.relativ_slutdag == 1)
 
     const searchAssistants = (searchString) => {
         if (searchString.length < 3) {
@@ -115,6 +122,14 @@
 
     /* Submit */
 
+    const removeNonIntegers = (value) => {
+        return value.replace(/(?![0-9])./gmi,'')
+    }
+
+    const sliceXChars = (value, x) => {
+        return value.slice(0, x)
+    }
+
     const submitForm = async () =>
     {     
         isSubmitting.value = true
@@ -127,13 +142,21 @@
 
             const formData = { ...inputFields.value }
 
+            if(isTemplate || addToTemplate)
+                delete formData.startdato, delete formData.slutdato
+            else
+                delete formData.relativ_startdag, delete formData.relativ_slutdag
+
             const response = isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData)
             if(response !== null)
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
                 else
-                    router.replace({ path: '/forloeb-overview', query: { id: forloeb_id } })
+                {
+                    var query = addToTemplate ? { tid: forloeb_id } : { id: forloeb_id }
+                    router.replace({ path: '/forloeb-overview', query: query })
+                }
             }
             else
                 console.log('Response:', response)
@@ -173,7 +196,7 @@
             <label for="description" class="floating-label">Beskrivelse</label>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
             <div class="flex-item">
                 <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" required>
                 <label for="startdate" class="floating-label">Startdato</label>
@@ -184,14 +207,38 @@
             </div>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate">
+        <!--  Relative start and end days -->
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate">
             <div class="flex-item">
-                <input type="text" id="startdate" name="startdate" v-model="inputFields.startdato" required>
-                <label for="startdate" class="floating-label">Startdag (relativ fra forløbets start)</label>
+                <input type="text" id="startdate" class="padding-input margin-input" name="startdate"
+                        v-model="inputFields.relativ_startdag" ref="relativStartday"
+                        @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 2);relativStartdayAtZero = inputFields.relativ_startdag==0"
+                        required>
+                <label for="startdate" class="floating-label">Startes efter </label>
+                <label for="startdate" class="annot-label">dage</label>
+                <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativStartdayAtZero}]"
+                        @click="inputFields.relativ_startdag--;relativStartdayAtZero = inputFields.relativ_startdag==0">
+                            <i class="fa fa-minus"></i>
+                        </div>
+                <div class="floating-button" 
+                    @click="relativStartdayAtZero = false;inputFields.relativ_startdag++">
+                    <i class="fa fa-plus"></i>
+                </div>
             </div>
             <div class="flex-item">
-                <input type="text" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
+                <input type="text" id="enddate" class="padding-input margin-input" name="enddate"
+                        v-model="inputFields.relativ_slutdag" ref="relativEndday"
+                        @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 2));relativEnddayAtOne = inputFields.relativ_slutdag==1"
+                        required>
                 <label for="enddate" class="floating-label">Varighed</label>
+                <label for="enddate" class="annot-label">dage</label>
+                <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativEnddayAtOne}]"
+                        @click="inputFields.relativ_slutdag--;relativEnddayAtOne = inputFields.relativ_slutdag==1">
+                        <i class="fa fa-minus"></i>
+                    </div>
+                <div class="floating-button" @click="relativEnddayAtOne = false;inputFields.relativ_slutdag++">
+                    <i class="fa fa-plus"></i>
+                </div>
             </div>
         </div>
 
@@ -202,3 +249,17 @@
     </div>
     </form>
 </template>
+<style scoped>
+    .annot-label {
+        right: 6rem;
+    }
+    .indent-floating-button {
+        right: 2.7rem;
+    }
+    .padding-input {
+        padding-left: 35%;
+    }
+    .margin-input {
+        margin-right: 40%;
+    }
+</style>

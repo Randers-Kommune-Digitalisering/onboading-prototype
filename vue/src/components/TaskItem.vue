@@ -64,6 +64,9 @@
         relativeStartdate: {
             type: Number
         },
+        relativeEnddate: {
+            type: Number
+        },
         startdate: {
             type: Date
         },
@@ -173,8 +176,8 @@
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">{{ isFutureTask ? 'Starter om' : 'Deadline' }}</div>
-                        <div>{{ returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                        <div class="small faded">{{ templateView ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
+                        <div>{{ templateView ? relativeEnddate + ' dage' : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 
