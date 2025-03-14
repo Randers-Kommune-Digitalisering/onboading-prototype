@@ -26,6 +26,7 @@
         relativ_startdag: 0,
         relativ_slutdag: 1,
         result: false,
+        booking: "",
         timestamp: ""
     })
 
@@ -205,6 +206,12 @@
                 <input type="date" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
                 <label for="enddate" class="floating-label">Slutdato</label>
             </div>
+        </div>
+
+        
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
+            <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking" required>
+            <label for="booking" class="floating-label">Booking</label>
         </div>
 
         <!--  Relative start and end days -->

@@ -46,6 +46,7 @@ class Opgave(Base):
     relativ_startdag = Column(Integer)
     relativ_slutdag = Column(Integer)
     result = Column(Boolean, nullable=False)
+    booking = Column(DateTime)
     timestamp = Column(DateTime, nullable=False)
     ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
     forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgave')

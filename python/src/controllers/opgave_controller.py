@@ -23,6 +23,7 @@ def create_opgave():
             relativ_startdag=data['relativ_startdag'] if 'relativ_startdag' in data else None,
             relativ_slutdag=data['relativ_slutdag'] if 'relativ_slutdag' in data else None,
             result=data['result'],
+            booking=datetime.fromisoformat(data['booking']) if 'booking' in data else None,
             timestamp=datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
         )
 
@@ -75,6 +76,7 @@ def get_all_opgaver():
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat(),
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgaver
         ]
@@ -167,11 +169,12 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -207,6 +210,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -242,6 +246,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -284,6 +289,7 @@ def get_opgave_by_forloeb_id(forlob_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -311,6 +317,7 @@ def update_opgave(opgave_id):
         opgave.relativ_startdag = data.get('relativ_startdag', opgave.relativ_startdag)
         opgave.relativ_slutdag = data.get('relativ_slutdag', opgave.relativ_slutdag)
         opgave.result = data.get('result', opgave.result)
+        opgave.booking = datetime.fromisoformat(data['booking']) if 'booking' in data else opgave.booking
         opgave.timestamp = datetime.fromisoformat(data['timestamp']) if 'timestamp' in data else opgave.timestamp
 
         session.commit()
