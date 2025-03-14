@@ -1,5 +1,6 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
+    import { useRoute } from 'vue-router'
     import keycloak from '@/keycloak'
 
     const adminMenuItems = [
@@ -92,6 +93,16 @@
         menuItems.value.forEach(x => x.selected = false)
         item.selected = true
     }
+
+    const route = useRoute()
+
+    watch(() => route.path, (newPath) => {
+        const matchFound = menuItems.value.some(item => item.url === newPath)
+        if (!matchFound) return
+        menuItems.value.forEach(item => {
+            item.selected = item.url === newPath
+        })
+    })
 </script>
 
 <template>
