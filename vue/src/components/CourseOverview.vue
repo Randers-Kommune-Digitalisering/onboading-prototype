@@ -123,6 +123,7 @@
         <router-link to="/" class="button disabled">Redigér {{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
         <router-link to="/" class="button red disabled" v-if="!isTemplate">Afslut forløb</router-link>
         <router-link to="/" class="button red disabled" v-if="isTemplate">Slet skabelon</router-link>
+        <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button red" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
     </div>
     <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
     <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" />

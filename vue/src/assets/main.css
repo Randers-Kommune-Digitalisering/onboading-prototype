@@ -456,6 +456,12 @@ a.disabled, .button.disabled {
     gap: 0.5rem;
 }
 
+@media only screen and (min-width: 768px) {
+    .buttons {
+        max-width: 38rem;
+    }
+}
+
 .card-content .buttons {
     justify-content: flex-end;
     margin-top: 2rem;
