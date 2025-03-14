@@ -279,8 +279,8 @@ def get_opgave_by_forloeb_id(forlob_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,

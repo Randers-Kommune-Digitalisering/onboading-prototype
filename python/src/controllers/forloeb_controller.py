@@ -1,6 +1,6 @@
 from flask import request, jsonify
-from datetime import datetime
-from models import Forløb, Forløbsskabelon, Opgave
+from datetime import datetime, timedelta
+from models import Forløb, Forløbsskabelon, Opgave, Ressource
 from utils.db_connection import get_db_client
 import logging
 
@@ -39,14 +39,24 @@ def create_forloeb():
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
                     ansvarlig=opgave.ansvarlig,
-                    startdato=opgave.startdato,
-                    slutdato=opgave.slutdato,
+                    startdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag),  # Adding relative days
+                    slutdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag) + timedelta(days=opgave.relativ_slutdag),
                     result=opgave.result,
                     timestamp=opgave.timestamp,
                     ForløbID=forloeb.ForløbID
                 )
                 session.add(new_opgave)
-            session.commit()
+                session.commit()  # Commit to get the new OpgaveID
+
+                ressources = session.query(Ressource).filter_by(OpgaveID=opgave.OpgaveID).all()
+                for ressource in ressources:
+                    new_ressource = Ressource(
+                        name=ressource.name,
+                        url=ressource.url,
+                        OpgaveID=new_opgave.OpgaveID  # Use the new OpgaveID
+                    )
+                    session.add(new_ressource)
+                session.commit()
 
         return jsonify({"message": "Forløb created successfully", "uid": forloeb.ForløbID}), 201
     except Exception as e:
