@@ -144,7 +144,7 @@
             const formData = { ...inputFields.value }
 
             if(isTemplate || addToTemplate)
-                delete formData.startdato, delete formData.slutdato
+                delete formData.startdato, delete formData.slutdato, delete formData.booking
             else
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
 

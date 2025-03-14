@@ -71,12 +71,12 @@ def get_all_opgaver():
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
-                'booking': opgave.booking.isoformat(),
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgaver
         ]
