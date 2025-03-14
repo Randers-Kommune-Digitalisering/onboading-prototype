@@ -147,6 +147,8 @@
                 delete formData.startdato, delete formData.slutdato, delete formData.booking
             else
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
+                if(formData.booking == "")
+                    delete formData.booking
 
             const response = isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData)
             if(response !== null)
@@ -210,7 +212,7 @@
 
         
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
-            <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking" required>
+            <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking">
             <label for="booking" class="floating-label">Booking</label>
         </div>
 
