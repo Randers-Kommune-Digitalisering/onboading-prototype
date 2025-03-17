@@ -185,6 +185,42 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
         session.close()
 
 
+def get_opgave(opgave_id):
+    session = db_client.get_session()
+    try:
+        opgave = session.query(Opgave).filter_by(OpgaveID=opgave_id).first()
+        if not opgave:
+            return jsonify({"error": "Opgave not found"}), 404
+
+        opgave_data = {
+            'OpgaveID': opgave.OpgaveID,
+            'title': opgave.title,
+            'beskrivelse': opgave.beskrivelse,
+            'resourcer': [
+                {
+                    'RessourceID': ressource.RessourceID,
+                    'name': ressource.name,
+                    'url': ressource.url
+                } for ressource in opgave.ressource
+            ],
+            'ansvarlig': opgave.ansvarlig,
+            'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+            'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
+            'relativ_startdag': opgave.relativ_startdag,
+            'relativ_slutdag': opgave.relativ_slutdag,
+            'result': opgave.result,
+            'booking': opgave.booking.isoformat() if opgave.booking else None,
+            'timestamp': opgave.timestamp.isoformat(),
+            'ForløbID': opgave.ForløbID,
+            'ForløbsskabelonID': opgave.ForløbsskabelonID
+        }
+        return jsonify(opgave_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
     session = db_client.get_session()
     try:
@@ -317,8 +353,8 @@ def update_opgave(opgave_id):
         opgave.relativ_startdag = data.get('relativ_startdag', opgave.relativ_startdag)
         opgave.relativ_slutdag = data.get('relativ_slutdag', opgave.relativ_slutdag)
         opgave.result = data.get('result', opgave.result)
-        opgave.booking = datetime.fromisoformat(data['booking']) if 'booking' in data else opgave.booking
-        opgave.timestamp = datetime.fromisoformat(data['timestamp']) if 'timestamp' in data else opgave.timestamp
+        opgave.booking = datetime.fromisoformat(data['booking']) if 'booking' in data else opgave.booking,
+        opgave.timestamp = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00')) if 'timestamp' in data else opgave.timestamp
 
         session.commit()
         return jsonify({"message": "Opgave updated successfully"}), 200

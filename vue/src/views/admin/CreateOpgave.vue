@@ -3,7 +3,7 @@
     import { useRoute, useRouter } from 'vue-router'
 
     import { getAnvarligNames } from '@/services/userService'
-    import { createOpgave } from '@/services/opgaveService'
+    import { createOpgave, getOpgaveByID, updateOpgave } from '@/services/opgaveService'
     import { createOpgaveskabelon } from '@/services/opgaveSkabelonService'
     import { getForloebById } from '@/services/forløbService'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
@@ -12,10 +12,12 @@
     const router = useRouter()
 
     const forloeb = ref(null)
-    const forloeb_id = parseInt(route.query.id ?? route.query.tid, 10)
-    const addToTemplate = route.query.id == null // Whether we are adding an opgave to a forløbsskabelon
+    const forloeb_id = ref(parseInt(route.query.id ?? route.query.tid, 10))
+    const addToTemplate = ref(route.query.id == null) // Whether we are adding an opgave to a forløbsskabelon
     const isTemplate = false  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
     const isSubmitting = ref(false)
+    const isEditing = route.query.edit === 'true'
+    const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
 
     const inputFields = ref({
         title: "",
@@ -92,33 +94,61 @@
     /* Instantiate */
 
     onMounted(() => {
-        if(!forloeb_id) {
+        if(!forloeb_id.value && !isEditing) {
             console.error('No ID provided')
             router.back()
             return
         }
 
-        if(!isTemplate && !addToTemplate)
+        if(!isTemplate && !addToTemplate.value)
             getAnvarligNames().then(response => {
                 assistantList.value = response.data.fullnames
             }).catch(error => {
                 console.error('Error fetching assistant names:', error)
             })
 
-        if(addToTemplate) // In case we are adding an opgave to a forløbsskabelon
-            getForloebsskabeloner().then(response => {
-                forloeb.value = response.data.filter(skabelon => skabelon.ForløbsskabelonID == forloeb_id)[0]
-                //console.log('Forløbsskabelon:', forloeb.value)
-            }).catch(error => {
-                console.error('Error fetching forløbsskabelon:', error)
+        // In case we are editing an existing opgave
+        if (isEditing) { 
+            getOpgaveByID(opgaveId).then(response => {
+                forloeb_id.value = response.data.ForløbID || response.data.ForløbsskabelonID
+                addToTemplate.value = response.data.ForløbsskabelonID != null
+                const formattedData = {
+                    ...response.data,
+                    startdato: response.data.startdato ? response.data.startdato.split('T')[0] : '',
+                    slutdato: response.data.slutdato ? response.data.slutdato.split('T')[0] : '',
+                    booking: response.data.booking ? response.data.booking.split('T').join(' ') : ''
+                }
+                Object.assign(inputFields.value, formattedData)
+                relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
+                relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
             })
+            .then(() => getForloebValues())
+            .then(() => resizeTextareToFitContent())
+            .catch(error => {
+                console.error('Error fetching opgave:', error)
+            })
+        }
         else
-            getForloebById(forloeb_id).then(response => {
-                forloeb.value = response.data
-                //console.log('Forløb:', forloeb.value)
-            }).catch(error => {
-                console.error('Error fetching forløb:', error)
-            })
+            getForloebValues()
+
+        // Get forløb values
+        // In case we are adding an opgave to a forløbsskabelon
+        function getForloebValues()
+        {
+            if(addToTemplate.value)
+                getForloebsskabeloner().then(response => {
+                    forloeb.value = response.data.filter(skabelon => skabelon.ForløbsskabelonID == forloeb_id.value)[0]
+                }).catch(error => {
+                    console.error('Error fetching forløbsskabelon:', error)
+                })
+            else {
+                getForloebById(forloeb_id.value).then(response => {
+                    forloeb.value = response.data
+                }).catch(error => {
+                    console.error('Error fetching forløb:', error)
+                })
+            }
+        }
     })
 
     /* Submit */
@@ -136,28 +166,28 @@
         isSubmitting.value = true
         try {
             inputFields.value.timestamp = new Date().toISOString()
-            if(addToTemplate)
-                inputFields.value.ForløbsskabelonID = forloeb_id
+            if(addToTemplate.value)
+                inputFields.value.ForløbsskabelonID = forloeb_id.value
             else
-                inputFields.value.ForløbID = forloeb_id
+                inputFields.value.ForløbID = forloeb_id.value
 
             const formData = { ...inputFields.value }
 
-            if(isTemplate || addToTemplate)
+            if(isTemplate || addToTemplate.value)
                 delete formData.startdato, delete formData.slutdato, delete formData.booking
             else
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
                 if(formData.booking == "")
                     delete formData.booking
 
-            const response = isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData)
+            const response = isEditing ? await updateOpgave(opgaveId, formData) : (isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData))
             if(response !== null)
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
                 else
                 {
-                    var query = addToTemplate ? { tid: forloeb_id } : { id: forloeb_id }
+                    var query = addToTemplate.value ? { tid: forloeb_id.value } : { id: forloeb_id.value }
                     router.replace({ path: '/forloeb-overview', query: query })
                 }
             }
@@ -172,7 +202,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">Tilføj opgave til {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger opgave' : 'Tilføj opgave' }} til {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -252,7 +282,7 @@
         </div>
 
         <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">+ Tilføj opgave</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">{{ isEditing ? 'Opdater opgave' : '+ Tilføj opgave' }}</button>
         </div>
 
     </div>

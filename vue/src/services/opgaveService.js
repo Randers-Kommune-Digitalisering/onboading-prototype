@@ -29,6 +29,10 @@ export const getOpgaverByAnsvarligEmail = (config) => {
 export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
   return axios.get(`${API_URL}/opgave/forloebsskabelon/admin/${forloebsskabelonID}`, config);
 };
+
+export const getOpgaveByID = (opgaveID) => {
+  return axios.get(`${API_URL}/opgave/${opgaveID}`);
+};
   
 export const deleteOpgave = (opgaveID) => {
     return axios.delete(`${API_URL}/opgave/${opgaveID}`);

@@ -6,6 +6,7 @@ from models import Base
 from controllers.opgave_controller import (
     create_opgave_with_opgaveskabelon,
     get_opgave_by_forloebsskabelon_id,
+    get_opgave,
     update_opgave,
     delete_opgave,
     get_opgave_by_forloeb_id,
@@ -93,6 +94,11 @@ def get_opgave_by_forloebsskabelon_id_endpoint(forlobsskabelon_id):
 @api_endpoints.route('/opgave/forloebsskabelon/admin/<int:forlobsskabelon_id>', methods=['GET'])
 def get_opgave_by_forloebsskabelon_id_admin_endpoint(forlobsskabelon_id):
     return get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id)
+
+
+@api_endpoints.route('/opgave/<int:opgave_id>', methods=['GET'])
+def gete_opgave_endpoint(opgave_id):
+    return get_opgave(opgave_id)
 
 
 @api_endpoints.route('/opgave/<int:opgave_id>', methods=['PUT'])

@@ -199,7 +199,7 @@
 
             </div>
 
-            <p>{{ description }}</p>
+            <p v-html="description.replace(/\n/g, '<br>')"></p>
 
             <div class="ressources" v-if="ressourceList.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
@@ -210,7 +210,7 @@
             <div class="buttons">
                 
                 <router-link v-if="adminView" :to="`/create-ressource?id=${id}`" class="button">+ Tilføj ressource</router-link>
-                <div class="button disabled" v-if="adminView">Redigér</div>
+                <router-link v-if="adminView" :to="`/create-opgave?edit=true&id=${id}`" class="button">Redigér</router-link>
                 <div class="button" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
             </div>
         </div>
