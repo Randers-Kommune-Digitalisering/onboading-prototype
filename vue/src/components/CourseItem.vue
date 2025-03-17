@@ -50,41 +50,41 @@
             type: Array
         }
     })
-
-    const opgaver = ref([])
     const isTemplate = props.id == null
+    const opgaver = ref(props.tasks || null)
 
-    onMounted(() => {
+    onMounted(async () => {
         try {
-            if (isTemplate)
-                getOpgaverByForloebsskabelonID(props.tid)
-                .then(response => {
-                    if (response?.data != null)
-                        opgaver.value = response.data
-                    else
-                        opgaver.value = []
-                })
+            if (props.tasks == null || props.tasks?.length == 0)
+            {
+                if (isTemplate)
+                    getOpgaverByForloebsskabelonID(props.tid)
+                    .then(response => {
+                        if (response?.data != null)
+                            opgaver.value = response.data
+                    })
+                else
+                    getOpgaverByForloebID(props.id)
+                    .then(response => {
+                        if (response?.data != null)
+                        {
+                            opgaver.value = response.data
+                            completedPercentage.value = opgaver.value.length > 0 ? Math.round((opgaver.value.filter(opgave => opgave.result).length / opgaver.value.length) * 100) : 0
+                        }
+                    })
+            }
             else
-                getOpgaverByForloebID(props.id)
-                .then(response => {
-                    if (response?.data != null)
-                    {
-                        opgaver.value = response.data
-                        completedPercentage.value = opgaver.value.length > 0 ? Math.round((opgaver.value.filter(opgave => opgave.result).length / opgaver.value.length) * 100) : 0
-                    }
-                    else
-                        opgaver.value = []
-                })
+                completedPercentage.value = props.tasks.length > 0 ? Math.round((props.tasks.filter(opgave => opgave.result).length / props.tasks.length) * 100) : 0
         }
         catch (error) {
             console.log(error)
-            opgaver.value = []
         }
     })
 
 </script>
 
 <template>
+
     <router-link :to="{ path: 'forloeb-overview', query: { id: id, tid: tid } }" :class="{ 'disabled': props.disableInteraction }">
 
     <div :class="['card', 'course', {'dark': props.dark}]" ref="cardRef">
@@ -101,7 +101,7 @@
 
             <div class="card-details" v-if="props.duration == null">
                 <div>
-                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="icon"><i class="fa-regular fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Opstart</div>
                         <div>{{ startDate ? returnFormattedDate(startDate) : 'Ingen startdato' }}</div>
@@ -118,10 +118,10 @@
             </div>
             <div class="card-details" v-else>
                 <div>
-                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="icon"><i class="fa-solid fa-list-check"></i></div>
                     <div class="text">
                         <div class="small faded">Antal opgaver</div>
-                        <div>{{ opgaver.length }} opgave{{ opgaver.length == 0 || opgaver.legnth > 1 ? 'r' : '' }}</div>
+                        <div>{{ props.tasks?.length || opgaver?.length || 0 }} opgave{{ props.tasks?.length > 1 || props.tasks?.length == 0 || opgaver?.length > 1 || opgaver?.length == 0 ? 'r' : '' }}</div>
                     </div>
                 </div>
                 <div>

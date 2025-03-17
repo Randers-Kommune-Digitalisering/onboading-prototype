@@ -40,6 +40,8 @@
 
     const forloeb = ref(null)
     const forloeb_id = ref(null)
+    const isOpgaverFetched = ref(false)
+    const opgaver_all = ref([])
     const opgaver_ongoing = ref([])
     const opgaver_future = ref([])
     const opgaver_completed = ref([])
@@ -77,6 +79,7 @@
                 }
 
                 // Store opgaver in different arrays based on their status
+                opgaver_all.value = opgaver_response.data
                 if(props.isTemplate)
                     opgaver_template.value = opgaver_response.data
                 else
@@ -89,6 +92,7 @@
                         else 
                             opgaver_ongoing.value.push(item)
                     }
+                isOpgaverFetched.value = true
 
 
             } else {
@@ -113,8 +117,18 @@
 </script>
 <template>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">Oversigt</p>
-    <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.usermail || 'Skabelon'" :name="forloeb.name" :duration="forloeb.varighed" :startDate="new Date(forloeb.startdate)" :deadline="new Date(forloeb.enddate)" />
-    <Placeholder v-if="forloeb == null && showDetails" :height="isTemplate ? 4.5 : 7.2" :dark="true" />
+    <CourseItem v-if="forloeb != null && isOpgaverFetched && showDetails"
+                :disableInteraction="true" 
+                :dark="true" 
+                :id="!isTemplate ? forloeb_id : null" 
+                :tid="!isTemplate ? forloeb_id : null" 
+                :title="forloeb.usermail || 'Skabelon'" 
+                :name="forloeb.name" 
+                :duration="forloeb.varighed" 
+                :startDate="new Date(forloeb.startdate)" 
+                :deadline="new Date(forloeb.enddate)"
+                :tasks="opgaver_all" />
+    <Placeholder v-else :height="isTemplate ? 4.5 : 7.2" :dark="true" />
     <div class="buttons" v-if="adminView">
         <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate">+ Tilføj opgave</router-link>
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
