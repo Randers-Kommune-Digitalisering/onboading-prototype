@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import ProgressBar from './ProgressBar.vue'
 
-    import { getOpgaverByForloebID } from '@/services/opgaveService'
+    import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService'
 
     const cardRef = ref(null)
     const completedPercentage = ref(0)
@@ -14,16 +14,13 @@
 
     const props = defineProps({
         id: {
-            type: Number,
-            required: true
+            type: Number
         },
         tid: {
-            type: Number,
-            required: false
+            type: Number
         },
         title: {
-            type: String,
-            required: true
+            type: String
         },
         name: {
             type: String
@@ -47,12 +44,10 @@
         },
         dark: {
             type: Boolean,
-            required: false,
             default: false
         },
         tasks: {
-            type: Array,
-            required: false
+            type: Array
         }
     })
 
@@ -61,16 +56,25 @@
 
     onMounted(() => {
         try {
-            getOpgaverByForloebID(props.id)
-            .then(response => {
-                if (response?.data != null)
-                {
-                    opgaver.value = response.data
-                    completedPercentage.value = opgaver.value.length > 0 ? Math.round((opgaver.value.filter(opgave => opgave.result).length / opgaver.value.length) * 100) : 0
-                }
-                else
-                    opgaver.value = []
-            })
+            if (isTemplate)
+                getOpgaverByForloebsskabelonID(props.tid)
+                .then(response => {
+                    if (response?.data != null)
+                        opgaver.value = response.data
+                    else
+                        opgaver.value = []
+                })
+            else
+                getOpgaverByForloebID(props.id)
+                .then(response => {
+                    if (response?.data != null)
+                    {
+                        opgaver.value = response.data
+                        completedPercentage.value = opgaver.value.length > 0 ? Math.round((opgaver.value.filter(opgave => opgave.result).length / opgaver.value.length) * 100) : 0
+                    }
+                    else
+                        opgaver.value = []
+                })
         }
         catch (error) {
             console.log(error)
@@ -116,8 +120,15 @@
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
+                        <div class="small faded">Antal opgaver</div>
+                        <div>{{ opgaver.length }} opgave{{ opgaver.length == 0 || opgaver.legnth > 1 ? 'r' : '' }}</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="text">
                         <div class="small faded">Varighed</div>
-                        <div>{{ duration }} dage</div>
+                        <div>{{ duration }} dag{{ duration > 0 ? 'e' : '' }}</div>
                     </div>
                 </div>
             </div>

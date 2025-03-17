@@ -56,8 +56,6 @@
                                         : await getForloebById(props.id, { headers })
                 
                 forloeb.value = forloeb_response.data
-                
-                console.log('Forløb: ', forloeb.value)
 
                 forloeb_id.value = forloeb.value.ForløbID || forloeb.value.ForløbsskabelonID
                 const opgaver_response =  props.ansvarligEmail ? await getOpgaverByAnsvarligEmail({ headers }) 

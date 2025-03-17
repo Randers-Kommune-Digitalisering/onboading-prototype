@@ -43,6 +43,10 @@
         return names.length > 1 ? names[0] + ' ' + names[names.length - 1] : names[0]
     }
 
+    const returnDagOrDage = (days) => {
+        return days > 1 ? 'dage' : 'dag'
+    }
+
     var props = defineProps({
         id: {
             type: Number,
@@ -169,7 +173,7 @@
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
-                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : relativeStartdate + ' dage efter opstart' }}</div>
+                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : relativeStartdate + ' ' + returnDagOrDage(relativeStartdate) + ' efter opstart' }}</div>
                     </div>
                 </div>
 
@@ -177,7 +181,7 @@
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">{{ templateView ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
-                        <div>{{ templateView ? relativeEnddate + ' dage' : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                        <div>{{ templateView ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 

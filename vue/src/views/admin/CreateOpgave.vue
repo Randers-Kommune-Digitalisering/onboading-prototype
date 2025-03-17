@@ -80,6 +80,10 @@
         }
     }
 
+    const returnDagOrDage = (days) => {
+        return days > 1 ? 'dage' : 'dag'
+    }
+
     /* Textarea */
 
     const textarea = ref(null)
@@ -202,7 +206,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger opgave' : 'Tilføj opgave' }} til {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger opgave på' : 'Tilføj opgave til' }} {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -254,7 +258,7 @@
                         @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 2);relativStartdayAtZero = inputFields.relativ_startdag==0"
                         required>
                 <label for="startdate" class="floating-label">Startes efter </label>
-                <label for="startdate" class="annot-label">dage</label>
+                <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}</label>
                 <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativStartdayAtZero}]"
                         @click="inputFields.relativ_startdag--;relativStartdayAtZero = inputFields.relativ_startdag==0">
                             <i class="fa fa-minus"></i>
@@ -270,7 +274,7 @@
                         @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 2));relativEnddayAtOne = inputFields.relativ_slutdag==1"
                         required>
                 <label for="enddate" class="floating-label">Varighed</label>
-                <label for="enddate" class="annot-label">dage</label>
+                <label for="enddate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_slutdag) }}</label>
                 <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativEnddayAtOne}]"
                         @click="inputFields.relativ_slutdag--;relativEnddayAtOne = inputFields.relativ_slutdag==1">
                         <i class="fa fa-minus"></i>
