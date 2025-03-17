@@ -81,11 +81,11 @@
                     opgaver_template.value = opgaver_response.data
                 else
                     for (const item of opgaver_response.data) {
-                        if (new Date(item.startdato) > new Date())
-                            opgaver_future.value.push(item)
-                        else
                         if (item.result)
                             opgaver_completed.value.push(item)
+                        else
+                        if (new Date(item.startdato) > new Date())
+                            opgaver_future.value.push(item)
                         else 
                             opgaver_ongoing.value.push(item)
                     }
