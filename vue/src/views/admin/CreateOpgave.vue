@@ -81,7 +81,7 @@
     }
 
     const returnDagOrDage = (days) => {
-        return days > 1 ? 'dage' : 'dag'
+        return days > 1 || days == 0 ? 'dage' : 'dag'
     }
 
     /* Textarea */
