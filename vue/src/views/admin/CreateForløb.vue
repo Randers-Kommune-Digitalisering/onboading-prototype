@@ -123,11 +123,21 @@
         }
     }
 
+    const setEndDateFromTemplate = () => {
+        const template = templates.value.find(template => template.ForløbsskabelonID === inputFields.value.ForløbsskabelonID)
+        if (template) {
+            const startDate = new Date(inputFields.value.startdate)
+            const daysToAdd = template.varighed
+            var endDate = new Date(startDate)
+            endDate.setDate(endDate.getDate() + daysToAdd)
+            inputFields.value.enddate = endDate.toISOString().split('T')[0]
+        }
+    }
+
     /* Instantiate */
     onMounted(() => {
         getForloebsskabeloner().then(data => {
             templates.value = data.data
-            console.log('Templates:', data.data)
             if (template_id) {
                 const selectedTemplate = templates.value.find(template => template.ForløbsskabelonID === template_id)
                 if (selectedTemplate) 
@@ -248,7 +258,7 @@
         
         <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
             <div class="flex-item">
-                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdate" required>
+                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdate" @input="setEndDateFromTemplate()" required>
                 <label for="startdate" class="floating-label">Startdato</label>
             </div>
             <div class="flex-item">
