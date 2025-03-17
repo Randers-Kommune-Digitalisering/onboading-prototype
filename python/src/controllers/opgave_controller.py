@@ -10,7 +10,7 @@ def create_opgave():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'startdato', 'slutdato', 'result', 'timestamp']
+        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'result', 'timestamp']
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
@@ -18,9 +18,12 @@ def create_opgave():
             title=data['title'],
             beskrivelse=data['beskrivelse'],
             ansvarlig=data['ansvarlig'],
-            startdato=datetime.fromisoformat(data['startdato']),
-            slutdato=datetime.fromisoformat(data['slutdato']),
+            startdato=datetime.fromisoformat(data['startdato']) if 'startdato' in data else None,
+            slutdato=datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else None,
+            relativ_startdag=data['relativ_startdag'] if 'relativ_startdag' in data else None,
+            relativ_slutdag=data['relativ_slutdag'] if 'relativ_slutdag' in data else None,
             result=data['result'],
+            booking=datetime.fromisoformat(data['booking']) if 'booking' in data else None,
             timestamp=datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
         )
 
@@ -34,6 +37,10 @@ def create_opgave():
             if not forløbsskabelon:
                 return jsonify({"error": "Forløbsskabelon not found"}), 404
             new_opgave.forløbsskabelon = forløbsskabelon
+
+            print(f"relativ_startdag: {new_opgave.relativ_startdag}, relativ_slutdag: {new_opgave.relativ_slutdag}")
+            if 'relativ_startdag' not in data or 'relativ_slutdag' not in data:
+                return jsonify({"error": "relativ_startdag and relativ_slutdag are required to create new opgaveskabelon"}), 400
         else:
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
@@ -64,9 +71,12 @@ def get_all_opgaver():
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgaver
         ]
@@ -89,7 +99,7 @@ def create_opgave_with_opgaveskabelon():
         if not opgaveskabelon:
             return jsonify({"error": "Opgaveskabelon not found"}), 404
 
-        new_opgave = Opgave(
+        new_opgave = Opgave(  # TODO: Set startdato relative to forløb startdate + relativ_startdag (same for slutdato)
             title=opgaveskabelon.title,
             beskrivelse=opgaveskabelon.beskrivelse,
             ansvarlig="",
@@ -159,9 +169,12 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -192,9 +205,12 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -227,7 +243,10 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'ansvarlig': opgave.ansvarlig,
                 'startdato': opgave.startdato.isoformat(),
                 'slutdato': opgave.slutdato.isoformat(),
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -265,9 +284,12 @@ def get_opgave_by_forloeb_id(forlob_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
         ]
@@ -292,7 +314,10 @@ def update_opgave(opgave_id):
         opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
         opgave.startdato = datetime.fromisoformat(data['startdato']) if 'startdato' in data else opgave.startdato
         opgave.slutdato = datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else opgave.slutdato
+        opgave.relativ_startdag = data.get('relativ_startdag', opgave.relativ_startdag)
+        opgave.relativ_slutdag = data.get('relativ_slutdag', opgave.relativ_slutdag)
         opgave.result = data.get('result', opgave.result)
+        opgave.booking = datetime.fromisoformat(data['booking']) if 'booking' in data else opgave.booking
         opgave.timestamp = datetime.fromisoformat(data['timestamp']) if 'timestamp' in data else opgave.timestamp
 
         session.commit()

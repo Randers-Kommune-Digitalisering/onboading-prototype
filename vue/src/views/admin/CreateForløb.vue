@@ -1,15 +1,17 @@
 <script setup>
-    import { ref, onMounted, watch } from 'vue'
-    import { useRouter } from 'vue-router'
+    import { ref, onMounted } from 'vue'
+    import { useRouter, useRoute } from 'vue-router'
     import keycloak from '@/keycloak'
 
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
     import { createForloeb } from '@/services/forløbService'
     import { getAdminNames, getEmail, getDQ } from '@/services/userService'
 
+    const route = useRoute()
     const router = useRouter()
     const isSubmitting = ref(false)
 
+	const template_id = parseInt(route.query.tid, 10)
     const templates = ref([])
     const inputFields = ref({
         usermail: "",
@@ -125,6 +127,12 @@
     onMounted(() => {
         getForloebsskabeloner().then(data => {
             templates.value = data.data
+            console.log('Templates:', data.data)
+            if (template_id) {
+                const selectedTemplate = templates.value.find(template => template.ForløbsskabelonID === template_id)
+                if (selectedTemplate) 
+                    inputFields.value.ForløbsskabelonID = selectedTemplate.ForløbsskabelonID
+            }
         }).catch(error => {
             console.error('Error fetching forloebsskabeloner:', error)
         })

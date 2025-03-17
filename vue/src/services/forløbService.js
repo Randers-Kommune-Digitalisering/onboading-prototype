@@ -25,3 +25,15 @@ export const getAllForloeb = () => {
 export const getForloebWithOpgaver = () => {
   return axios.get(`${API_URL}/forloeb/opgaver`);
 };
+
+export const updateForloeb = (forloeb_id, data) => {
+  return axios.put(`${API_URL}/forloeb/${forloeb_id}`, data);
+};
+
+export const completeForloeb = (forloeb_id) => {
+  return axios.put(`${API_URL}/forloeb/complete/${forloeb_id}`);
+};
+
+export const deleteForloeb = (forloeb_id) => {
+  return axios.delete(`${API_URL}/forloeb/${forloeb_id}`);
+};

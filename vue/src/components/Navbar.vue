@@ -1,5 +1,6 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
+    import { useRoute } from 'vue-router'
     import keycloak from '@/keycloak'
 
     const adminMenuItems = [
@@ -16,7 +17,7 @@
         {
             "title": "Opret forløb",
             "url": "/create-forloeb",
-            "icon": "fa-solid fa-plus"
+            "icon": "fa-solid fa-square-plus"
         },
         // {
         //     "title": "Opret ressource",
@@ -24,15 +25,15 @@
         //     "icon": "fa-solid fa-plus"
         // },
         {
-            "title": "Opret forløbsskabelon",
-            "url": "/create-forloebsskabelon",
-            "icon": "fa-solid fa-plus"
+            "title": "Skabeloner",
+            "url": "/template-overview",
+            "icon": "fa-solid fa-folder"
         },
-        {
-            "title": "Opret opgaveskabelon",
-            "url": "/create-opgaveskabelon",
-            "icon": "fa-solid fa-plus"
-        },
+        // {
+        //     "title": "Opret opgaveskabelon",
+        //     "url": "/create-opgaveskabelon",
+        //     "icon": "fa-solid fa-plus"
+        // },
         {
             "title": "Hjælp",
             "url": "/admin-start",
@@ -92,6 +93,16 @@
         menuItems.value.forEach(x => x.selected = false)
         item.selected = true
     }
+
+    const route = useRoute()
+
+    watch(() => route.path, (newPath) => {
+        const matchFound = menuItems.value.some(item => item.url === newPath)
+        if (!matchFound) return
+        menuItems.value.forEach(item => {
+            item.selected = item.url === newPath
+        })
+    })
 </script>
 
 <template>

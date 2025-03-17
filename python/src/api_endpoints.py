@@ -18,6 +18,7 @@ from controllers.opgave_controller import (
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
     get_all_forloebsskabeloner,
+    get_forloebsskabelon_by_id,
     update_forloebsskabelon,
     get_forloebsskabeloner_with_opgaver
 )
@@ -28,7 +29,9 @@ from controllers.forloeb_controller import (
     get_all_forloeb,
     get_forloeb_with_opgaver,
     get_forloeb_by_email,
-    get_forloeb_by_admin
+    get_forloeb_by_admin,
+    complete_forloeb,
+    update_forloeb
 )
 
 from controllers.user_controller import (
@@ -124,12 +127,22 @@ def create_forloeb_endpoint():
 
 @api_endpoints.route('/forloeb', methods=['GET'])
 def get_all_forloeb_endpoint():
-    logger.info("Headers", request.headers)
+    logger.info(f"Headers: {request.headers}")
     admin_name = request.headers.get('adminname')
-    logger.info("Adminname", request.headers.get('adminname'))
+    logger.info(f"Adminname: {admin_name}")
     if admin_name:
         return get_forloeb_by_admin(admin_name)
     return get_all_forloeb()
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['DELETE'])
+def delete_forloeb_endpoint(forloeb_id):
+    return complete_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['PUT'])
+def update_forloeb_endpoint(forloeb_id):
+    return update_forloeb(forloeb_id)
 
 
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['GET'])
@@ -150,6 +163,11 @@ def create_forloebsskabelon_endpoint():
 @api_endpoints.route('/forlobsskabelon', methods=['GET'])
 def get_all_forloebsskabeloner_endpoint():
     return get_all_forloebsskabeloner()
+
+
+@api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['GET'])
+def get_forloebsskabeloner_by_id_endpoint(forloebsskabelon_id):
+    return get_forloebsskabelon_by_id(forloebsskabelon_id)
 
 
 @api_endpoints.route('/forlobsskabelon/opgaver', methods=['GET'])

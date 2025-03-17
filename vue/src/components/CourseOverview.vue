@@ -2,10 +2,11 @@
     import { ref, onMounted } from 'vue'
     import keycloak from '@/keycloak'
     import { getForloebByEmail, getForloebById } from '@/services/forløbService'
-    import { getOpgaverByForloebID } from '@/services/opgaveService'
+    import { getForloebsskabelonById } from '@/services/forløbsskabelonService'
+    import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService'
     import TaskList from '@/components/TaskList.vue'
     import CourseItem from '@/components/CourseItem.vue'
-    import Placeholder from './Placeholder.vue'
+    import Placeholder from '@/components/Placeholder.vue'
 
     const props = defineProps({
         showDetails: {
@@ -17,6 +18,10 @@
             type: String,
             required: false
         },
+        ansvarligEmail: {
+            type: String,
+            required: false
+        },
         id: {
             type: Number,
             required: false
@@ -25,28 +30,68 @@
             type: Boolean,
             required: false,
             default: false
+        },
+        isTemplate: {
+            type: Boolean,
+            required: false,
+            default: false
         }
     })
 
     const forloeb = ref(null)
     const forloeb_id = ref(null)
-    const opgaver = ref([])
+    const opgaver_ongoing = ref([])
+    const opgaver_future = ref([])
+    const opgaver_completed = ref([])
+    const opgaver_template = ref([])
 
     const fetchOpgaver = async () => {
         try {
             const headers = { usermail: props.userEmail }
 
-            if (props.userEmail || props.id) {
-                const forloeb_response = props.userEmail ? await getForloebByEmail({ headers }) : await getForloebById(props.id, { headers })
-                forloeb.value = forloeb_response.data
-                //console.log('Forløb: ', forloeb.value)
-
-                forloeb_id.value = forloeb.value.ForløbID
-                const opgaver_response = await getOpgaverByForloebID(forloeb_id.value, { headers })
-                opgaver.value = opgaver_response != null ? opgaver_response.data : [] //response.data.map(opgave => ({ ...opgave, showDetails: false }))
+            if (props.userEmail || (props.id && props.adminView)) {
+                const forloeb_response =  props.ansvarligEmail ? null
+                                        : props.userEmail ? await getForloebByEmail({ headers }) 
+                                        : props.isTemplate ? await getForloebsskabelonById(props.id, { headers })
+                                        : await getForloebById(props.id, { headers })
                 
-                if (!Array.isArray(opgaver.value))
-                    opgaver.value = [opgaver.value]
+                forloeb.value = forloeb_response.data
+                
+                console.log('Forløb: ', forloeb.value)
+
+                forloeb_id.value = forloeb.value.ForløbID || forloeb.value.ForløbsskabelonID
+                const opgaver_response =  props.ansvarligEmail ? await getOpgaverByAnsvarligEmail({ headers }) 
+                                        : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
+                                        : await getOpgaverByForloebID(forloeb_id.value, { headers })
+
+                if (opgaver_response.data == null)
+                    return
+                
+                if (!Array.isArray(opgaver_response.data))
+                    opgaver_response.data = [opgaver_response.data]
+
+                if(props.isTemplate)
+                    opgaver_response.data.sort((a, b) => a.relativ_startdag - b.relativ_startdag)
+                else
+                {
+                    opgaver_response.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+                    opgaver_response.data.reverse()
+                }
+
+                // Store opgaver in different arrays based on their status
+                if(props.isTemplate)
+                    opgaver_template.value = opgaver_response.data
+                else
+                    for (const item of opgaver_response.data) {
+                        if (new Date(item.startdato) > new Date())
+                            opgaver_future.value.push(item)
+                        else
+                        if (item.result)
+                            opgaver_completed.value.push(item)
+                        else 
+                            opgaver_ongoing.value.push(item)
+                    }
+
 
             } else {
                 console.log('Please provide user email')
@@ -54,7 +99,6 @@
 
         } catch (error) {
             console.log(error)
-            opgaver.value = []
         }
     }
 
@@ -71,12 +115,18 @@
 </script>
 <template>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">Oversigt</p>
-    <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.userdq" :name="forloeb.name" :startDate="new Date(forloeb.startdate)" :deadline="new Date(forloeb.enddate)" />
-    <Placeholder v-if="forloeb == null && showDetails" :dark="true" />
+    <CourseItem v-if="forloeb != null && showDetails" :disableInteraction="true" :dark="true" :id="forloeb_id" :title="forloeb.usermail || 'Skabelon'" :name="forloeb.name" :duration="forloeb.varighed" :startDate="new Date(forloeb.startdate)" :deadline="new Date(forloeb.enddate)" />
+    <Placeholder v-if="forloeb == null && showDetails" :height="isTemplate ? 4.5 : 7.2" :dark="true" />
     <div class="buttons" v-if="adminView">
-        <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button">+ Tilføj opgave</router-link>
-        <router-link to="/" class="button disabled">Redigér forløb</router-link>
-        <router-link to="/" class="button red disabled">Afslut forløb</router-link>
+        <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate">+ Tilføj opgave</router-link>
+        <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
+        <router-link to="/" class="button disabled">Redigér {{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
+        <router-link to="/" class="button red disabled" v-if="!isTemplate">Afslut forløb</router-link>
+        <router-link to="/" class="button red disabled" v-if="isTemplate">Slet skabelon</router-link>
+        <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button red" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
     </div>
-    <TaskList v-if="forloeb != null" :tasks="opgaver" :adminView="adminView" />
+    <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
+    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" />
+    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_future" :adminView="adminView" title="Kommende opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" itemColor="777371" />
+    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_completed" :adminView="adminView" title="Afsluttede opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" :dark="true" itemColor="617a5d" />
 </template>

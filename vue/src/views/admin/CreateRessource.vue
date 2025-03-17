@@ -60,15 +60,20 @@
             const response = await createRessource(formData)
             if(response !== null)
             {
+				console.log('Response:', response)
+				console.log('Last route: ', router.getRoutes()[router.getRoutes().length-1].name)
+
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
-                // else
+				else if (router.getRoutes()[router.getRoutes().length-1].name == "Reload")
+					router.back(2)
+				// else
                 //     router.replace({ path: '/forloeb-overview', query: { id: forloeb_id } })
             }
             else
                 console.log('Response:', response)
 
-        } catch (error) {            
+        } catch (error) {
             console.log('Error:', error.response?.data?.error ?? error)
         }
         isSubmitting.value = false

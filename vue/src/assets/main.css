@@ -5,14 +5,14 @@
     --color-text: rgb(65, 63, 62);
     --color-logo: rgb(48, 46, 45);
     --color-logo-subtext: rgb(164, 158, 154);
-    --color-logo-subtext-hover: rgb(130, 124, 120);
+    --color-logo-subtext-hover: rgb(130, 124, 120); /* Also used for disabled floating-button */
     --color-navbar: rgb(237, 229, 220);
     --color-navbar-item-selected: rgb(221, 213, 204);
     --color-navbar-item-hover: rgb(119, 115, 113);
     --color-card: rgb(237, 229, 220);
     --color-card-dark: rgb(221, 213, 204);
     --color-card-faded: rgb(221, 213, 204);
-    --color-card-text: rgb(92, 89, 88);
+    --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
     --color-button: #4c4980;
     --color-button-text: rgb(237, 229, 220);
     --color-button-hover: #3b386d;
@@ -389,7 +389,7 @@ a.disabled, .button.disabled {
 .card-content > p, .card-content > .ressources {
     margin-left: 1.2rem;
     margin-right: 1.2rem;
-    margin-top: 0.4rem;
+    margin-top: 0.8rem;
     margin-bottom: 0.8rem;
     font-family: 'Lato', sans-serif;
 }
@@ -436,8 +436,10 @@ a.disabled, .button.disabled {
 
 .card-content .card-details {
     display: flex;
-    gap: 3rem;
+    justify-content: space-between;
+    gap: 0.5rem;
     margin: 1.5rem;
+    margin-top: 1.2rem;
 }
 
     .card-content .card-details > div, .card-header .card-details > div {
@@ -452,6 +454,12 @@ a.disabled, .button.disabled {
     margin: 1rem 0.8rem;
     border: 0;
     gap: 0.5rem;
+}
+
+@media only screen and (min-width: 768px) {
+    .buttons {
+        max-width: 38rem;
+    }
 }
 
 .card-content .buttons {
@@ -580,7 +588,48 @@ button[type="submit"] {
     font-size: 1em;
 }
 
-input[type=text], input[type=date], select, textarea {
+.annot-label {
+    position: absolute;
+    bottom: 0.7rem;
+    right: 1rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    color: #787878;
+    font-size: 0.8em;
+}
+
+.floating-button {
+    position: absolute;
+    right: 0rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.2rem;
+    
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    bottom: 0.5rem;
+
+    transition: 0.1s ease all;
+    color: var(--color-input-bg);
+    background-color: var(--color-navbar-item-hover);
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.floating-button:hover {
+    background-color: var(--color-card-text);
+}
+.floating-button.disabled {
+    background-color: var(--color-logo-subtext);
+    pointer-events: none;
+}
+
+input[type=text], input[type=date], input[type=datetime-local], select, textarea {
     background-color: var(--color-input-bg);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
@@ -601,7 +650,7 @@ select {
     appearance: none;
 }
 
-input[type=text]:focus, input[type=date]:focus, select:focus, textarea:focus {
+input[type=text]:focus, input[type=date]:focus, input[type=datetime-local]:focus, select:focus, textarea:focus {
     outline:none;
     background-color: var(--color-input-focus-bg);
 }
@@ -653,6 +702,7 @@ input.invalid {
 input[type=text]:focus + .floating-label,
 input[type=text]:not(:placeholder-shown) + .floating-label,
 input[type=date] + .floating-label, /* :valid for date, if selection is required */
+input[type=datetime-local] + .floating-label,
 select:valid + .floating-label,
 textarea:focus + .floating-label,
 textarea:not(:placeholder-shown) + .floating-label {
@@ -706,6 +756,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     padding-right: 0.5rem;
     padding-left: 1.8rem;
     color:var(--color-card);
+    transition-duration: 250ms;
 }
 
 .progression-bar .progression.gray {
@@ -939,7 +990,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     overflow: hidden;
 }
 
-.prevent-select {
+.no-select {
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */

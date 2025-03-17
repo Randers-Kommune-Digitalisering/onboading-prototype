@@ -9,7 +9,7 @@ class Forløbsskabelon(Base):
     __tablename__ = 'Forløbsskabelon'
     ForløbsskabelonID = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    varighed = Column(DateTime, nullable=False)
+    varighed = Column(Integer, nullable=False)
     opgave = relationship('Opgave', back_populates='forløbsskabelon')
 
 
@@ -31,8 +31,8 @@ class Opgaveskabelon(Base):
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
-    startdato = Column(DateTime, nullable=False)
-    slutdato = Column(DateTime, nullable=False)
+    startdato = Column(Integer, nullable=False)
+    slutdato = Column(Integer, nullable=False)
 
 
 class Opgave(Base):
@@ -41,9 +41,12 @@ class Opgave(Base):
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     ansvarlig = Column(String, nullable=False)
-    startdato = Column(DateTime, nullable=False)
-    slutdato = Column(DateTime, nullable=False)
+    startdato = Column(DateTime)
+    slutdato = Column(DateTime)
+    relativ_startdag = Column(Integer)
+    relativ_slutdag = Column(Integer)
     result = Column(Boolean, nullable=False)
+    booking = Column(DateTime)
     timestamp = Column(DateTime, nullable=False)
     ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
     forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgave')

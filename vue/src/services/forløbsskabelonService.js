@@ -6,14 +6,18 @@ export const createForloebsskabelon = (data) => {
     return axios.post(`${API_URL}/forlobsskabelon`, data);
 };
 
-  export const getForloebsskabeloner = () => {
+export const getForloebsskabeloner = () => {
     return axios.get(`${API_URL}/forlobsskabelon`);
 };
 
-  export const getForloebsskabelonerWithOpgavers = () => {
+export const getForloebsskabelonById = (id) => {
+    return axios.get(`${API_URL}/forlobsskabelon/${id}`);
+};
+
+export const getForloebsskabelonerWithOpgavers = () => {
     return axios.get(`${API_URL}/forlobsskabelon/opgaver`);
 };
 
-  export const updateForloebsskabelon = (forloebsskabelon_id, data) => {
+export const updateForloebsskabelon = (forloebsskabelon_id, data) => {
     return axios.put(`${API_URL}/forlobsskabelon/${forloebsskabelon_id}`, data);
 };

@@ -20,21 +20,25 @@ export const getOpgaverByForloebID = async (forloebID, config) => {
     }
     throw error; // Re-throw the error if it's not a 404
   }
-}
+};
+
+export const getOpgaverByAnsvarligEmail = (config) => {
+  return axios.get(`${API_URL}/opgave/admin`, config);
+};
 
 export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
-  return axios.get(`${API_URL}/opgave/forloebsskabelon/${forloebsskabelonID}`, config);
+  return axios.get(`${API_URL}/opgave/forloebsskabelon/admin/${forloebsskabelonID}`, config);
 };
   
-  export const deleteOpgave = (opgaveID) => {
+export const deleteOpgave = (opgaveID) => {
     return axios.delete(`${API_URL}/opgave/${opgaveID}`);
 };
   
-  export const updateOpgave = (opgaveID, data) => {
+export const updateOpgave = (opgaveID, data) => {
     return axios.put(`${API_URL}/opgave/${opgaveID}`, data);
 };
 
-  export const getOpgaver = () => {
+export const getOpgaver = () => {
     return axios.get(`${API_URL}/opgave`);
 };
 

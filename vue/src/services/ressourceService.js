@@ -14,7 +14,7 @@ export const getRessourcesByOpgaveID = async (opgaveID) => {
         if (error.response && error.response.status === 404) {
           return { data: [] }; // Return an empty array or any other custom response
         }
-        throw error; // Re-throw the error if it's not a 404
+        //throw error; // Re-throw the error if it's not a 404
       }
 };
 

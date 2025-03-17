@@ -17,13 +17,19 @@
             type: Number,
             required: true
         },
+        tid: {
+            type: Number,
+            required: false
+        },
         title: {
             type: String,
             required: true
         },
-        name:
-        {
+        name: {
             type: String
+        },
+        duration: {
+            type: Number
         },
         startDate : {
             type: Date
@@ -51,6 +57,7 @@
     })
 
     const opgaver = ref([])
+    const isTemplate = props.id == null
 
     onMounted(() => {
         try {
@@ -74,8 +81,7 @@
 </script>
 
 <template>
-
-    <router-link :to="{ path: 'forloeb-overview', query: { id: id } }" :class="{ 'disabled': props.disableInteraction }">
+    <router-link :to="{ path: 'forloeb-overview', query: { id: id, tid: tid } }" :class="{ 'disabled': props.disableInteraction }">
 
     <div :class="['card', 'course', {'dark': props.dark}]" ref="cardRef">
         <div :class="['card-header', {'pointer': !props.disableInteraction}]" @click="expandCard">
@@ -89,7 +95,7 @@
                 </p>
             </div>
 
-            <div class="card-details">
+            <div class="card-details" v-if="props.duration == null">
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
@@ -106,10 +112,19 @@
                     </div>
                 </div>
             </div>
+            <div class="card-details" v-else>
+                <div>
+                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="text">
+                        <div class="small faded">Varighed</div>
+                        <div>{{ duration }} dage</div>
+                    </div>
+                </div>
+            </div>
             
         </div>
 
-        <div class="card-content always-show"><ProgressBar :hideText="true" :percentage="completedPercentage" /></div>
+        <div class="card-content always-show" v-if="!duration"><ProgressBar :hideText="true" :percentage="completedPercentage" /></div>
     </div>
 
     </router-link>
