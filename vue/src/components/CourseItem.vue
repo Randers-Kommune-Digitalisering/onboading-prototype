@@ -81,6 +81,10 @@
         }
     })
 
+    const returnOpgaveOrOpgaver = (num) => {
+        return num > 1 || num == 0 ? 'opgaver' : 'opgave'
+    }
+
 </script>
 
 <template>
@@ -121,7 +125,7 @@
                     <div class="icon"><i class="fa-solid fa-list-check"></i></div>
                     <div class="text">
                         <div class="small faded">Antal opgaver</div>
-                        <div>{{ props.tasks?.length || opgaver?.length || 0 }} opgave{{ props.tasks?.length > 1 || props.tasks?.length == 0 || opgaver?.length > 1 || opgaver?.length == 0 ? 'r' : '' }}</div>
+                        <div>{{ props.tasks?.length || opgaver?.length || 0 }} {{returnOpgaveOrOpgaver(props.tasks?.length || opgaver?.length || 0)}}</div>
                     </div>
                 </div>
                 <div>
