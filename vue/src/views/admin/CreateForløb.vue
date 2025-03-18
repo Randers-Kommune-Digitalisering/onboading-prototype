@@ -9,7 +9,10 @@
 
     const route = useRoute()
     const router = useRouter()
+
     const isSubmitting = ref(false)
+    const isEditing = route.query.edit === 'true'
+    const forloeb_id = isEditing ? parseInt(route.query.id, 10) : null
 
 	const template_id = parseInt(route.query.tid, 10)
     const templates = ref([])

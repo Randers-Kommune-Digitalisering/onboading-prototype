@@ -61,7 +61,7 @@ body {
     color: var(--color-logo-subtext);
     display: block;
     margin-bottom: 0.8rem;
-    transform: translateY(-0.1rem);
+    transform: translate(-0.25rem, -0.1rem);
     text-align: left;
 }
 
@@ -76,6 +76,12 @@ body {
         color: var(--color-logo-subtext-hover);
         margin-bottom: 0.75rem;
         transform: translateY(-0.9rem);
+    }
+}
+
+@media only screen and (max-width: 560px) {
+    #logo, .logo-subtext {
+        display: none;
     }
 }
 
@@ -141,6 +147,8 @@ a.disabled, .button.disabled {
         border-radius: 0.35rem;
         transition: cubic-bezier(0.075, 0.82, 0.165, 1);
         transition-duration: 400ms;
+
+        white-space: nowrap;
     }
     
     @media only screen and (min-width: 768px) {
@@ -299,6 +307,9 @@ a.disabled, .button.disabled {
 
     margin-top:0;
     margin-bottom: 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .card-subtitle {
@@ -311,7 +322,6 @@ a.disabled, .button.disabled {
 
     margin-top: 0;
     margin-bottom: 0;
-    width: 100%;
 }
 
 .card-separator {
@@ -425,6 +435,8 @@ a.disabled, .button.disabled {
 
 .card-titles {
     flex-grow: 1;
+    max-width: calc(100% - 14rem);
+    overflow: hidden;
 }
 
 .card-header .card-details {
@@ -712,15 +724,6 @@ textarea:not(:placeholder-shown) + .floating-label {
     font-size: 0.8em;
 }
 
-@media only screen and (max-width: 768px) {
-    .hideOnMobile {
-        opacity: 0;
-        overflow: hidden;
-        pointer-events: none;
-    }
-}
-
-
 /* Progression bar */
 
 .card-content .progression-bar {
@@ -952,7 +955,7 @@ textarea:not(:placeholder-shown) + .floating-label {
 }
 
 /* Adjust spacing between format */
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 767px) {
     .p-header-adjust {
         margin-top: 0.5rem;
     }    
@@ -971,9 +974,14 @@ textarea:not(:placeholder-shown) + .floating-label {
 
 /* Utility */
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 767px) {
     .desktop-only {
         display: none;
+    }
+    .hideOnMobile {
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none;
     }
 }
 @media only screen and (min-width: 768px) {

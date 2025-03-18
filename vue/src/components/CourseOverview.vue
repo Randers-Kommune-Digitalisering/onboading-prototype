@@ -101,6 +101,7 @@
 
         } catch (error) {
             console.log(error)
+            isOpgaverFetched.value = true
         }
     }
 

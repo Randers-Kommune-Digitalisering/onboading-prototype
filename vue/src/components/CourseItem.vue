@@ -55,7 +55,7 @@
 
     onMounted(async () => {
         try {
-            if (props.tasks == null || props.tasks?.length == 0)
+            if (props.tasks == null)
             {
                 if (isTemplate)
                     getOpgaverByForloebsskabelonID(props.tid)

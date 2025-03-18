@@ -10,9 +10,10 @@
 
 	const inputFields = ref({
         name: "",
-        varighed: ""
+        varighed: 7
     })
     const varighed = ref(null)
+    const durationAtOne = ref(false)
 
 	/* Submit */
 
@@ -35,6 +36,11 @@
         }
         isSubmitting.value = false
     }
+
+    const returnDagOrDage = (days) => {
+        return days > 1 || days == 0 ? 'dage' : 'dag'
+    }
+
 </script>
 
 <template>
@@ -49,8 +55,16 @@
 		</div>
 
 		<div class="inputContainer">
-			<input type="text" id="duration" name="duration" placeholder=" " ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 2)" required>
-			<label for="duration" class="floating-label">Forløbets varighed (dage)</label>
+			<input type="text" id="duration" name="duration" placeholder=" " class="padding-input" ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 2)" required>
+			<label for="duration" class="floating-label">Forløbets varighed</label>
+            <label for="duration" class="annot-label">{{ returnDagOrDage(inputFields.varighed) }}</label>
+            <div :class="['floating-button', 'indent-floating-button', { 'disabled': durationAtOne}]"
+                    @click="inputFields.varighed--;durationAtOne = inputFields.varighed==1">
+                    <i class="fa fa-minus"></i>
+                </div>
+            <div class="floating-button" @click="durationAtOne = false;inputFields.varighed++">
+                <i class="fa fa-plus"></i>
+            </div>
 		</div>
 
 		<div class="inputContainer submit">
@@ -60,3 +74,15 @@
 	</div>
 	</form>
 </template>
+<style scoped>
+    .annot-label {
+        left: calc(45% - 0.5rem);
+        bottom: 0.6rem;
+    }
+    .indent-floating-button {
+        right: 2.7rem;
+    }
+    .padding-input {
+        padding-left: calc(45% - 2rem);
+    }
+</style>

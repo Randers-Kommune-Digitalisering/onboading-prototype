@@ -253,7 +253,7 @@
         <!--  Relative start and end days -->
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate">
             <div class="flex-item">
-                <input type="text" id="startdate" class="padding-input margin-input" name="startdate"
+                <input type="text" id="startdate" class="padding-input" name="startdate"
                         v-model="inputFields.relativ_startdag" ref="relativStartday"
                         @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 2);relativStartdayAtZero = inputFields.relativ_startdag==0"
                         required>
@@ -269,7 +269,7 @@
                 </div>
             </div>
             <div class="flex-item">
-                <input type="text" id="enddate" class="padding-input margin-input" name="enddate"
+                <input type="text" id="enddate" class="padding-input" name="enddate"
                         v-model="inputFields.relativ_slutdag" ref="relativEndday"
                         @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 2));relativEnddayAtOne = inputFields.relativ_slutdag==1"
                         required>
@@ -294,15 +294,13 @@
 </template>
 <style scoped>
     .annot-label {
-        right: 6rem;
+        left: calc(45% - 0.5rem);
+        bottom: 0.6rem;
     }
     .indent-floating-button {
         right: 2.7rem;
     }
     .padding-input {
-        padding-left: 35%;
-    }
-    .margin-input {
-        margin-right: 40%;
+        padding-left: calc(45% - 2rem);
     }
 </style>
