@@ -175,7 +175,8 @@ def get_forloeb_by_admin(admin_name):
         session.close()
 
 
-def update_forloeb(id, data):
+def update_forloeb(id):
+    data = request.json
     session = db_client.get_session()
     try:
         forloeb = session.query(Forløb).filter_by(ForløbID=id).first()
@@ -190,7 +191,7 @@ def update_forloeb(id, data):
         forloeb.userdq = data.get('userdq', forloeb.userdq)
 
         session.commit()
-        return jsonify({"message": "Forløb updated successfully"}), 200
+        return jsonify({"message": "Forløb updated successfully", "uid": forloeb.ForløbID}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

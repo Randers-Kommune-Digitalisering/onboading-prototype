@@ -4,8 +4,8 @@
     import keycloak from '@/keycloak'
 
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
-    import { createForloeb } from '@/services/forløbService'
-    import { getAdminNames, getEmail, getDQ } from '@/services/userService'
+    import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService'
+    import { getAdminNames, getEmail } from '@/services/userService'
 
     const route = useRoute()
     const router = useRouter()
@@ -173,6 +173,19 @@
             }
         }
 
+        if (isEditing) {
+            getForloebById(forloeb_id).then(response => {
+                const formattedData = {
+                    ...response.data,
+                    startdate: response.data.startdate ? response.data.startdate.split('T')[0] : '',
+                    enddate: response.data.enddate ? response.data.enddate.split('T')[0] : ''
+                }
+                Object.assign(inputFields.value, formattedData)
+            }).catch(error => {
+                console.error('Error fetching forløb:', error)
+            })
+        }
+
         // getDQ().then(data => {
         //     dqList.value = data.data.dq_numbers
         //     console.log('DQs:', data.data)
@@ -203,7 +216,7 @@
             else 
                 delete formData.privateEmail
 
-            const response = await createForloeb(formData)
+            const response = isEditing ? await updateForloeb(forloeb_id, formData) : await createForloeb(formData)
             if(response.data.uid)
             {
                 console.log('Redirecting to:', `/forloeb-overview?id=${response.data.uid}`)
@@ -221,7 +234,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">Opret forløb</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløb' : 'Opret forløb' }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -249,7 +262,7 @@
             </div>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
+        <div v-if="!isEditing" :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
             <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
                 <option value="" disabled selected hidden></option>
                 <option :value="null">Ingen skabelon</option>
@@ -276,7 +289,7 @@
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">+ Opret forløb</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater forløb' : '+ Opret forløb' }}</button>
         </div>
 
     </div>

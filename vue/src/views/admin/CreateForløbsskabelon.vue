@@ -1,12 +1,15 @@
 <script setup>
     import { ref, onMounted } from 'vue'
-    import { useRouter } from 'vue-router'
+    import { useRouter, useRoute } from 'vue-router'
 	
-    import { createForloebsskabelon } from '@/services/forløbsskabelonService'
+    import { createForloebsskabelon, getForloebsskabelonById, updateForloebsskabelon } from '@/services/forløbsskabelonService'
 
+    const route = useRoute()
 	const router = useRouter()
 
     const isSubmitting = ref(false)
+    const isEditing = route.query.edit === 'true'
+    const skabelon_id = isEditing ? parseInt(route.query.id, 10) : null
 
 	const inputFields = ref({
         name: "",
@@ -14,6 +17,17 @@
     })
     const varighed = ref(null)
     const durationAtOne = ref(false)
+
+    /* Instantiate */
+    onMounted(() => {
+        if (isEditing) {
+            getForloebsskabelonById(skabelon_id).then(response => {
+                Object.assign(inputFields.value, response.data)
+            }).catch(error => {
+                console.error('Error fetching forløbsskabelon:', error)
+            })
+        }
+    })
 
 	/* Submit */
 
@@ -23,7 +37,7 @@
         try {
             const formData = { ...inputFields.value }
 
-            const response = await createForloebsskabelon(formData)
+            const response = isEditing ? await updateForloebsskabelon(skabelon_id, formData) : await createForloebsskabelon(formData)
             if(response !== null)
             {
                 router.push({ path: 'forloeb-overview', query: { tid: response.data.uid } })
@@ -44,7 +58,7 @@
 </script>
 
 <template>
-	<p class="indent-tiny bold uppercase p-header-adjust">Opret forløbsskabelon</p>
+	<p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløbsskabelon' : 'Opret forløbsskabelon' }}</p>
 
 	<form @submit.prevent="submitForm">
 	<div class="formContainer">
@@ -68,7 +82,7 @@
 		</div>
 
 		<div class="inputContainer submit">
-			<button class="button button-outline" type="submit" :disabled="isSubmitting">+ Opret forløbsskabelon</button>
+			<button class="button button-outline" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater forløbsskabelon' : '+ Opret forløbsskabelon' }}</button>
 		</div>
 
 	</div>

@@ -30,7 +30,7 @@ export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
   return axios.get(`${API_URL}/opgave/forloebsskabelon/admin/${forloebsskabelonID}`, config);
 };
 
-export const getOpgaveByID = (opgaveID) => {
+export const getOpgaveById = (opgaveID) => {
   return axios.get(`${API_URL}/opgave/${opgaveID}`);
 };
   

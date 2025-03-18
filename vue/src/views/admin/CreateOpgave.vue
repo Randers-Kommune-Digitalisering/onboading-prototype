@@ -3,7 +3,7 @@
     import { useRoute, useRouter } from 'vue-router'
 
     import { getAnvarligNames } from '@/services/userService'
-    import { createOpgave, getOpgaveByID, updateOpgave } from '@/services/opgaveService'
+    import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService'
     import { createOpgaveskabelon } from '@/services/opgaveSkabelonService'
     import { getForloebById } from '@/services/forløbService'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
@@ -113,7 +113,7 @@
 
         // In case we are editing an existing opgave
         if (isEditing) { 
-            getOpgaveByID(opgaveId).then(response => {
+            getOpgaveById(opgaveId).then(response => {
                 forloeb_id.value = response.data.ForløbID || response.data.ForløbsskabelonID
                 addToTemplate.value = response.data.ForløbsskabelonID != null
                 const formattedData = {

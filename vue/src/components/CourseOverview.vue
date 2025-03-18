@@ -133,7 +133,7 @@
     <div class="buttons" v-if="adminView">
         <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate">+ Tilføj opgave</router-link>
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
-        <router-link to="/" class="button disabled">Redigér {{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
+        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`" class="button">Redigér {{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
         <router-link to="/" class="button red disabled" v-if="!isTemplate">Afslut forløb</router-link>
         <router-link to="/" class="button red disabled" v-if="isTemplate">Slet skabelon</router-link>
         <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button red" v-if="isTemplate">+ Opret forløb med skabelon</router-link>

@@ -76,7 +76,7 @@ def update_forloebsskabelon(forloebsskabelon_id):
         forloebsskabelon.varighed = data.get('varighed', forloebsskabelon.varighed)
 
         session.commit()
-        return jsonify({"message": "Forløbsskabelon updated successfully"}), 200
+        return jsonify({"message": "Forløbsskabelon updated successfully", "uid": forloebsskabelon.ForløbsskabelonID}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
