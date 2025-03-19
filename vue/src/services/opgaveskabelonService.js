@@ -6,11 +6,11 @@ export const createOpgaveskabelon = (data) => {
     return axios.post(`${API_URL}/opgaveskabelon`, data);
 };
   
-  export const getOpgaveskabeloner = () => {
+export const getOpgaveskabeloner = () => {
     return axios.get(`${API_URL}/opgaveskabelon`);
 };
 
-  export const updateOpgaveskabelon = (opgaveskabelon_id, data) => {
+export const updateOpgaveskabelon = (opgaveskabelon_id, data) => {
     return axios.put(`${API_URL}/opgaveskabelon/${opgaveskabelon_id}`, data);
 };
 

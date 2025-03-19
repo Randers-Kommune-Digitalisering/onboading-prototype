@@ -1,19 +1,23 @@
 <script setup>
-	import { ref, onMounted } from 'vue'
+	import { ref, onMounted, watch } from 'vue'
 	import keycloak from '@/keycloak'
 
 	import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
+	import { getOpgaveskabeloner } from '@/services/opgaveskabelonService'
+
 	import CourseList from '@/components/CourseList.vue'
+	import TaskList from '@/components/TaskList.vue' // Import TaskList component
 
 	const TemplateType = {
 		Forloebsskabelon: 0,
 		Opgaveskabelon: 1
 	}
 	
-	const templates = ref([])
+	const forloebTemplates = ref([])
+	const opgaveTemplates = ref([])
 	const selectedType = ref(TemplateType.Forloebsskabelon)
 
-	onMounted(async () => {
+	const fetchTemplates = async () => {
 		if (keycloak.authenticated) {
 			const loggedInAdmin = keycloak.tokenParsed?.name || null
 			
@@ -23,7 +27,13 @@
 			}
 
 			const headers =  { adminname: loggedInAdmin }
-			const response = await getForloebsskabeloner({headers})
+			let response
+
+			if (selectedType.value === TemplateType.Forloebsskabelon) {
+				response = await getForloebsskabeloner({headers})
+			} else {
+				response = await getOpgaveskabeloner({headers})
+			}
 
 			if (response.data == null)
 				return
@@ -31,9 +41,15 @@
 			if (!Array.isArray(response.data))
 				response.data = [response.data]
 
-			templates.value = response.data
+			if (selectedType.value === TemplateType.Forloebsskabelon)
+				forloebTemplates.value = response.data
+			else
+				opgaveTemplates.value = response.data
 		}
-	})
+	}
+
+	onMounted(fetchTemplates)
+	watch(selectedType, fetchTemplates)
 </script>
 
 <template>
@@ -47,12 +63,13 @@
 			<span>Opgaveskabeloner</span>
 		</div>
 	</div>
-    <p class="indent-tiny bold uppercase p-header-adjust-medium">{{ selectedType==TemplateType.Forloebsskabelon ? 'Forløbsskabeloner' : 'Opgaveskabeloner' }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ selectedType==TemplateType.Forloebsskabelon ? 'Forløbsskabeloner' : 'Opgaveskabeloner' }}</p>
 	<div class="buttons">
         <router-link v-if="selectedType==TemplateType.Forloebsskabelon" :to="`/create-forloebsskabelon`" class="button">+ Opret forløbsskabelon</router-link>
         <router-link v-if="selectedType==TemplateType.Opgaveskabelon" :to="`/create-opgaveskabelon`" class="button">+ Opret opgaveskabelon</router-link>
     </div>
-  	<CourseList :courses="templates" title="" />
+  	<CourseList v-if="selectedType==TemplateType.Forloebsskabelon" :courses="forloebTemplates" title="" />
+	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon" :tasks="opgaveTemplates" title="" />
 </template>
 
 <style scoped>
