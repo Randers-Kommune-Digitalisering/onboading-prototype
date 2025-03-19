@@ -11,7 +11,6 @@ import CreateOpgave from '@/views/admin/CreateOpgave.vue'
 import CreateForløb from '@/views/admin/CreateForløb.vue'
 import CreateRessource from '@/views/admin/CreateRessource.vue'
 import CreateForløbsskabelon from '@/views/admin/CreateForløbsskabelon.vue'
-import CreateOpgaveskabelon from '@/views/admin/CreateOpgaveskabelon.vue'
 import AdminOverview from '@/views/admin/AdminOverview.vue'
 import AnsvarligOverview from '@/views/ansvarlig/AnsvarligOverview.vue'
 import AnsvarligStart from '@/views/ansvarlig/AnsvarligStart.vue'
@@ -46,12 +45,6 @@ const routes = [
         path: '/create-forloebsskabelon',
         name: 'CreateForløbsskabelon',
         component: CreateForløbsskabelon,
-        meta: { roles: ['Admin'] }
-    },
-    {
-        path: '/create-opgaveskabelon',
-        name: 'CreateOpgaveskabelon',
-        component: CreateOpgaveskabelon,
         meta: { roles: ['Admin'] }
     },
     {

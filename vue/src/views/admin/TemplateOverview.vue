@@ -66,10 +66,10 @@
     <p class="indent-tiny bold uppercase p-header-adjust">{{ selectedType==TemplateType.Forloebsskabelon ? 'Forløbsskabeloner' : 'Opgaveskabeloner' }}</p>
 	<div class="buttons">
         <router-link v-if="selectedType==TemplateType.Forloebsskabelon" :to="`/create-forloebsskabelon`" class="button">+ Opret forløbsskabelon</router-link>
-        <router-link v-if="selectedType==TemplateType.Opgaveskabelon" :to="`/create-opgaveskabelon`" class="button">+ Opret opgaveskabelon</router-link>
+        <router-link v-if="selectedType==TemplateType.Opgaveskabelon" :to="`/create-opgave?template=true`" class="button">+ Opret opgaveskabelon</router-link>
     </div>
   	<CourseList v-if="selectedType==TemplateType.Forloebsskabelon" :courses="forloebTemplates" title="" />
-	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon" :tasks="opgaveTemplates" title="" />
+	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon" :tasks="opgaveTemplates" title="" :expandFirstItem="false" />
 </template>
 
 <style scoped>

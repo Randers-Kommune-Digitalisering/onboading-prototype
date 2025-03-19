@@ -13,8 +13,8 @@
 
     const forloeb = ref(null)
     const forloeb_id = ref(parseInt(route.query.id ?? route.query.tid, 10))
-    const addToTemplate = ref(route.query.id == null) // Whether we are adding an opgave to a forløbsskabelon
-    const isTemplate = false  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
+    const isTemplate = route.query.template === 'true'  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
+    const addToTemplate = ref(route.query.id == null && isTemplate == false) // Whether we are adding an opgave to a forløbsskabelon
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
@@ -98,7 +98,7 @@
     /* Instantiate */
 
     onMounted(() => {
-        if(!forloeb_id.value && !isEditing) {
+        if(!forloeb_id.value && (!isEditing && !isTemplate)) {
             console.error('No ID provided')
             router.back()
             return
@@ -139,13 +139,13 @@
         // In case we are adding an opgave to a forløbsskabelon
         function getForloebValues()
         {
-            if(addToTemplate.value)
+            if(addToTemplate.value == true)
                 getForloebsskabeloner().then(response => {
                     forloeb.value = response.data.filter(skabelon => skabelon.ForløbsskabelonID == forloeb_id.value)[0]
                 }).catch(error => {
                     console.error('Error fetching forløbsskabelon:', error)
                 })
-            else {
+            else if(forloeb_id.value) {
                 getForloebById(forloeb_id.value).then(response => {
                     forloeb.value = response.data
                 }).catch(error => {
@@ -206,7 +206,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger opgave på' : 'Tilføj opgave til' }} {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger opgave på' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave til' }} {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -252,7 +252,7 @@
 
         <!--  Relative start and end days -->
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate">
-            <div class="flex-item">
+            <div v-if="addToTemplate" class="flex-item">
                 <input type="text" id="startdate" class="padding-input" name="startdate"
                         v-model="inputFields.relativ_startdag" ref="relativStartday"
                         @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 2);relativStartdayAtZero = inputFields.relativ_startdag==0"
@@ -286,7 +286,7 @@
         </div>
 
         <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">{{ isEditing ? 'Opdater opgave' : '+ Tilføj opgave' }}</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">{{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}</button>
         </div>
 
     </div>
