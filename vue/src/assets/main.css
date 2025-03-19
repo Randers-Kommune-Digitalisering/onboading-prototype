@@ -10,7 +10,7 @@
     --color-navbar-item-selected: rgb(221, 213, 204);
     --color-navbar-item-hover: rgb(119, 115, 113);
     --color-card: rgb(237, 229, 220);
-    --color-card-dark: rgb(221, 213, 204);
+    --color-card-dark: rgb(215, 207, 197);
     --color-card-faded: rgb(221, 213, 204);
     --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
     --color-button: #4c4980;
@@ -133,7 +133,7 @@ a.disabled, .button.disabled {
     }
 }
 
-    .navbar .item {
+    .navbar .item, .navItem {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -146,7 +146,6 @@ a.disabled, .button.disabled {
 
         border-radius: 0.35rem;
         transition: cubic-bezier(0.075, 0.82, 0.165, 1);
-        transition-duration: 400ms;
 
         white-space: nowrap;
     }
@@ -158,21 +157,21 @@ a.disabled, .button.disabled {
         }
     }
 
-    .navbar .item.selected {
+    .navbar .item.selected, .navItem.selected {
         background-color: var(--color-navbar-item-selected);
     }
 
-    .navbar .item > i {
+    .navbar .item > i, .navItem > i {
         transform: translateY(0.6rem);
     }
 
-    .navbar .item > span {
+    .navbar .item > span, .navItem > span {
         font-size: 0.8em;
         font-weight: 600;
         padding-top: 1.5rem;
     }
 
-    .navbar .item:hover:not(.selected) {
+    .navbar .item:hover:not(.selected), .navItem:hover:not(.selected) {
         cursor: pointer;
         /*background-color: rgb(221, 213, 204);*/
         color: var(--color-navbar-item-hover);
@@ -247,7 +246,7 @@ a.disabled, .button.disabled {
 }
 
 .card.dark {
-    background-color: var(--color-card-dark);
+    background-color: var(--color-card-faded);
 }
 
 .card, .card * {
@@ -509,7 +508,7 @@ button[type="submit"] {
     }
 
         .button.disabled.dark {
-            background-color: var(--color-card-dark);
+            background-color: var(--color-card-faded);
         }
 
 .formContainer {
@@ -958,7 +957,10 @@ textarea:not(:placeholder-shown) + .floating-label {
 @media only screen and (max-width: 767px) {
     .p-header-adjust {
         margin-top: 0.5rem;
-    }    
+    }
+    .p-header-adjust-medium {
+        margin-top: 1rem;
+    }
     .p-header-adjust-large {
         margin-top: 1.5rem;
     }
@@ -966,7 +968,10 @@ textarea:not(:placeholder-shown) + .floating-label {
 @media only screen and (min-width: 768px) {
     .p-header-adjust {
         margin-top: 1rem;
-    }    
+    }
+    .p-header-adjust-medium {
+        margin-top: 2rem;
+    }
     .p-header-adjust-large {
         margin-top: 3rem;
     }
