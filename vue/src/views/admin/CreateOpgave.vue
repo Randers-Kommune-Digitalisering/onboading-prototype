@@ -293,7 +293,7 @@
             <div class="flex-item">
                 <input type="text" id="enddate" class="padding-input" name="enddate"
                         v-model="inputFields.relativ_slutdag" ref="relativEndday"
-                        @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 2));relativEnddayAtOne = inputFields.relativ_slutdag==1"
+                        @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 3));relativEnddayAtOne = inputFields.relativ_slutdag==1"
                         required>
                 <label for="enddate" class="floating-label">Varighed</label>
                 <label for="enddate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_slutdag) }}</label>
