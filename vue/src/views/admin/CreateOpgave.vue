@@ -224,7 +224,6 @@
 </script>
 
 <template>
-    addToTemplate: {{ addToTemplate }}, isTemplate: {{ isTemplate }}, isEditing: {{ isEditing }}
     <p class="indent-tiny bold uppercase p-header-adjust">
         {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave til' }}
         {{ isTemplate ? '' : ' på ' + forloeb?.name?? 'forløbet' }}</p>

@@ -7,6 +7,7 @@
         {
             "title": "Overblik",
             "url": "/admin-overview",
+            "alias": ['/forloeb-overview'],
             "icon": "fa-solid fa-list-check"
         },
         // {
@@ -97,10 +98,10 @@
     const route = useRoute()
 
     watch(() => route.path, (newPath) => {
-        const matchFound = menuItems.value.some(item => item.url === newPath)
+        const matchFound = menuItems.value.some(item => item.url === newPath) || menuItems.value.some(item => item.alias?.includes(newPath))
         if (!matchFound) return
         menuItems.value.forEach(item => {
-            item.selected = item.url === newPath
+            item.selected = item.url === newPath || item.alias?.includes(newPath)
         })
     })
 </script>
