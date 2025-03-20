@@ -3,7 +3,8 @@
     import { useRouter } from 'vue-router'
 
     import { getRessourcesByOpgaveID, getRessourcesByOpgaveskabelonID  } from '@/services/ressourceService'
-    import { updateOpgave } from '@/services/opgaveService'
+    import { updateOpgave, deleteOpgave } from '@/services/opgaveService'
+    import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService'
 
     const router = useRouter()
 
@@ -116,10 +117,31 @@
             const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
             router.replace({ path: '/reload' }).then(() => {
                 router.replace(currentPath)
-            });
+            })
         }).catch(error => {
             console.error('Error completing task:', error)
         })
+    }
+
+    const deleteTask = () => {
+        if(props.templateView)
+            deleteOpgaveskabelon(props.id).then(response => {
+                const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
+                router.replace({ path: '/reload' }).then(() => {
+                    router.replace(currentPath)
+                })
+            }).catch(error => {
+                console.error('Error deleting task template:', error)
+            })
+        else
+            deleteOpgave(props.id).then(response => {
+                const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
+                router.replace({ path: '/reload' }).then(() => {
+                    router.replace(currentPath)
+                })
+            }).catch(error => {
+                console.error('Error deleting task:', error)
+            })
     }
 
     /* Instantiate */
@@ -219,9 +241,10 @@
 
             <div class="buttons">
                 
-                <router-link v-if="adminView" :to="`/create-ressource?${templateView ? 't' : ''}id=${id}`" class="button">+ Tilføj ressource</router-link>
-                <router-link v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${templateView ? '&template=true' : ''}`" class="button">Redigér</router-link>
-                <div class="button" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
+                <router-link class="button" v-if="adminView" :to="`/create-ressource?${templateView ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
+                <router-link class="button hollow" v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${templateView ? '&template=true' : ''}`">Redigér</router-link>
+                <div :class="['button', 'hollow', {'red': props.result}]" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
+                <div class="button hollow red" v-if="adminView" @click="deleteTask()">Slet</div>
             </div>
         </div>
     </div>

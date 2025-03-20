@@ -99,3 +99,20 @@ def get_forloebsskabeloner_with_opgaver():
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def delete_forloebsskabelon(forloebsskabelon_id):
+    session = db_client.get_session()
+    try:
+        forloebsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=forloebsskabelon_id).first()
+        if not forloebsskabelon:
+            return jsonify({"error": "Forløbsskabelon not found"}), 404
+
+        session.delete(forloebsskabelon)
+        session.commit()
+        return jsonify({"message": "Forløbsskabelon deleted successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()

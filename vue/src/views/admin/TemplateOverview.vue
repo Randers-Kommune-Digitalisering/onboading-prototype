@@ -1,6 +1,6 @@
 <script setup>
 	import { ref, onMounted, watch } from 'vue'
-	import { useRoute } from 'vue-router'
+	import { useRoute, useRouter } from 'vue-router'
 	import keycloak from '@/keycloak'
 
 	import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
@@ -10,6 +10,7 @@
 	import TaskList from '@/components/TaskList.vue' // Import TaskList component
 
 	const route = useRoute()
+	const router = useRouter()
 	const view = route.query.view
 
 	const TemplateType = {
@@ -20,6 +21,11 @@
 	const forloebTemplates = ref([])
 	const opgaveTemplates = ref([])
 	const selectedType = ref(view == '0' ? TemplateType.Forloebsskabelon : view == '1' ? TemplateType.Opgaveskabelon : TemplateType.Forloebsskabelon)
+
+	const selectTemplateType = (type) => {
+		selectedType.value = type
+		router.replace({ query: { view: type } })
+	}
 
 	const fetchTemplates = async () => {
 		if (keycloak.authenticated) {
@@ -58,11 +64,11 @@
 
 <template>
 	<div class="navItems">
-		<div @click="selectedType=TemplateType.Forloebsskabelon" :class="['navItem', {'selected': selectedType==TemplateType.Forloebsskabelon}]">
+		<div @click="selectTemplateType(TemplateType.Forloebsskabelon)" :class="['navItem', {'selected': selectedType==TemplateType.Forloebsskabelon}]">
 			<i class="fa-regular fa-calendar fa-xl"></i>
 			<span>Forløbsskabeloner</span>
 		</div>
-		<div @click="selectedType=TemplateType.Opgaveskabelon" :class="['navItem', {'selected': selectedType==TemplateType.Opgaveskabelon}]">
+		<div @click="selectTemplateType(TemplateType.Opgaveskabelon)" :class="['navItem', {'selected': selectedType==TemplateType.Opgaveskabelon}]">
 			<i class="fa-solid fa-list-check fa-xl"></i>
 			<span>Opgaveskabeloner</span>
 		</div>

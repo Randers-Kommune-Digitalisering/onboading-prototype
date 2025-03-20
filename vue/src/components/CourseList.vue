@@ -25,7 +25,7 @@
 </script>
 
 <template>
-    <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ title }}</p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ title ?? "Aktuelle forløb" }}</p>
     <div class="card-list" v-if="courses && courses.length > 0">
         <Card v-for="course in courses"
             :id="course.ForløbID"

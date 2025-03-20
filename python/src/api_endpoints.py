@@ -21,7 +21,8 @@ from controllers.forloebsskabelon_controller import (
     get_all_forloebsskabeloner,
     get_forloebsskabelon_by_id,
     update_forloebsskabelon,
-    get_forloebsskabeloner_with_opgaver
+    get_forloebsskabeloner_with_opgaver,
+    delete_forloebsskabelon
 )
 
 from controllers.forloeb_controller import (
@@ -147,6 +148,11 @@ def delete_forloeb_endpoint(forloeb_id):
     return complete_forloeb(forloeb_id)
 
 
+@api_endpoints.route('/forloeb/complete/<int:forloeb_id>', methods=['PUT'])
+def complete_forloeb_endpoint(forloeb_id):
+    return complete_forloeb(forloeb_id)
+
+
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['PUT'])
 def update_forloeb_endpoint(forloeb_id):
     return update_forloeb(forloeb_id)
@@ -185,6 +191,11 @@ def get_forloebsskabeloner_with_opgaver_endpoint():
 @api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['PUT'])
 def update_forloebsskabelon_endpoint(forloebsskabelon_id):
     return update_forloebsskabelon(forloebsskabelon_id)
+
+
+@api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['DELETE'])
+def delete_forloebsskabelon_endpoint(forloebsskabelon_id):
+    return delete_forloebsskabelon(forloebsskabelon_id)
 
 
 @api_endpoints.route('/ressource', methods=['POST'])

@@ -1,12 +1,15 @@
 <script setup>
     import { ref, onMounted } from 'vue'
+    import { useRouter } from 'vue-router'
     import keycloak from '@/keycloak'
-    import { getForloebByEmail, getForloebById } from '@/services/forløbService'
-    import { getForloebsskabelonById } from '@/services/forløbsskabelonService'
+    import { getForloebByEmail, getForloebById, completeForloeb } from '@/services/forløbService'
+    import { getForloebsskabelonById, deleteForloebsskabelon } from '@/services/forløbsskabelonService'
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService'
     import TaskList from '@/components/TaskList.vue'
     import CourseItem from '@/components/CourseItem.vue'
     import Placeholder from '@/components/Placeholder.vue'
+
+    const router = useRouter()
 
     const props = defineProps({
         showDetails: {
@@ -40,6 +43,7 @@
 
     const forloeb = ref(null)
     const forloeb_id = ref(null)
+    const isForloebCompleted = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
     const opgaver_ongoing = ref([])
@@ -58,6 +62,7 @@
                                         : await getForloebById(props.id, { headers })
                 
                 forloeb.value = forloeb_response.data
+                isForloebCompleted.value = forloeb.value.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
 
                 forloeb_id.value = forloeb.value.ForløbID || forloeb.value.ForløbsskabelonID
                 const opgaver_response =  props.ansvarligEmail ? await getOpgaverByAnsvarligEmail({ headers }) 
@@ -105,6 +110,25 @@
         }
     }
 
+    const completeCourse = () => {
+        completeForloeb(forloeb_id.value).then(response => {
+            const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
+            router.replace({ path: '/reload' }).then(() => {
+                router.replace(currentPath)
+            })
+        }).catch(error => {
+            console.error('Error completing course:', error)
+        })
+    }
+
+    const deleteTemplate = () => {
+        deleteForloebsskabelon(forloeb_id.value).then(response => {
+            router.replace({ path: '/template-overview' })
+        }).catch(error => {
+            console.error('Error deleting template:', error)
+        })
+    }
+
     onMounted(() => {
         try {
             if (keycloak.authenticated) {
@@ -131,12 +155,12 @@
                 :tasks="opgaver_all" />
     <Placeholder v-else :height="isTemplate ? 4.5 : 7.2" :dark="true" />
     <div class="buttons" v-if="adminView">
-        <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate">+ Tilføj opgave</router-link>
+        <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate && !isForloebCompleted">+ Tilføj opgave</router-link>
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
-        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`" class="button">Redigér {{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
-        <router-link to="/" class="button red disabled" v-if="!isTemplate">Afslut forløb</router-link>
-        <router-link to="/" class="button red disabled" v-if="isTemplate">Slet skabelon</router-link>
-        <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button red" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
+        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`" class="button hollow">Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
+        <div @click="completeCourse()" class="button hollow red" v-if="!isTemplate && !isForloebCompleted">Afslut forløb</div>
+        <div @click="deleteTemplate()" class="button red hollow" v-if="isTemplate">Slet skabelon</div>
+        <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
     </div>
     <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
     <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" />

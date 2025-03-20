@@ -21,3 +21,7 @@ export const getForloebsskabelonerWithOpgavers = () => {
 export const updateForloebsskabelon = (forloebsskabelon_id, data) => {
     return axios.put(`${API_URL}/forlobsskabelon/${forloebsskabelon_id}`, data);
 };
+
+export const deleteForloebsskabelon = (forloebsskabelon_id) => {
+    return axios.delete(`${API_URL}/forlobsskabelon/${forloebsskabelon_id}`);
+};

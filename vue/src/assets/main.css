@@ -13,11 +13,13 @@
     --color-card-dark: rgb(215, 207, 197);
     --color-card-faded: rgb(221, 213, 204);
     --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
-    --color-button: #4c4980;
     --color-button-text: rgb(237, 229, 220);
+    --color-button: #4c4980;
     --color-button-hover: #3b386d;
+    --color-button-hover-dark: #2e2c5c;
+    --color-button-red: #be3b3b;
+    --color-button-red-hover: #963333;
     --color-button-disabled: rgb(237, 229, 220, 0);
-    --color-button-disabled-text: #4c4980;
     --color-input-bg: rgb(241, 237, 232);
     --color-input-focus-bg: rgb(248, 246, 244);
     --color-input-disabled-bg: rgb(230, 224, 216);
@@ -495,21 +497,27 @@ button[type="submit"] {
     background-color: var(--color-button);
     color:var(--color-button-text);
     cursor: pointer;
+    border: 0.1rem solid var(--color-button);
 }
 
     .button:hover {
         background-color: var(--color-button-hover);
+        border: 0.1rem solid var(--color-button-hover);
     }
-
-    .button.disabled {
-        border: 0.1rem solid var(--color-button-disabled-text);
-        color: var(--color-button-disabled-text);
+    .button.disabled, .button.hollow {
+        border: 0.1rem solid var(--color-button);
+        color: var(--color-button);
         background-color: var(--color-button-disabled);
     }
-
-        .button.disabled.dark {
+        .button.disabled.dark, .button.hollow.dark {
             background-color: var(--color-card-faded);
         }
+    .button.hollow:hover {
+        border: 0.1rem solid var(--color-button-hover-dark);
+        color: var(--color-button-hover-dark);
+    }
+    .button.hollow.red { border: 0.1rem solid var(--color-button-red); color: var(--color-button-red) }
+    .button.hollow.red:hover { border: 0.1rem solid var(--color-button-red-hover); color: var(--color-button-red-hover) }
 
 .formContainer {
     position: relative;

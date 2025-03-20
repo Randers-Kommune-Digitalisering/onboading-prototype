@@ -118,13 +118,9 @@
                     forloeb_id.value = response.data.ForløbID || response.data.ForløbsskabelonID
                     addToTemplate.value = response.data.ForløbsskabelonID != null
                     const formattedData = {
-                        ...response.data,
-                        startdato: response.data.startdato ? response.data.startdato.split('T')[0] : '',
-                        slutdato: response.data.slutdato ? response.data.slutdato.split('T')[0] : '',
-                        booking: response.data.booking ? response.data.booking.split('T').join(' ') : ''
+                        ...response.data
                     }
                     Object.assign(inputFields.value, formattedData)
-                    relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
                 })
                 .then(() => getForloebValues())

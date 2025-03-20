@@ -45,7 +45,7 @@
 </script>
 
 <template>
-    <p :class="'indent-tiny bold uppercase p-header-adjust' + (adminView || largeHeaderAdjust ? '-large' : '')">{{ (title != null ? title : ( adminView ? 'Aktuelle' : 'Dine') + ' opgaver' ) }} </p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + ((adminView && !templateView) || largeHeaderAdjust ? '-large' : '')">{{ (title ?? (adminView ? 'Aktuelle' : 'Dine') + ' opgaver' ) }} </p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
             :adminView="adminView"
@@ -59,9 +59,7 @@
             :deadline="task.slutdato ? new Date(new Date(task.slutdato)) : null"
             :responsible="task.ansvarlig"
             :booking="task.booking ? new Date(new Date(task.booking)) : null"
-            image="https://www.teknologisk.dk/_/media/67761&w=1460&h=808&r=cover&_filename=67761_7-gode-rr%C3%A5d-til-IT-sikkerhed.jpg"
             :color="props.itemColor != null ? props.itemColor : (!templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-            isComplete="false"
             :expandByDefault="expandFirstItem && index == 0"
             :dark="dark"
             :templateView="templateView"
