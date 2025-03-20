@@ -4,7 +4,7 @@
 
     import { getAnvarligNames } from '@/services/userService'
     import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService'
-    import { createOpgaveskabelon } from '@/services/opgaveSkabelonService'
+    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveSkabelonService'
     import { getForloebById } from '@/services/forløbService'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
 
@@ -112,25 +112,45 @@
             })
 
         // In case we are editing an existing opgave
-        if (isEditing) { 
-            getOpgaveById(opgaveId).then(response => {
-                forloeb_id.value = response.data.ForløbID || response.data.ForløbsskabelonID
-                addToTemplate.value = response.data.ForløbsskabelonID != null
-                const formattedData = {
-                    ...response.data,
-                    startdato: response.data.startdato ? response.data.startdato.split('T')[0] : '',
-                    slutdato: response.data.slutdato ? response.data.slutdato.split('T')[0] : '',
-                    booking: response.data.booking ? response.data.booking.split('T').join(' ') : ''
-                }
-                Object.assign(inputFields.value, formattedData)
-                relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
-                relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
-            })
-            .then(() => getForloebValues())
-            .then(() => resizeTextareToFitContent())
-            .catch(error => {
-                console.error('Error fetching opgave:', error)
-            })
+        if (isEditing) {
+            if(isTemplate)
+                getOpgaveskabelonById(opgaveId).then(response => {
+                    forloeb_id.value = response.data.ForløbID || response.data.ForløbsskabelonID
+                    addToTemplate.value = response.data.ForløbsskabelonID != null
+                    const formattedData = {
+                        ...response.data,
+                        startdato: response.data.startdato ? response.data.startdato.split('T')[0] : '',
+                        slutdato: response.data.slutdato ? response.data.slutdato.split('T')[0] : '',
+                        booking: response.data.booking ? response.data.booking.split('T').join(' ') : ''
+                    }
+                    Object.assign(inputFields.value, formattedData)
+                    relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
+                    relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
+                })
+                .then(() => getForloebValues())
+                .then(() => resizeTextareToFitContent())
+                .catch(error => {
+                    console.error('Error fetching opgave:', error)
+                })
+            else
+                getOpgaveById(opgaveId).then(response => {
+                    forloeb_id.value = response.data.ForløbID || response.data.ForløbsskabelonID
+                    addToTemplate.value = response.data.ForløbsskabelonID != null
+                    const formattedData = {
+                        ...response.data,
+                        startdato: response.data.startdato ? response.data.startdato.split('T')[0] : '',
+                        slutdato: response.data.slutdato ? response.data.slutdato.split('T')[0] : '',
+                        booking: response.data.booking ? response.data.booking.split('T').join(' ') : ''
+                    }
+                    Object.assign(inputFields.value, formattedData)
+                    relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
+                    relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
+                })
+                .then(() => getForloebValues())
+                .then(() => resizeTextareToFitContent())
+                .catch(error => {
+                    console.error('Error fetching opgave:', error)
+                })
         }
         else
             getForloebValues()
@@ -184,13 +204,13 @@
                 if(formData.booking == "")
                     delete formData.booking
 
-            const response = isEditing ? await updateOpgave(opgaveId, formData) : (isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData))
+            const response = isEditing ? (isTemplate ? await updateOpgaveskabelon(opgaveId, formData) : await updateOpgave(opgaveId, formData)) : (isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData))
             if(response !== null)
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
                 else if(isTemplate)
-                    router.replace({ path: '/template-overview?view=1' })
+                    router.replace({ path: '/template-overview', query: { view: '1' } })
                 else
                 {
                     var query = addToTemplate.value ? { tid: forloeb_id.value } : { id: forloeb_id.value }

@@ -56,7 +56,8 @@ from controllers.opgaveskabelon_controller import (
     create_opgaveskabelon,
     get_all_opgaveskabeloner,
     update_opgaveskabelon,
-    delete_opgaveskabelon
+    delete_opgaveskabelon,
+    get_opgaveskabelon
 )
 
 logger = logging.getLogger(__name__)
@@ -219,6 +220,11 @@ def create_opgaveskabelon_endpoint():
 @api_endpoints.route('/opgaveskabelon', methods=['GET'])
 def get_all_opgaveskabeloner_endpoint():
     return get_all_opgaveskabeloner()
+
+
+@api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['GET'])
+def get_opgaveskabelon_endpoint(opgaveskabelon_id):
+    return get_opgaveskabelon(opgaveskabelon_id)
 
 
 @api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['PUT'])

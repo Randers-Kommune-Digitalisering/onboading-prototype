@@ -220,7 +220,7 @@
             <div class="buttons">
                 
                 <router-link v-if="adminView" :to="`/create-ressource?${templateView ? 't' : ''}id=${id}`" class="button">+ Tilføj ressource</router-link>
-                <router-link v-if="adminView" :to="`/create-opgave?edit=true&id=${id}`" class="button">Redigér</router-link>
+                <router-link v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${templateView ? '&template=true' : ''}`" class="button">Redigér</router-link>
                 <div class="button" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
             </div>
         </div>

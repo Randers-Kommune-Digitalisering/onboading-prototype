@@ -10,6 +10,10 @@ export const getOpgaveskabeloner = () => {
     return axios.get(`${API_URL}/opgaveskabelon`);
 };
 
+export const getOpgaveskabelonById = (opgaveskabelon_id) => {
+    return axios.get(`${API_URL}/opgaveskabelon/${opgaveskabelon_id}`);
+};
+
 export const updateOpgaveskabelon = (opgaveskabelon_id, data) => {
     return axios.put(`${API_URL}/opgaveskabelon/${opgaveskabelon_id}`, data);
 };

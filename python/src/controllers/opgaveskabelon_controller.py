@@ -48,6 +48,26 @@ def get_all_opgaveskabeloner():
         session.close()
 
 
+def get_opgaveskabelon(opgaveskabelon_id):
+    session = db_client.get_session()
+    try:
+        opgaveskabelon = session.query(Opgaveskabelon).filter_by(OpgaveskabelonID=opgaveskabelon_id).first()
+        if not opgaveskabelon:
+            return jsonify({"error": "Opgaveskabelon not found"}), 404
+
+        opgaveskabelon_data = {
+            'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
+            'title': opgaveskabelon.title,
+            'beskrivelse': opgaveskabelon.beskrivelse,
+            'relativ_slutdag': opgaveskabelon.relativ_slutdag
+        }
+        return jsonify(opgaveskabelon_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def update_opgaveskabelon(opgaveskabelon_id):
     session = db_client.get_session()
     try:

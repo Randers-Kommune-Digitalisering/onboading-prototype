@@ -19,7 +19,7 @@
 	
 	const forloebTemplates = ref([])
 	const opgaveTemplates = ref([])
-	const selectedType = ref(view === '0' ? TemplateType.Forloebsskabelon : TemplateType.Opgaveskabelon)
+	const selectedType = ref(view == '0' ? TemplateType.Forloebsskabelon : view == '1' ? TemplateType.Opgaveskabelon : TemplateType.Forloebsskabelon)
 
 	const fetchTemplates = async () => {
 		if (keycloak.authenticated) {
