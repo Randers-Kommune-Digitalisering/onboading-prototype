@@ -63,6 +63,7 @@
             :expandByDefault="expandFirstItem && index == 0"
             :dark="dark"
             :templateView="templateView"
+            :isTemplate="task.OpgaveskabelonID != null"
             :result="task.result" />
     </div><!-- /card-list -->
     <div v-else>

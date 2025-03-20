@@ -108,6 +108,10 @@
         templateView: {
             type: Boolean,
             default: false
+        },
+        isTemplate: {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -124,7 +128,7 @@
     }
 
     const deleteTask = () => {
-        if(props.templateView)
+        if(props.isTemplate)
             deleteOpgaveskabelon(props.id).then(response => {
                 const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
                 router.replace({ path: '/reload' }).then(() => {
@@ -147,7 +151,7 @@
     /* Instantiate */
 
     onMounted(() => {
-        if(props.templateView)
+        if(props.isTemplate)
             getRessourcesByOpgaveskabelonID(props.id).then(response => {
                 ressourceList.value = response.data
             }).catch(error => {
@@ -197,7 +201,7 @@
 
         <div class="card-content">
             <div class="card-details">
-                <div v-if="templateView && relativeStartdate != null">
+                <div v-if="templateView && !isTemplate">
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
@@ -239,10 +243,9 @@
                     <i class="fa-solid fa-up-right-from-square"></i>{{ ressource.name }}</a>
             </div>
 
-            <div class="buttons">
-                
+            <div class="buttons">                
                 <router-link class="button" v-if="adminView" :to="`/create-ressource?${templateView ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
-                <router-link class="button hollow" v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${templateView ? '&template=true' : ''}`">Redigér</router-link>
+                <router-link class="button hollow" v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${isTemplate ? '&template=true' : ''}`">Redigér</router-link>
                 <div :class="['button', 'hollow', {'red': props.result}]" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
                 <div class="button hollow red" v-if="adminView" @click="deleteTask()">Slet</div>
             </div>

@@ -14,7 +14,7 @@
     const forloeb = ref(null)
     const forloeb_id = ref(parseInt(route.query.id ?? route.query.tid, 10))
     const isTemplate = route.query.template === 'true'  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
-    const addToTemplate = ref(route.query.id == null && isTemplate == false) // Whether we are adding an opgave to a forløbsskabelon
+    const addToTemplate = ref(route.query.tid != null) // Whether we are adding an opgave to a forløbsskabelon
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
@@ -224,7 +224,10 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger opgave på' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave til' }} {{ forloeb?.name == '' ? 'forløbet' : forloeb?.name  }}</p>
+    addToTemplate: {{ addToTemplate }}, isTemplate: {{ isTemplate }}, isEditing: {{ isEditing }}
+    <p class="indent-tiny bold uppercase p-header-adjust">
+        {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave til' }}
+        {{ isTemplate ? '' : ' på ' + forloeb?.name?? 'forløbet' }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">

@@ -488,6 +488,7 @@ button[type="submit"] {
     border: 0rem;
     font-size: 1em;
     font-weight: 500;
+    border: 0.1rem solid var(--color-button);
 }
 
 .button {
