@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
-    import { getRessourcesByOpgaveID  } from '@/services/ressourceService'
+    import { getRessourcesByOpgaveID, getRessourcesByOpgaveskabelonID  } from '@/services/ressourceService'
     import { updateOpgave } from '@/services/opgaveService'
 
     const router = useRouter()
@@ -125,11 +125,18 @@
     /* Instantiate */
 
     onMounted(() => {
-        getRessourcesByOpgaveID(props.id).then(response => {
-            ressourceList.value = response.data
-        }).catch(error => {
-            console.error('Error fetching ressources:', error)
-        })
+        if(props.templateView)
+            getRessourcesByOpgaveskabelonID(props.id).then(response => {
+                ressourceList.value = response.data
+            }).catch(error => {
+                console.error('Error fetching ressources:', error)
+            })
+        else
+            getRessourcesByOpgaveID(props.id).then(response => {
+                ressourceList.value = response.data
+            }).catch(error => {
+                console.error('Error fetching ressources:', error)
+            })
 
         isFutureTask.value = new Date(props.startdate) > new Date()
     })
@@ -168,8 +175,7 @@
 
         <div class="card-content">
             <div class="card-details">
-
-                <div v-if="templateView">
+                <div v-if="templateView && relativeStartdate != null">
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
@@ -213,7 +219,7 @@
 
             <div class="buttons">
                 
-                <router-link v-if="adminView" :to="`/create-ressource?id=${id}`" class="button">+ Tilføj ressource</router-link>
+                <router-link v-if="adminView" :to="`/create-ressource?${templateView ? 't' : ''}id=${id}`" class="button">+ Tilføj ressource</router-link>
                 <router-link v-if="adminView" :to="`/create-opgave?edit=true&id=${id}`" class="button">Redigér</router-link>
                 <div class="button" v-if="!templateView" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
             </div>

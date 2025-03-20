@@ -49,11 +49,11 @@
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
             :adminView="adminView"
-            :id="task.OpgaveID"
+            :id="task.OpgaveID ?? task.OpgaveskabelonID"
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"
-            :relativeStartdate="task.relativ_startdag"
+            :relativeStartdate="task.relativ_startdag ?? task.startdato"
             :relativeEnddate="task.relativ_slutdag"
             :startdate="task.startdato ? new Date(new Date(task.startdato)) : null"
             :deadline="task.slutdato ? new Date(new Date(task.slutdato)) : null"

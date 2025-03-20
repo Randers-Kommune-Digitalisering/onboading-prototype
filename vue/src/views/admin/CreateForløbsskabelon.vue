@@ -69,7 +69,7 @@
 		</div>
 
 		<div class="inputContainer">
-			<input type="text" id="duration" name="duration" placeholder=" " class="padding-input" ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 2)" required>
+			<input type="text" id="duration" name="duration" placeholder=" " class="padding-input" ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 3)" required>
 			<label for="duration" class="floating-label">Forløbets varighed</label>
             <label for="duration" class="annot-label">{{ returnDagOrDage(inputFields.varighed) }}</label>
             <div :class="['floating-button', 'indent-floating-button', { 'disabled': durationAtOne}]"
@@ -97,6 +97,6 @@
         right: 2.7rem;
     }
     .padding-input {
-        padding-left: calc(45% - 2rem);
+        padding-left: calc(45% - 2.5rem);
     }
 </style>

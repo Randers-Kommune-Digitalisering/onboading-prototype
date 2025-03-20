@@ -9,18 +9,15 @@ def create_opgaveskabelon():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse']
+        required_fields = ['title', 'beskrivelse', 'relativ_slutdag']
 
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
-        
-        if 'relativ_slutdag' not in data and 'slutdato' not in data:
-            return jsonify({"error": "Missing required date field"}), 400
 
         new_opgaveskabelon = Opgaveskabelon(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
-            slutdato=data['relativ_slutdag'] if 'relativ_slutdag' not in data else data['slutdato'],
+            relativ_slutdag=data['relativ_slutdag'],
         )
         session.add(new_opgaveskabelon)
         session.commit()
@@ -41,7 +38,7 @@ def get_all_opgaveskabeloner():
                 'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
                 'title': opgaveskabelon.title,
                 'beskrivelse': opgaveskabelon.beskrivelse,
-                'slutdato': opgaveskabelon.slutdato
+                'relativ_slutdag': opgaveskabelon.relativ_slutdag
             } for opgaveskabelon in opgaveskabeloner
         ]
         return jsonify(opgaveskabeloner_data), 200
@@ -55,13 +52,10 @@ def update_opgaveskabelon(opgaveskabelon_id):
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse']
+        required_fields = ['title', 'beskrivelse', 'relativ_slutdag']
 
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
-        
-        if 'relativ_slutdag' not in data and 'slutdato' not in data:
-            return jsonify({"error": "Missing required date field"}), 400
 
         opgaveskabelon = session.query(Opgaveskabelon).filter_by(OpgaveskabelonID=opgaveskabelon_id).first()
         if not opgaveskabelon:
@@ -69,7 +63,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
 
         opgaveskabelon.title = data['title']
         opgaveskabelon.beskrivelse = data['beskrivelse']
-        opgaveskabelon.slutdato = data['relativ_slutdag'] if 'relativ_slutdag' in data else data['slutdato']
+        opgaveskabelon.relativ_slutdag = data['relativ_slutdag']
 
         session.commit()
         return jsonify({"message": "Opgaveskabelon updated successfully"}), 200

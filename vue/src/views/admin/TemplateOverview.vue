@@ -1,5 +1,6 @@
 <script setup>
 	import { ref, onMounted, watch } from 'vue'
+	import { useRoute } from 'vue-router'
 	import keycloak from '@/keycloak'
 
 	import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
@@ -8,6 +9,9 @@
 	import CourseList from '@/components/CourseList.vue'
 	import TaskList from '@/components/TaskList.vue' // Import TaskList component
 
+	const route = useRoute()
+	const view = route.query.view
+
 	const TemplateType = {
 		Forloebsskabelon: 0,
 		Opgaveskabelon: 1
@@ -15,7 +19,7 @@
 	
 	const forloebTemplates = ref([])
 	const opgaveTemplates = ref([])
-	const selectedType = ref(TemplateType.Forloebsskabelon)
+	const selectedType = ref(view === '0' ? TemplateType.Forloebsskabelon : TemplateType.Opgaveskabelon)
 
 	const fetchTemplates = async () => {
 		if (keycloak.authenticated) {
@@ -69,7 +73,7 @@
         <router-link v-if="selectedType==TemplateType.Opgaveskabelon" :to="`/create-opgave?template=true`" class="button">+ Opret opgaveskabelon</router-link>
     </div>
   	<CourseList v-if="selectedType==TemplateType.Forloebsskabelon" :courses="forloebTemplates" title="" />
-	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon" :tasks="opgaveTemplates" title="" :expandFirstItem="false" />
+	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon" :tasks="opgaveTemplates" title="" :expandFirstItem="false" :templateView="true" :adminView="true" />
 </template>
 
 <style scoped>

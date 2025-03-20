@@ -189,6 +189,8 @@
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
+                else if(isTemplate)
+                    router.replace({ path: '/template-overview?view=1' })
                 else
                 {
                     var query = addToTemplate.value ? { tid: forloeb_id.value } : { id: forloeb_id.value }
@@ -255,7 +257,7 @@
             <div v-if="addToTemplate" class="flex-item">
                 <input type="text" id="startdate" class="padding-input" name="startdate"
                         v-model="inputFields.relativ_startdag" ref="relativStartday"
-                        @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 2);relativStartdayAtZero = inputFields.relativ_startdag==0"
+                        @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3);relativStartdayAtZero = inputFields.relativ_startdag==0"
                         required>
                 <label for="startdate" class="floating-label">Startes efter </label>
                 <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}</label>
@@ -301,6 +303,6 @@
         right: 2.7rem;
     }
     .padding-input {
-        padding-left: calc(45% - 2rem);
+        padding-left: calc(45% - 2.5rem);
     }
 </style>

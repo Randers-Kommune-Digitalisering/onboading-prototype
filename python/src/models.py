@@ -31,7 +31,7 @@ class Opgaveskabelon(Base):
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
-    slutdato = Column(Integer, nullable=False)
+    relativ_slutdag = Column(Integer, nullable=False)
 
 
 class Opgave(Base):
