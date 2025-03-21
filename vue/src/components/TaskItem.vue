@@ -112,6 +112,11 @@
         isTemplate: {
             type: Boolean,
             default: false
+        },
+        ressources:
+        {
+            type: Array,
+            required: false
         }
     })
 
@@ -154,18 +159,18 @@
     /* Instantiate */
 
     onMounted(() => {
-        if(props.isTemplate)
-            getRessourcesByOpgaveskabelonID(props.id).then(response => {
-                ressourceList.value = response.data
-            }).catch(error => {
-                console.error('Error fetching ressources:', error)
-            })
-        else
-            getRessourcesByOpgaveID(props.id).then(response => {
-                ressourceList.value = response.data
-            }).catch(error => {
-                console.error('Error fetching ressources:', error)
-            })
+        // if(props.isTemplate)
+        //     getRessourcesByOpgaveskabelonID(props.id).then(response => {
+        //         ressourceList.value = response.data
+        //     }).catch(error => {
+        //         console.error('Error fetching ressources:', error)
+        //     })
+        // else
+        //     getRessourcesByOpgaveID(props.id).then(response => {
+        //         ressourceList.value = response.data
+        //     }).catch(error => {
+        //         console.error('Error fetching ressources:', error)
+        //     })
 
         isFutureTask.value = new Date(props.startdate) > new Date()
     })
@@ -240,13 +245,13 @@
 
             <p v-html="description.replace(/\n/g, '<br>')"></p>
 
-            <div class="ressources" v-if="ressourceList.length > 0">
+            <div class="ressources" v-if="props.ressources.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
-                <a v-if="!props.adminView" v-for="ressource in ressourceList" :href="ressource.url" target="_blank" class="link">
+                <a v-if="!props.adminView" v-for="ressource in props.ressources" :href="ressource.url" target="_blank" class="link">
                     <i class="fa-solid fa-up-right-from-square"></i>
                     {{ ressource.name }}
                 </a>
-                <router-link v-else v-for="ressource in ressourceList" :to="`/create-ressource?id=${ressource.RessourceID}&edit=true`" class="link">
+                <router-link v-else v-for="ressource in props.ressources" :to="`/create-ressource?id=${ressource.RessourceID}&edit=true`" class="link">
                     <i class="fa-solid fa-up-right-from-square"></i>
                     {{ ressource.name }}
                 </router-link>

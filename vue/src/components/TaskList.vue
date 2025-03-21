@@ -64,7 +64,8 @@
             :dark="dark"
             :templateView="templateView"
             :isTemplate="task.OpgaveskabelonID != null"
-            :result="task.result" />
+            :result="task.result"
+            :ressources="task.resourcer" />
     </div><!-- /card-list -->
     <div v-else>
         <p class="indent-tiny">Ingen opgaver fundet.</p>
