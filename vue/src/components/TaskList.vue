@@ -53,7 +53,7 @@
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"
-            :relativeStartdate="task.relativ_startdag ?? task.startdato"
+            :relativeStartdate="task.relativ_startdag"
             :relativeEnddate="task.relativ_slutdag"
             :startdate="task.startdato ? new Date(new Date(task.startdato)) : null"
             :deadline="task.slutdato ? new Date(new Date(task.slutdato)) : null"

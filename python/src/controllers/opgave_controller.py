@@ -293,6 +293,44 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         session.close()
 
 
+def get_opgave_by_admin(adminmail):
+    session = db_client.get_session()
+    try:
+        query = session.query(Opgave).filter(Opgave.ansvarlig == adminmail)
+        opgave = query.all()
+
+        if not opgave:
+            return jsonify({"error": "No opgave found for the specified usermail"}), 404
+
+        opgave_data = [
+            {
+                'OpgaveID': opgave.OpgaveID,
+                'title': opgave.title,
+                'beskrivelse': opgave.beskrivelse,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
+                ],
+                'ansvarlig': opgave.ansvarlig,
+                'startdato': opgave.startdato.isoformat(),
+                'slutdato': opgave.slutdato.isoformat(),
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
+                'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
+                'timestamp': opgave.timestamp.isoformat()
+            } for opgave in opgave
+        ]
+        return jsonify(opgave_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def get_opgave_by_forloeb_id(forlob_id):
     session = db_client.get_session()
     try:

@@ -55,37 +55,39 @@
 
     const fetchOpgaver = async () => {
         try {
-            const headers = { usermail: props.userEmail }
+            const headers = { usermail: props.userEmail ?? props.ansvarligEmail }
 
-            if (props.userEmail || (props.id && props.adminView)) {
+            if (props.userEmail || props.ansvarligEmail || (props.id && props.adminView)) {
                 const forloeb_response =  props.ansvarligEmail ? null
                                         : props.userEmail ? await getForloebByEmail({ headers }) 
                                         : props.isTemplate ? await getForloebsskabelonById(props.id, { headers })
                                         : await getForloebById(props.id, { headers })
                 
-                forloeb.value = forloeb_response.data
-                isForloebCompleted.value = forloeb.value.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
+                forloeb.value = forloeb_response?.data
+                isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
 
-                forloeb_id.value = forloeb.value.ForløbID || forloeb.value.ForløbsskabelonID
+                forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 const opgaver_response =  props.ansvarligEmail ? await getOpgaverByAnsvarligEmail({ headers }) 
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
                                         : await getOpgaverByForloebID(forloeb_id.value, { headers })
 
-                if (opgaver_response.data == null)
+                if (opgaver_response?.data == null)
+                {
+                    console.log('No tasks found')
+                    isOpgaverFetched.value = true
                     return
+                }
                 
                 if (!Array.isArray(opgaver_response.data))
                     opgaver_response.data = [opgaver_response.data]
 
+                // Sort and 
+                // Store opgaver in different arrays based on their status
                 if(props.isTemplate)
                     opgaver_response.data.sort((a, b) => a.relativ_startdag - b.relativ_startdag)
                 else
-                {
-                    opgaver_response.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-                    opgaver_response.data.reverse()
-                }
+                    opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
 
-                // Store opgaver in different arrays based on their status
                 opgaver_all.value = opgaver_response.data
                 completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
 
@@ -101,8 +103,9 @@
                         else 
                             opgaver_ongoing.value.push(item)
                     }
-                isOpgaverFetched.value = true
+                opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
 
+                isOpgaverFetched.value = true
 
             } else {
                 console.log('Please provide user email')
@@ -168,7 +171,7 @@
                 :deadline="new Date(forloeb.enddate)"
                 :tasks="opgaver_all" />
     <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate ? 4.5 : 7.2" :dark="true" />
-    <ProgressBar v-if="!showDetails" :percentage="completedPercentage"></ProgressBar>
+    <ProgressBar v-if="!showDetails && !ansvarligEmail" :percentage="completedPercentage"></ProgressBar>
     <div class="buttons" v-if="adminView">
         <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate && !isForloebCompleted">+ Tilføj opgave</router-link>
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
