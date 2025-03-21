@@ -116,7 +116,8 @@
         ressources:
         {
             type: Array,
-            required: false
+            required: false,
+            default: []
         }
     })
 
@@ -258,7 +259,7 @@
             </div>
 
             <div class="buttons">
-                <router-link class="button" v-if="adminView" :to="`/create-ressource?${templateView ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
+                <router-link class="button" v-if="adminView" :to="`/create-ressource?${isTemplate ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
                 <router-link class="button hollow" v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${isTemplate ? '&template=true' : ''}`">Redigér</router-link>
                 <div :class="['button', 'hollow', {'red': props.result}]" v-if="!templateView && ((!props.adminView && props.responsible == '') || props.adminView)" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
                 <div class="button hollow red" v-if="adminView" @click="deleteTask()">Slet</div>

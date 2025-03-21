@@ -38,7 +38,14 @@ def get_all_opgaveskabeloner():
                 'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
                 'title': opgaveskabelon.title,
                 'beskrivelse': opgaveskabelon.beskrivelse,
-                'relativ_slutdag': opgaveskabelon.relativ_slutdag
+                'relativ_slutdag': opgaveskabelon.relativ_slutdag,
+                'resourcer': [
+                    {
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgaveskabelon.ressource
+                ]
             } for opgaveskabelon in opgaveskabeloner
         ]
         return jsonify(opgaveskabeloner_data), 200
