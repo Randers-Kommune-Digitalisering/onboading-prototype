@@ -2,13 +2,14 @@
     import { ref, onMounted } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 	
-    import { createRessource } from '@/services/ressourceService'
+    import { createRessource, getRessourceById, updateRessource, deleteRessource } from '@/services/ressourceService'
 
     const route = useRoute()
 	const router = useRouter()
 
 	const opgave_id = parseInt(route.query.id ?? route.query.tid, 10)
     const isTemplate = route.query.id == null
+	const isEditing = route.query.edit == 'true'
     const isSubmitting = ref(false)
 	const isUrlValid = ref(true)
 
@@ -38,6 +39,16 @@
             router.back()
             return
         }
+		console.log('Editing:', isEditing)
+		if(isEditing) {
+			getRessourceById(opgave_id).then(response => {
+				console.log('Ressource response:', response)
+				inputFields.value.name = response.data.name
+				inputFields.value.url = response.data.url
+			}).catch(error => {
+				console.error('Error fetching ressource:', error)
+			})
+		}
     })
 
 	/* Submit */
@@ -52,23 +63,18 @@
         try {
 			if (isTemplate)
 				inputFields.value.OpgaveskabelonID = opgave_id
-			else
+			else if (!isEditing)
 				inputFields.value.OpgaveID = opgave_id
 
             const formData = { ...inputFields.value }
 
-            const response = await createRessource(formData)
+            const response = isEditing ? await updateRessource(opgave_id, formData) : await createRessource(formData)
             if(response !== null)
             {
-				console.log('Response:', response)
-				console.log('Last route: ', router.getRoutes()[router.getRoutes().length-1].name)
-
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
 				else if (router.getRoutes()[router.getRoutes().length-1].name == "Reload")
 					router.back(2)
-				// else
-                //     router.replace({ path: '/forloeb-overview', query: { id: forloeb_id } })
             }
             else
                 console.log('Response:', response)
@@ -78,6 +84,22 @@
         }
         isSubmitting.value = false
     }
+
+	const deleteItem = () =>
+	{
+		console.log('Deleting ressource:', opgave_id)
+		deleteRessource(opgave_id)
+		.then(response => {
+			if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
+				router.back()
+			else if (router.getRoutes()[router.getRoutes().length-1].name == "Reload")
+				router.back(2)
+		})
+		.catch(error => {
+			console.error('Error deleting ressource:', error)
+		})
+	}
+	
 </script>
 
 <template>
@@ -97,7 +119,8 @@
 		</div>
 
 		<div class="inputContainer submit">
-			<button class="button button-outline" type="submit" :disabled="isSubmitting">+ Tilføj ressource</button>
+			<div class="button hollow red" @click="deleteItem()">Slet ressource</div>
+			<button class="button button-outline" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater' : '+ Tilføj' }} ressource</button>
 		</div>
 
 	</div>

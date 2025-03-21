@@ -50,7 +50,8 @@ from controllers.ressource_controller import (
     get_ressources_by_opgaveid,
     delete_ressource,
     update_ressource,
-    get_ressources_by_opgaveskabelonid
+    get_ressources_by_opgaveskabelonid,
+    get_ressource
 
 )
 
@@ -197,6 +198,11 @@ def update_forloebsskabelon_endpoint(forloebsskabelon_id):
 @api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['DELETE'])
 def delete_forloebsskabelon_endpoint(forloebsskabelon_id):
     return delete_forloebsskabelon(forloebsskabelon_id)
+
+
+@api_endpoints.route('/ressource/<int:ressource_id>', methods=['GET'])
+def get_ressource_endpoint(ressource_id):
+    return get_ressource(ressource_id)
 
 
 @api_endpoints.route('/ressource', methods=['POST'])

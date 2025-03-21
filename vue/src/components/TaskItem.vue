@@ -239,8 +239,14 @@
 
             <div class="ressources" v-if="ressourceList.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
-                <a v-for="ressource in ressourceList" :href="ressource.url" target="_blank" class="link">
-                    <i class="fa-solid fa-up-right-from-square"></i>{{ ressource.name }}</a>
+                <a v-if="!props.adminView" v-for="ressource in ressourceList" :href="ressource.url" target="_blank" class="link">
+                    <i class="fa-solid fa-up-right-from-square"></i>
+                    {{ ressource.name }}
+                </a>
+                <router-link v-else v-for="ressource in ressourceList" :to="`/create-ressource?id=${ressource.RessourceID}&edit=true`" class="link">
+                    <i class="fa-solid fa-up-right-from-square"></i>
+                    {{ ressource.name }}
+                </router-link>
             </div>
 
             <div class="buttons">                

@@ -29,3 +29,7 @@ export const updateRessource = (ressourceID, data) => {
 export const getRessourcesByOpgaveskabelonID = (opgaveskabelonID) => {
     return axios.get(`${API_URL}/ressource/opgaveskabelon/${opgaveskabelonID}`);
 };
+
+export const getRessourceById = (ressourceID) => {
+    return axios.get(`${API_URL}/ressource/${ressourceID}`);
+};

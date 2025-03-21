@@ -78,6 +78,25 @@ def update_ressource(ressource_id):
         session.close()
 
 
+def get_ressource(ressource_id):
+    session = db_client.get_session()
+    try:
+        ressource = session.query(Ressource).filter_by(RessourceID=ressource_id).first()
+        if not ressource:
+            return jsonify({"error": "Ressource not found"}), 404
+
+        result = {
+            "RessourceID": ressource.RessourceID,
+            "name": ressource.name,
+            "url": ressource.url
+        }
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def get_ressources_by_opgaveid(opgave_id):
     session = db_client.get_session()
     try:
