@@ -8,6 +8,7 @@
     import TaskList from '@/components/TaskList.vue'
     import CourseItem from '@/components/CourseItem.vue'
     import Placeholder from '@/components/Placeholder.vue'
+    import ProgressBar from '@/components/ProgressBar.vue'
 
     const router = useRouter()
 
@@ -46,6 +47,7 @@
     const isForloebCompleted = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
+    const completedPercentage = ref(0)
     const opgaver_ongoing = ref([])
     const opgaver_future = ref([])
     const opgaver_completed = ref([])
@@ -85,6 +87,8 @@
 
                 // Store opgaver in different arrays based on their status
                 opgaver_all.value = opgaver_response.data
+                completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
+
                 if(props.isTemplate)
                     opgaver_template.value = opgaver_response.data
                 else
@@ -163,7 +167,8 @@
                 :startDate="new Date(forloeb.startdate)" 
                 :deadline="new Date(forloeb.enddate)"
                 :tasks="opgaver_all" />
-    <Placeholder v-else :height="isTemplate ? 4.5 : 7.2" :dark="true" />
+    <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate ? 4.5 : 7.2" :dark="true" />
+    <ProgressBar v-if="!showDetails" :percentage="completedPercentage"></ProgressBar>
     <div class="buttons" v-if="adminView">
         <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate && !isForloebCompleted">+ Tilføj opgave</router-link>
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
@@ -173,7 +178,7 @@
         <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
     </div>
     <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
-    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" />
+    <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" :largeHeaderAdjust="!showDetails" />
     <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_future" :adminView="adminView" title="Kommende opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" itemColor="777371" />
     <TaskList v-if="forloeb != null && !isTemplate" :tasks="opgaver_completed" :adminView="adminView" title="Afsluttede opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" :dark="true" itemColor="617a5d" />
 </template>
