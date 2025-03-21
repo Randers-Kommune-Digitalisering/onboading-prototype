@@ -88,23 +88,21 @@
 	justify-content: flex-start;
 	margin-bottom: 1rem;
 	gap: 0.6rem;
-	border-bottom: 0.1rem solid var(--color-navbar-item-hover);
+	border-bottom: 0.25rem solid var(--color-card-dark);
 }
 .navItems .navItem {
 	background-color: var(--color-card-faded);
 }
-.navItems .navItem:hover {
-	background-color: var(--color-card-dark);
-}
 .navItems .navItem.selected {
+	background: linear-gradient(to bottom, rgb(199, 190, 179), var(--color-background));
 	background-color: var(--color-background);
 	pointer-events: none;
-	border-top: 0.1rem solid var(--color-navbar-item-hover);
-	border-left: 0.1rem solid var(--color-navbar-item-hover);
-	border-right: 0.1rem solid var(--color-navbar-item-hover);
+	border-top: 0.25rem solid var(--color-card-dark);
+	border-left: 0.25rem solid var(--color-card-dark);
+	border-right: 0.25rem solid var(--color-card-dark);
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
-	transform: translateY(0.1rem);
+	transform: translateY(0.25rem);
 }
 .navItems .navItem:not(.selected) {
 	margin-bottom: 0.4rem;

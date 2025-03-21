@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
     import keycloak from '@/keycloak'
-    import { getForloebByEmail, getForloebById, completeForloeb } from '@/services/forløbService'
+    import { getForloebByEmail, getForloebById, completeForloeb, deleteForloeb } from '@/services/forløbService'
     import { getForloebsskabelonById, deleteForloebsskabelon } from '@/services/forløbsskabelonService'
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService'
     import TaskList from '@/components/TaskList.vue'
@@ -121,12 +121,19 @@
         })
     }
 
-    const deleteTemplate = () => {
-        deleteForloebsskabelon(forloeb_id.value).then(response => {
-            router.replace({ path: '/template-overview' })
-        }).catch(error => {
-            console.error('Error deleting template:', error)
-        })
+    const deleteCourse = () => {
+        if(props.isTemplate)
+            deleteForloebsskabelon(forloeb_id.value).then(response => {
+                router.replace({ path: '/template-overview' })
+            }).catch(error => {
+                console.error('Error deleting template:', error)
+            })
+        else
+            deleteForloeb(forloeb_id.value).then(response => {
+                router.replace({ path: '/admin-overview' })
+            }).catch(error => {
+                console.error('Error deleting course:', error)
+            })
     }
 
     onMounted(() => {
@@ -159,7 +166,7 @@
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
         <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`" class="button hollow">Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
         <div @click="completeCourse()" class="button hollow red" v-if="!isTemplate && !isForloebCompleted">Afslut forløb</div>
-        <div @click="deleteTemplate()" class="button red hollow" v-if="isTemplate">Slet skabelon</div>
+        <div @click="deleteCourse()" class="button red hollow" v-if="isTemplate || isForloebCompleted">Slet {{ isTemplate ? 'skabelon' : 'forløb' }}</div>
         <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
     </div>
     <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />

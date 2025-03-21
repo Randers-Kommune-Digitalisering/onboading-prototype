@@ -214,3 +214,20 @@ def complete_forloeb(id):
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def delete_forloeb(id):
+    session = db_client.get_session()
+    try:
+        forloeb = session.query(Forløb).filter_by(ForløbID=id).first()
+        if not forloeb:
+            return jsonify({"error": "Forløb not found"}), 404
+
+        session.delete(forloeb)
+        session.commit()
+        return jsonify({"message": "Forløb deleted successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()

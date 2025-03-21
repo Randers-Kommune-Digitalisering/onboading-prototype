@@ -33,7 +33,8 @@ from controllers.forloeb_controller import (
     get_forloeb_by_email,
     get_forloeb_by_admin,
     complete_forloeb,
-    update_forloeb
+    update_forloeb,
+    delete_forloeb
 )
 
 from controllers.user_controller import (
@@ -145,7 +146,7 @@ def get_all_forloeb_endpoint():
 
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['DELETE'])
 def delete_forloeb_endpoint(forloeb_id):
-    return complete_forloeb(forloeb_id)
+    return delete_forloeb(forloeb_id)
 
 
 @api_endpoints.route('/forloeb/complete/<int:forloeb_id>', methods=['PUT'])
