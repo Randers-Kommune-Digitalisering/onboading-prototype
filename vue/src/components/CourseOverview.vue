@@ -122,6 +122,9 @@
     }
 
     const deleteCourse = () => {
+        if(!confirm(`Er du sikker på, at du vil slette ${props.isTemplate ? 'denne skabelon' : 'dette forløb'}?`))
+            return
+
         if(props.isTemplate)
             deleteForloebsskabelon(forloeb_id.value).then(response => {
                 router.replace({ path: '/template-overview' })

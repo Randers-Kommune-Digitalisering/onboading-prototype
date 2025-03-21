@@ -128,6 +128,9 @@
     }
 
     const deleteTask = () => {
+        if(!confirm(`Er du sikker på, at du vil slette denne opgave${props.isTemplate ? 'skabelon' : ''}?`))
+            return
+
         if(props.isTemplate)
             deleteOpgaveskabelon(props.id).then(response => {
                 const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
