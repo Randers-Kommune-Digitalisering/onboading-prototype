@@ -4,7 +4,7 @@
 
     import { getAnvarligNames } from '@/services/userService.js'
     import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService.js'
-    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveSkabelonService.js'
+    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveskabelonService.js'
     import { getForloebById } from '@/services/forløbService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
 
