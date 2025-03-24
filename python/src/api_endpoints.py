@@ -285,3 +285,8 @@ def get_and_save_azure_ad_data_endpoint():
 @api_endpoints.route('/users/admin', methods=['GET'])
 def get_all_admin_names_endpoint():
     return get_admin_names()
+
+
+@api_endpoints.route('/healthz', methods=['GET'])
+def healthcheck():
+    return 'OK', 200
