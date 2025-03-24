@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { getOpgaver } from '../../services/opgaveService';
+import { getOpgaver } from '../../services/opgaveService.js';
 import { onMounted, ref, computed } from 'vue';
 import keycloak from '@/keycloak'
 

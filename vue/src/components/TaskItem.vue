@@ -2,9 +2,9 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
-    import { getRessourcesByOpgaveID, getRessourcesByOpgaveskabelonID  } from '@/services/ressourceService'
-    import { updateOpgave, deleteOpgave } from '@/services/opgaveService'
-    import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService'
+    import { getRessourcesByOpgaveID, getRessourcesByOpgaveskabelonID  } from '@/services/ressourceService.js'
+    import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
+    import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
 
     const router = useRouter()
 

@@ -3,8 +3,8 @@
 	import { useRoute, useRouter } from 'vue-router'
 	import keycloak from '@/keycloak'
 
-	import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
-	import { getOpgaveskabeloner } from '@/services/opgaveskabelonService'
+	import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
+	import { getOpgaveskabeloner } from '@/services/opgaveskabelonService.js'
 
 	import CourseList from '@/components/CourseList.vue'
 	import TaskList from '@/components/TaskList.vue' // Import TaskList component

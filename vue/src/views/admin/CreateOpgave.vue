@@ -2,11 +2,11 @@
     import { ref, onMounted } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 
-    import { getAnvarligNames } from '@/services/userService'
-    import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService'
-    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveSkabelonService'
-    import { getForloebById } from '@/services/forløbService'
-    import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
+    import { getAnvarligNames } from '@/services/userService.js'
+    import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService.js'
+    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveSkabelonService.js'
+    import { getForloebById } from '@/services/forløbService.js'
+    import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
 
     const route = useRoute()
     const router = useRouter()

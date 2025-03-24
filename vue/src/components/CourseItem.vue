@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import ProgressBar from './ProgressBar.vue'
 
-    import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService'
+    import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService.js'
 
     const cardRef = ref(null)
     const completedPercentage = ref(0)

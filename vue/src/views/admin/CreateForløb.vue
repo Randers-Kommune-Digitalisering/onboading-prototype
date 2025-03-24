@@ -3,9 +3,9 @@
     import { useRouter, useRoute } from 'vue-router'
     import keycloak from '@/keycloak'
 
-    import { getForloebsskabeloner } from '@/services/forløbsskabelonService'
-    import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService'
-    import { getAdminNames, getEmail } from '@/services/userService'
+    import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
+    import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
+    import { getAdminNames, getEmail } from '@/services/userService.js'
 
     const route = useRoute()
     const router = useRouter()

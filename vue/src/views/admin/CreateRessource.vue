@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 	
-    import { createRessource, getRessourceById, updateRessource, deleteRessource } from '@/services/ressourceService'
+    import { createRessource, getRessourceById, updateRessource, deleteRessource } from '@/services/ressourceService.js'
 
     const route = useRoute()
 	const router = useRouter()

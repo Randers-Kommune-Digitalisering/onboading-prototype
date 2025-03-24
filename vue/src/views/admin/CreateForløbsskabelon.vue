@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
 	
-    import { createForloebsskabelon, getForloebsskabelonById, updateForloebsskabelon } from '@/services/forløbsskabelonService'
+    import { createForloebsskabelon, getForloebsskabelonById, updateForloebsskabelon } from '@/services/forløbsskabelonService.js'
 
     const route = useRoute()
 	const router = useRouter()

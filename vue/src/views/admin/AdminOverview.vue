@@ -2,7 +2,7 @@
 	import { ref, onMounted } from 'vue'
 	import keycloak from '@/keycloak'
 
-	import { getForloebByAdmin } from '@/services/forløbService'
+	import { getForloebByAdmin } from '@/services/forløbService.js'
 	import CourseList from '@/components/CourseList.vue'
 
 	const forloeb_ongoing = ref([])

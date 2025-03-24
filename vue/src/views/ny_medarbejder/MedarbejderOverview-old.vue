@@ -43,8 +43,8 @@
 
 <script>
 import keycloak from '@/keycloak';
-import { getForloebWithOpgaver } from '../../services/forløbService';
-import { updateOpgave, getOpgaverByForloebID } from '../../services/opgaveService';
+import { getForloebWithOpgaver } from '../../services/forløbService.js';
+import { updateOpgave, getOpgaverByForloebID } from '../../services/opgaveService.js';
 
 export default {
   data() {
