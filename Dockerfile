@@ -24,7 +24,7 @@ RUN pip install -r python/src/requirements.txt
 
 COPY python/ ./python/
 
-COPY --from=frontend /app/dist /app/frontend
+COPY --from=frontend /app/dist /app/
 
 EXPOSE 8000
 CMD ["python", "python/src/main.py"]
