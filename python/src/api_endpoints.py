@@ -1,25 +1,49 @@
 import logging
-from flask import Blueprint
+from flask import Blueprint, request
 from utils.database import DatabaseClient
 from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
 from models import Base
 from controllers.opgave_controller import (
     create_opgave_with_opgaveskabelon,
     get_opgave_by_forloebsskabelon_id,
+    get_opgave,
     update_opgave,
     delete_opgave,
     get_opgave_by_forloeb_id,
-    create_opgave
+    create_opgave,
+    get_all_opgaver,
+    get_opgave_by_forloebsskabelon_id_admin,
+    get_opgave_by_forloeb_id_admin,
+    get_opgave_by_admin
 )
+
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
     get_all_forloebsskabeloner,
-    update_forloebsskabelon_name
-
+    get_forloebsskabelon_by_id,
+    update_forloebsskabelon,
+    get_forloebsskabeloner_with_opgaver,
+    delete_forloebsskabelon
 )
 
 from controllers.forloeb_controller import (
-    create_forloeb
+    create_forloeb,
+    get_forloeb,
+    get_all_forloeb,
+    get_forloeb_with_opgaver,
+    get_forloeb_by_email,
+    get_forloeb_by_admin,
+    complete_forloeb,
+    update_forloeb,
+    delete_forloeb
+)
+
+from controllers.user_controller import (
+    get_admin_names,
+    get_email,
+    get_dq_numbers,
+    get_fullname,
+    get_and_save_azure_ad_data
 )
 
 from controllers.ressource_controller import (
@@ -27,7 +51,8 @@ from controllers.ressource_controller import (
     get_ressources_by_opgaveid,
     delete_ressource,
     update_ressource,
-    get_ressources_by_opgaveskabelonid
+    get_ressources_by_opgaveskabelonid,
+    get_ressource
 
 )
 
@@ -35,15 +60,25 @@ from controllers.opgaveskabelon_controller import (
     create_opgaveskabelon,
     get_all_opgaveskabeloner,
     update_opgaveskabelon,
-    delete_opgaveskabelon
+    delete_opgaveskabelon,
+    get_opgaveskabelon
 )
 
-db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
-Base.metadata.create_all(db_client.engine)
-
-
 logger = logging.getLogger(__name__)
+db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
+try:
+    Base.metadata.create_all(db_client.engine)
+except Exception as e:
+    print(f"Error creating tables: {e}")
+
+
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
+
+
+@api_endpoints.route('/mitforloeb', methods=['GET'])
+def get_forloeb_by_email_endpoint():
+    mail = request.headers.get('usermail')
+    return get_forloeb_by_email(mail)
 
 
 @api_endpoints.route('/opgave', methods=['POST'])
@@ -61,6 +96,22 @@ def get_opgave_by_forloebsskabelon_id_endpoint(forlobsskabelon_id):
     return get_opgave_by_forloebsskabelon_id(forlobsskabelon_id)
 
 
+@api_endpoints.route('/opgave/forloebsskabelon/admin/<int:forlobsskabelon_id>', methods=['GET'])
+def get_opgave_by_forloebsskabelon_id_admin_endpoint(forlobsskabelon_id):
+    return get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id)
+
+
+@api_endpoints.route('/opgave/admin', methods=['GET'])
+def get_all_opgaver_admin_endpoint():
+    mail = request.headers.get('usermail')
+    return get_opgave_by_admin(mail)
+
+
+@api_endpoints.route('/opgave/<int:opgave_id>', methods=['GET'])
+def get_opgave_endpoint(opgave_id):
+    return get_opgave(opgave_id)
+
+
 @api_endpoints.route('/opgave/<int:opgave_id>', methods=['PUT'])
 def update_opgave_endpoint(opgave_id):
     return update_opgave(opgave_id)
@@ -76,9 +127,54 @@ def get_opgave_by_forloeb_id_endpoint(forloeb_id):
     return get_opgave_by_forloeb_id(forloeb_id)
 
 
+@api_endpoints.route('/opgave/forloeb/admin/<int:forloeb_id>', methods=['GET'])
+def get_opgave_by_forloeb_id_admin_endpoint(forloeb_id):
+    return get_opgave_by_forloeb_id_admin(forloeb_id)
+
+
+@api_endpoints.route('/opgave', methods=['GET'])
+def get_all_opgaver_endpoint():
+    return get_all_opgaver()
+
+
 @api_endpoints.route('/forloeb', methods=['POST'])
 def create_forloeb_endpoint():
     return create_forloeb()
+
+
+@api_endpoints.route('/forloeb', methods=['GET'])
+def get_all_forloeb_endpoint():
+    logger.info(f"Headers: {request.headers}")
+    admin_name = request.headers.get('adminname')
+    logger.info(f"Adminname: {admin_name}")
+    if admin_name:
+        return get_forloeb_by_admin(admin_name)
+    return get_all_forloeb()
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['DELETE'])
+def delete_forloeb_endpoint(forloeb_id):
+    return delete_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/complete/<int:forloeb_id>', methods=['PUT'])
+def complete_forloeb_endpoint(forloeb_id):
+    return complete_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['PUT'])
+def update_forloeb_endpoint(forloeb_id):
+    return update_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['GET'])
+def get_forloeb_endpoint(forloeb_id):
+    return get_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/opgaver', methods=['GET'])
+def get_forloeb_with_opgaver_endpoint():
+    return get_forloeb_with_opgaver()
 
 
 @api_endpoints.route('/forlobsskabelon', methods=['POST'])
@@ -91,9 +187,29 @@ def get_all_forloebsskabeloner_endpoint():
     return get_all_forloebsskabeloner()
 
 
+@api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['GET'])
+def get_forloebsskabeloner_by_id_endpoint(forloebsskabelon_id):
+    return get_forloebsskabelon_by_id(forloebsskabelon_id)
+
+
+@api_endpoints.route('/forlobsskabelon/opgaver', methods=['GET'])
+def get_forloebsskabeloner_with_opgaver_endpoint():
+    return get_forloebsskabeloner_with_opgaver()
+
+
 @api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['PUT'])
-def update_forloebsskabelon_name_endpoint(forloebsskabelon_id):
-    return update_forloebsskabelon_name(forloebsskabelon_id)
+def update_forloebsskabelon_endpoint(forloebsskabelon_id):
+    return update_forloebsskabelon(forloebsskabelon_id)
+
+
+@api_endpoints.route('/forlobsskabelon/<int:forloebsskabelon_id>', methods=['DELETE'])
+def delete_forloebsskabelon_endpoint(forloebsskabelon_id):
+    return delete_forloebsskabelon(forloebsskabelon_id)
+
+
+@api_endpoints.route('/ressource/<int:ressource_id>', methods=['GET'])
+def get_ressource_endpoint(ressource_id):
+    return get_ressource(ressource_id)
 
 
 @api_endpoints.route('/ressource', methods=['POST'])
@@ -131,6 +247,11 @@ def get_all_opgaveskabeloner_endpoint():
     return get_all_opgaveskabeloner()
 
 
+@api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['GET'])
+def get_opgaveskabelon_endpoint(opgaveskabelon_id):
+    return get_opgaveskabelon(opgaveskabelon_id)
+
+
 @api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['PUT'])
 def update_opgaveskabelon_endpoint(opgaveskabelon_id):
     return update_opgaveskabelon(opgaveskabelon_id)
@@ -139,3 +260,33 @@ def update_opgaveskabelon_endpoint(opgaveskabelon_id):
 @api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['DELETE'])
 def delete_opgaveskabelon_endpoint(opgaveskabelon_id):
     return delete_opgaveskabelon(opgaveskabelon_id)
+
+
+@api_endpoints.route('/users/email', methods=['GET'])
+def get_email_endpoint():
+    return get_email()
+
+
+@api_endpoints.route('/users/dq', methods=['GET'])
+def get_dq_numbers_endpoint():
+    return get_dq_numbers()
+
+
+@api_endpoints.route('/users/fullname', methods=['GET'])
+def get_fullname_endpoint():
+    return get_fullname()
+
+
+@api_endpoints.route('/users/azure', methods=['GET'])
+def get_and_save_azure_ad_data_endpoint():
+    return get_and_save_azure_ad_data()
+
+
+@api_endpoints.route('/users/admin', methods=['GET'])
+def get_all_admin_names_endpoint():
+    return get_admin_names()
+
+
+@api_endpoints.route('/healthz', methods=['GET'])
+def healthcheck():
+    return 'OK', 200

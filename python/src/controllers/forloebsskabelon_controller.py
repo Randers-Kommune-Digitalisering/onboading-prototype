@@ -1,6 +1,5 @@
 from flask import request, jsonify
-from datetime import datetime
-from models import Forløbsskabelon
+from models import Forløbsskabelon, Opgave
 from utils.db_connection import get_db_client
 
 db_client = get_db_client()
@@ -15,11 +14,11 @@ def create_forloebsskabelon():
 
         forloebsskabelon = Forløbsskabelon(
             name=data['name'],
-            varighed=datetime.fromisoformat(data['varighed'])
+            varighed=data['varighed']
         )
         session.add(forloebsskabelon)
         session.commit()
-        return jsonify({"message": "Forløbsskabelon created successfully"}), 201
+        return jsonify({"message": "Forløbsskabelon created successfully", "uid": forloebsskabelon.ForløbsskabelonID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -35,7 +34,7 @@ def get_all_forloebsskabeloner():
             {
                 'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
                 'name': forloebsskabelon.name,
-                'varighed': forloebsskabelon.varighed.isoformat()
+                'varighed': forloebsskabelon.varighed
             } for forloebsskabelon in forloebsskabeloner
         ]
         return jsonify(forloebsskabeloner_data)
@@ -45,20 +44,73 @@ def get_all_forloebsskabeloner():
         session.close()
 
 
-def update_forloebsskabelon_name(forloebsskabelon_id):
+def get_forloebsskabelon_by_id(forloebsskabelon_id):
+    session = db_client.get_session()
+    try:
+        forloebsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=forloebsskabelon_id).first()
+        if not forloebsskabelon:
+            return jsonify({"error": "Forløbsskabelon not found"}), 404
+
+        forloebsskabelon_data = {
+            'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
+            'name': forloebsskabelon.name,
+            'varighed': forloebsskabelon.varighed
+        }
+        return jsonify(forloebsskabelon_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def update_forloebsskabelon(forloebsskabelon_id):
     session = db_client.get_session()
     try:
         data = request.json
-        if 'name' not in data:
-            return jsonify({"error": "Missing required field: name"}), 400
 
         forloebsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=forloebsskabelon_id).first()
         if not forloebsskabelon:
             return jsonify({"error": "Forløbsskabelon not found"}), 404
 
-        forloebsskabelon.name = data['name']
+        forloebsskabelon.name = data.get('name', forloebsskabelon.name)
+        forloebsskabelon.varighed = data.get('varighed', forloebsskabelon.varighed)
+
         session.commit()
-        return jsonify({"message": "Forløbsskabelon name updated successfully"}), 200
+        return jsonify({"message": "Forløbsskabelon updated successfully", "uid": forloebsskabelon.ForløbsskabelonID}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def get_forloebsskabeloner_with_opgaver():
+    session = db_client.get_session()
+    try:
+        forloebsskabeloner = session.query(Forløbsskabelon).join(Opgave).all()
+        forloebsskabeloner_data = [
+            {
+                'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
+                'name': forloebsskabelon.name
+            } for forloebsskabelon in forloebsskabeloner
+        ]
+        return jsonify(forloebsskabeloner_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def delete_forloebsskabelon(forloebsskabelon_id):
+    session = db_client.get_session()
+    try:
+        forloebsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=forloebsskabelon_id).first()
+        if not forloebsskabelon:
+            return jsonify({"error": "Forløbsskabelon not found"}), 404
+
+        session.delete(forloebsskabelon)
+        session.commit()
+        return jsonify({"message": "Forløbsskabelon deleted successfully"}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

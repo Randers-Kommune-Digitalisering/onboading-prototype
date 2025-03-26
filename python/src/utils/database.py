@@ -4,7 +4,11 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 class DatabaseClient:
+    logger = logging.getLogger(__name__)
+
     def __init__(self, db_type, database, username, password, host, port=None):
+        self.logger.debug(f"Creating database engine with {db_type} driver")
+
         if db_type.lower() == 'mssql':
             driver = 'mssql+pymssql'
         elif db_type.lower() == 'mariadb':
@@ -13,8 +17,6 @@ class DatabaseClient:
             driver = 'postgresql+psycopg2'
         else:
             raise ValueError(f"Invalid database type {db_type}")
-
-        self.logger = logging.getLogger(__name__)
 
         if port:
             host = host + f':{port}'
