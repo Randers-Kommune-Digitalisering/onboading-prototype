@@ -1,30 +1,44 @@
-FROM node:14-alpine AS frontend
+FROM node:23-alpine AS vue-build
 
 WORKDIR /app
 
-COPY vue/package*.json ./vue/
-RUN cd vue && npm install
+## Build and copy the vue app
+COPY vue .
+RUN npm install && npm run build
 
-COPY vue/ ./vue/
-RUN cd vue && npm run build
+FROM python:3.12-alpine
 
-RUN cp -r vue/dist dist
+# Set dir and user
+ENV GROUP_NAME=app
+ENV HOME=/app
+ENV GROUP_ID=11000
+ENV USER_ID=11001
+ENV PORT=8080
 
-RUN rm -rf vue
+# Add user
+RUN addgroup --gid $GROUP_ID $GROUP_NAME && \
+    adduser $USER_ID -u $USER_ID -D -G $GROUP_NAME -h $HOME
 
-FROM python:3.10-alpine AS backend
-
-WORKDIR /app
-
+# Install packages
 RUN apk update
 RUN apk add musl-dev gcc libpq-dev mariadb-connector-c-dev postgresql-dev python3-dev
 
-COPY python/src/requirements.txt ./python/src/
-RUN pip install -r python/src/requirements.txt
+# Set working dir
+WORKDIR $HOME
 
-COPY python/ ./python/
+# Copy files and 
+COPY --from=vue-build /app/dist ./dist
+COPY python/src .
 
-COPY --from=frontend /app/dist /app/frontend
+# Install python packages
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-EXPOSE 8000
-CMD ["python", "python/src/main.py"]
+# Open port
+EXPOSE $PORT
+
+# Set user
+USER $USER_ID
+
+ENTRYPOINT ["python"]
+CMD ["main.py"]
