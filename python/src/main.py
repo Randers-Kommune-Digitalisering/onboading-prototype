@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, send_from_directory
+import os
 from healthcheck import HealthCheck
 from prometheus_client import generate_latest
 from utils.logging import set_logging_configuration, is_ready_gauge, last_updated_gauge
@@ -11,6 +12,7 @@ set_logging_configuration()
 def create_app():
     app = Flask(__name__)
     CORS(app)
+    app = Flask(__name__, static_folder='dist', static_url_path='/')
     health = HealthCheck()
     app.add_url_rule('/healthz', 'healthcheck', view_func=lambda: health.run())
     app.add_url_rule('/metrics', 'metrics', view_func=generate_latest)
@@ -26,6 +28,15 @@ def create_app():
 
 
 app = create_app()
+
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 if __name__ == '__main__':  # pragma: no cover
