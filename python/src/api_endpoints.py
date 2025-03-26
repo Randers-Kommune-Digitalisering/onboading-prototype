@@ -1,7 +1,6 @@
 import logging
 from flask import Blueprint, request
-from utils.database import DatabaseClient
-from utils.config import MSSQL_USER, MSSQL_PASS, MSSQL_HOST, MSSQL_DATABASE
+from utils.db_connection import get_db_client
 from models import Base
 from controllers.opgave_controller import (
     create_opgave_with_opgaveskabelon,
@@ -65,7 +64,8 @@ from controllers.opgaveskabelon_controller import (
 )
 
 logger = logging.getLogger(__name__)
-db_client = DatabaseClient('mssql', MSSQL_DATABASE, MSSQL_USER, MSSQL_PASS, MSSQL_HOST)
+
+db_client = get_db_client()
 try:
     Base.metadata.create_all(db_client.engine)
 except Exception as e:
