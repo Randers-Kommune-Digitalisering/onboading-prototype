@@ -23,6 +23,12 @@ AZURE_CLIENTID = os.getenv('AZURE_CLIENTID', '').strip()  # environ["AZURE_CLIEN
 AZURE_TENANTID = os.getenv('AZURE_TENANTID', '').strip()  # environ["AZURE_TENANTID"].strip()
 AZURE_CLIENTSECRET = os.getenv('AZURE_CLIENTSECRET', '').strip()  # environ["AZURE_CLIENTSECRET"].strip()
 CSV_PATH = os.getenv('CSV_PATH', '').strip()  # environ["CSV_PATH"].strip()
+
+KEYCLOAK_URL = os.environ["KEYCLOAK_URL"].strip()
+KEYCLOAK_CLIENT_ID = os.environ["KEYCLOAK_CLIENT_ID"].strip()
+KEYCLOAK_CLIENT_SECRET = os.environ["KEYCLOAK_CLIENT_SECRET"].strip()
+COOKIE_SECRET = os.environ["COOKIE_SECRET"].strip()
+
 # SFTP_HOST = os.environ['SFTP_HOST'].rstrip()
 # SFTP_USER = os.environ['SFTP_USER'].rstrip()
 # SFTP_PASS = os.environ['SFTP_PASS'].rstrip()

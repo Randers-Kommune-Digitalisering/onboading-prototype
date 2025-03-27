@@ -1,4 +1,6 @@
+Authlib
 Flask==3.0.3
+flask-session
 mariadb
 pymssql
 py-healthcheck
