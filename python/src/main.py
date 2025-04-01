@@ -12,7 +12,7 @@ from api_endpoints import api_endpoints
 set_logging_configuration()
 
 
-def create_app():    
+def create_app():
     app = Flask(__name__, static_folder='dist', static_url_path='/')
 
     CORS(app)
