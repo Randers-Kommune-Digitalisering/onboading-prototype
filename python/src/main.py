@@ -1,4 +1,3 @@
-import os
 from flask import Flask, send_from_directory, redirect, url_for, session, request, abort
 from flask_cors import CORS
 from healthcheck import HealthCheck
