@@ -6,42 +6,58 @@ from prometheus_client import generate_latest
 from authlib.integrations.flask_client import OAuth
 
 from utils.logging import set_logging_configuration
-from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
-from api_endpoints import api_endpoints  # Uncomment to import enpoints
+from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK
+from api_endpoints import api_endpoints
 
 set_logging_configuration()
 
 
 def create_app():    
     app = Flask(__name__, static_folder='dist', static_url_path='/')
-    # app.secret_key = COOKIE_SECRET
 
     CORS(app)
 
-    # oauth = OAuth(app)
+    if DISABLE_KEYCLOAK:
+        @app.route('/api/userinfo')
+        def user_info():
+            user_info = {'name': 'Test Testsen', 'email': 'test@test.dk', 'roles': ['Admin', 'Ansvarlig', 'Ny medarbejder']}
+            return user_info, 200
+    else:
+        app.secret_key = COOKIE_SECRET
 
-    # oauth.register(name='keycloak', client_id=KEYCLOAK_CLIENT_ID, client_secret=KEYCLOAK_CLIENT_SECRET, server_metadata_url=f'{KEYCLOAK_URL.rstrip("/")}/.well-known/openid-configuration', client_kwargs={'scope': 'openid profile email'})
+        oauth = OAuth(app)
+
+        oauth.register(name='keycloak', client_id=KEYCLOAK_CLIENT_ID, client_secret=KEYCLOAK_CLIENT_SECRET, server_metadata_url=f'{KEYCLOAK_URL.rstrip("/")}/.well-known/openid-configuration', client_kwargs={'scope': 'openid profile email'})
+
+        @app.before_request
+        def check_authenticated():
+            if 'user' not in session and request.path != '/login' and request.path != '/auth':
+                return redirect(url_for("login"))
+
+        @app.route("/login")
+        def login():
+            redirect_uri = url_for("auth", _external=True)
+            return oauth.keycloak.authorize_redirect(redirect_uri)
+
+        @app.route("/auth")
+        def auth():
+            token = oauth.keycloak.authorize_access_token()
+            session["user"] = token['userinfo']
+            return redirect("/")
+
+        @app.route('/api/userinfo')
+        def user_info():
+            if 'user' in session:
+                user_info = session['user']
+                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', [])
+                return user_info, 200
+            else:
+                return redirect(url_for('login'))
 
     health = HealthCheck()
 
     app.add_url_rule('/healthz', 'healthcheck', view_func=lambda: health.run())
     app.add_url_rule('/metrics', 'metrics', view_func=generate_latest)
-
-    @app.before_request
-    def check_authenticated():
-        if 'user' not in session and request.path != '/login' and request.path != '/auth':
-            return redirect(url_for("login"))
-
-    @app.route("/login")
-    def login():
-        redirect_uri = url_for("auth", _external=True)
-        return oauth.keycloak.authorize_redirect(redirect_uri)
-
-    @app.route("/auth")
-    def auth():
-        token = oauth.keycloak.authorize_access_token()
-        session["user"] = oauth.keycloak.parse_id_token(token, None)
-        return redirect("/")
 
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')

@@ -9,6 +9,7 @@ load_dotenv()
 DEBUG = os.getenv('DEBUG', 'True')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
+DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')
 
 DB_TYPE = os.getenv('DB_TYPE', None)  # environ["DB_TYPE"].strip()
 POSTGRES_USER = os.getenv('POSTGRES_USER', '').strip()  # environ["POSTGRES_USER"].strip()
