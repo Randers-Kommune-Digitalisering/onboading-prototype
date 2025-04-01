@@ -1,8 +1,8 @@
 <script setup>
 	import { ref, onMounted, watch } from 'vue'
 	import { useRoute, useRouter } from 'vue-router'
-	import keycloak from '@/keycloak'
 
+	import { getUserInfo } from '../../services/keycloakService.js'
 	import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
 	import { getOpgaveskabeloner } from '@/services/opgaveskabelonService.js'
 
@@ -28,34 +28,34 @@
 	}
 
 	const fetchTemplates = async () => {
-		if (keycloak.authenticated) {
-			const loggedInAdmin = keycloak.tokenParsed?.name || null
-			
-			if(!loggedInAdmin) {
-				console.error("No admin name found")
-				return
-			}
 
-			const headers =  { adminname: loggedInAdmin }
-			let response
-
-			if (selectedType.value === TemplateType.Forloebsskabelon) {
-				response = await getForloebsskabeloner({headers})
-			} else {
-				response = await getOpgaveskabeloner({headers})
-			}
-
-			if (response.data == null)
-				return
-
-			if (!Array.isArray(response.data))
-				response.data = [response.data]
-
-			if (selectedType.value === TemplateType.Forloebsskabelon)
-				forloebTemplates.value = response.data
-			else
-				opgaveTemplates.value = response.data
+		let userInfo = await getUserInfo()
+		const loggedInAdmin = userInfo.name || null
+		
+		if(!loggedInAdmin) {
+			console.error("No admin name found")
+			return
 		}
+
+		const headers =  { adminname: loggedInAdmin }
+		let response
+
+		if (selectedType.value === TemplateType.Forloebsskabelon) {
+			response = await getForloebsskabeloner({headers})
+		} else {
+			response = await getOpgaveskabeloner({headers})
+		}
+
+		if (response.data == null)
+			return
+
+		if (!Array.isArray(response.data))
+			response.data = [response.data]
+
+		if (selectedType.value === TemplateType.Forloebsskabelon)
+			forloebTemplates.value = response.data
+		else
+			opgaveTemplates.value = response.data
 	}
 
 	onMounted(fetchTemplates)

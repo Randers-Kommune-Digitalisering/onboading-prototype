@@ -1,8 +1,8 @@
 <script setup>
     import { ref, onMounted } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
-    import keycloak from '@/keycloak'
 
+    import { getUserInfo } from '../../services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
     import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
     import { getAdminNames, getEmail } from '@/services/userService.js'
@@ -79,6 +79,12 @@
     const adminList = ref([])
     const adminSearchResults = ref([])
     const isAdminSearchOpen = ref(false)
+
+
+    getUserInfo().then(userInfo => {
+        loggedInAdmin.value = userInfo.name || 'No name'
+    })
+
 
     const searchAdmins = (searchString) => {
         if (isUserMailSearchOpen) {
@@ -165,13 +171,7 @@
             console.error('Error fetching emails:', error)
         })
 
-        if (keycloak.authenticated) {
-            if(keycloak.tokenParsed?.name) {
-                // Automatically select logged in admin
-                loggedInAdmin.value = keycloak.tokenParsed?.name
-                selectAdmin(loggedInAdmin.value)
-            }
-        }
+        selectAdmin(loggedInAdmin.value)
 
         if (isEditing) {
             getForloebById(forloeb_id).then(response => {

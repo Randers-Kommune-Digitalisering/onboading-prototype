@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import keycloak from '@/keycloak'
 
 defineExpose({ setAlert })
 
