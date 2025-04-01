@@ -144,9 +144,9 @@ def create_forloeb_endpoint():
 
 @api_endpoints.route('/forloeb', methods=['GET'])
 def get_all_forloeb_endpoint():
-    logger.info(f"Headers: {request.headers}")
+    # logger.info(f"Headers: {request.headers}")
     admin_name = request.headers.get('adminname')
-    logger.info(f"Adminname: {admin_name}")
+    # logger.info(f"Adminname: {admin_name}")
     if admin_name:
         return get_forloeb_by_admin(admin_name)
     return get_all_forloeb()
