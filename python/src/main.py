@@ -1,5 +1,5 @@
 import os
-from flask import Flask, send_from_directory, redirect, url_for, session, request
+from flask import Flask, send_from_directory, redirect, url_for, session, request, abort
 from flask_cors import CORS
 from healthcheck import HealthCheck
 from prometheus_client import generate_latest
@@ -60,12 +60,17 @@ def create_app():
     app.add_url_rule('/metrics', 'metrics', view_func=generate_latest)
 
     @app.route('/', defaults={'path': ''})
+    def serve_vue_app():
+        return send_from_directory(app.static_folder, 'index.html')
+
     @app.route('/<path:path>')
-    def serve(path):
-        if path != "" and os.path.exists(app.static_folder + '/' + path):
+    def serve_static_files(path):
+        try:
             return send_from_directory(app.static_folder, path)
-        else:
+        except FileNotFoundError:
             return send_from_directory(app.static_folder, 'index.html')
+        except Exception as e:
+            abort(500, description=str(e))
 
     app.register_blueprint(api_endpoints)
 
