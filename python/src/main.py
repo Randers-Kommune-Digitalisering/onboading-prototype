@@ -31,7 +31,7 @@ def create_app():
 
         @app.before_request
         def check_authenticated():
-            if 'user' not in session and request.path != '/login' and request.path != '/auth':
+            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics']:
                 return redirect(url_for("login"))
 
         @app.route("/login")
