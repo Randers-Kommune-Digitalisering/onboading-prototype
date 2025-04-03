@@ -40,6 +40,7 @@ class Opgave(Base):
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     ansvarlig = Column(String, nullable=False)
+    ansvarligEmail = Column(String, nullable=False)
     startdato = Column(DateTime)
     slutdato = Column(DateTime)
     relativ_startdag = Column(Integer)

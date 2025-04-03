@@ -4,19 +4,34 @@ import pandas as pd
 from utils.df_to_csv import df_to_csv
 from utils.sftp import SFTPClient
 from utils.admin_names import handle_files
-from utils.transform_azure_data import transform_ad_email, transform_ad_dq_number, transform_ad_fullname
-from utils.config import AZURE_CLIENTID, AZURE_TENANTID, AZURE_CLIENTSECRET, CSV_PATH, SFTP_HOST, SFTP_USER, SFTP_PASS
+from utils.transform_azure_data import transform_ad_email, transform_ad_dq_number, transform_ad_fullname, transform_ad_data
+from utils.config import AZURE_CLIENTID, AZURE_TENANTID, AZURE_CLIENTSECRET, AZURE_CSV_PATH, SD_CSV_PATH, SFTP_HOST, SFTP_USER, SFTP_PASS
 import logging
 import os
 
 logger = logging.getLogger(__name__)
 
 
+def get_user_data():
+    try:
+        absolute_path = AZURE_CSV_PATH
+        data = transform_ad_data(absolute_path)
+        if not data:
+            logger.error("Error retrieving data from CSV")
+            return jsonify({"error": "Error retrieving data from CSV"}), 500
+    except Exception as e:
+        logger.error(f"Error processing CSV file: {e}")
+        return jsonify({"error": "Error processing CSV file"}), 500
+
+    logger.info(f"Retrieved data: {data}")
+    return jsonify(data), 200
+
+
 def get_email():
     logger.info("Retrieving randers emails from Azure AD'...")
 
     try:
-        absolute_path = CSV_PATH
+        absolute_path = AZURE_CSV_PATH
         emails = transform_ad_email(absolute_path)
         if not emails:
             logger.error("Error retrieving emails from CSV")
@@ -33,7 +48,7 @@ def get_dq_numbers():
     logger.info("Retrieving DQ Numbers from Azure AD'...")
 
     try:
-        absolute_path = CSV_PATH
+        absolute_path = AZURE_CSV_PATH
         dq_numbers = transform_ad_dq_number(absolute_path)
         if not dq_numbers:
             logger.error("Error retrieving DQ numbers from CSV")
@@ -50,7 +65,7 @@ def get_fullname():
     logger.info("Retrieving user FullName from Azure AD'...")
 
     try:
-        absolute_path = CSV_PATH
+        absolute_path = AZURE_CSV_PATH
         logger.info(f"Absolute path to CSV file: {absolute_path}")
         fullnames = transform_ad_fullname(absolute_path)
         if not fullnames:
@@ -86,12 +101,12 @@ def get_and_save_azure_ad_data():
 
 
 def get_admin_data():
-    local_file_path = r'C:\Users\DQA8932\Desktop\Onboarding\Brugeradministration-da.csv'
+    absolute_path = SD_CSV_PATH
 
-    if os.path.exists(local_file_path):
-        logger.info(f"Local file {local_file_path} exists. Reading admin names from local file...")
+    if os.path.exists(absolute_path):
+        logger.info(f"Local file {absolute_path} exists. Reading admin names from local file...")
         try:
-            df = pd.read_csv(local_file_path, encoding='utf-16', delimiter=';')
+            df = pd.read_csv(absolute_path, encoding='utf-16', delimiter=';')
             admin_data = [{"name": row['Navn'], "mail": row['Email']} for _, row in df.iterrows() if 'Navn' in df.columns and 'Email' in df.columns]
 
             # Remove objects with missing data

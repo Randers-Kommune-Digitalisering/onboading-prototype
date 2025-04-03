@@ -39,6 +39,7 @@ from controllers.forloeb_controller import (
 
 from controllers.user_controller import (
     get_admin_data,
+    get_user_data,
     get_email,
     get_dq_numbers,
     get_fullname,
@@ -258,6 +259,11 @@ def update_opgaveskabelon_endpoint(opgaveskabelon_id):
 @api_endpoints.route('/opgaveskabelon/<int:opgaveskabelon_id>', methods=['DELETE'])
 def delete_opgaveskabelon_endpoint(opgaveskabelon_id):
     return delete_opgaveskabelon(opgaveskabelon_id)
+
+
+@api_endpoints.route('/users', methods=['GET'])
+def get_user_data_endpoint():
+    return get_user_data()
 
 
 @api_endpoints.route('/users/email', methods=['GET'])
