@@ -1,7 +1,8 @@
 <script setup>
     import { ref, onMounted, watch } from 'vue'
     import { useRoute } from 'vue-router'
-    import keycloak from '@/keycloak'
+
+    import { getUserInfo } from '../services/keycloakService.js'
 
     const adminMenuItems = [
         {
@@ -71,8 +72,10 @@
     const menuItems = ref([])
 
     onMounted(() => {
-        if (keycloak.authenticated) {
-            const clientRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
+        getUserInfo().then(userInfo => {
+            let user_info = userInfo
+            
+            const clientRoles = user_info.roles;
 
             // Filter menu items based on roles
             if (clientRoles.includes('Admin')) {
@@ -87,7 +90,9 @@
             const landingPageIndex = menuItems.value.findIndex(x => x.url == new URL(location.href).pathname)
             if (landingPageIndex !== -1)
                 menuItems.value[landingPageIndex].selected = true
-        }
+        }).catch(error => {
+            console.error('Error fetching user info:', error);
+        });
     })
 
     function select(item) {

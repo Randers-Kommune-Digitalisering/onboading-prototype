@@ -4,7 +4,8 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import App from './App.vue'
-import keycloak from './keycloak.js'
+
+import { getUserInfo } from './services/keycloakService.js'
 
 // Import af views til routing
 import CreateOpgave from '@/views/admin/CreateOpgave.vue'
@@ -111,17 +112,36 @@ const router = createRouter({
     routes
 })
 
-// Initialize Keycloak and then create the Vue app
-keycloak.init({ onLoad: 'login-required' }).then(() => {
-    const app = createApp(App)
-    app.use(router)
+const app = createApp(App)
+app.use(router)
 
-    // Check roles and redirect if necessary
-    const userRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
+const currentPath = window.location.pathname
+const currentRoute = window.location.pathname + window.location.search
+router.addRoute({ path: currentRoute })
 
-    const currentPath = window.location.pathname
-    const currentRoute = window.location.pathname + window.location.search
-    router.addRoute({ path: currentRoute })
+router.beforeEach((to, from, next) => {
+    getUserInfo().then(userInfo => {
+        let userRoles = userInfo.roles
+
+        if (to.matched.some(record => record.meta.roles)) {
+            const requiredRoles = to.meta.roles
+            const hasAccess = requiredRoles.some(role => userRoles.includes(role))
+
+            if (!hasAccess) {
+                // TODO: What if user does not have any roles?
+            } else {
+                next()
+            }
+        } else {
+            next()
+        }
+    }).catch(() => {
+        next({ path: '/login' })
+    })
+})
+
+getUserInfo().then(userInfo => {
+    let userRoles = userInfo.roles
 
     // TODO: Only push to overview if user is not on other accepted page
     if (userRoles.includes('Admin') && currentPath === '/') {
@@ -131,8 +151,7 @@ keycloak.init({ onLoad: 'login-required' }).then(() => {
     } else if (userRoles.includes('Ny medarbejder') && currentPath === '/') {
         router.push('/medarbejder-overview')
     }
+    // TODO: What if user does not have any roles?
+})
 
-    app.mount('#app')
-}).catch(() => {
-    console.error('Keycloak initialization failed');
-});
+app.mount('#app')

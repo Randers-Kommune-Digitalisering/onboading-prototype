@@ -1,7 +1,7 @@
 <script setup>
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
-    import keycloak from '@/keycloak'
+    
     import { getForloebByEmail, getForloebById, completeForloeb, deleteForloeb } from '@/services/forløbService.js'
     import { getForloebsskabelonById, deleteForloebsskabelon } from '@/services/forløbsskabelonService.js'
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService.js'
@@ -148,10 +148,7 @@
 
     onMounted(() => {
         try {
-            if (keycloak.authenticated) {
-                //console.log('User email: ', props.userEmail)
-                fetchOpgaver()
-            }
+            fetchOpgaver()
         } catch (error) {
             console.log(error)
         }

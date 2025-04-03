@@ -9,6 +9,7 @@ load_dotenv()
 DEBUG = os.getenv('DEBUG', 'True')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
+DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')
 
 DB_TYPE = os.getenv('DB_TYPE', None)  # environ["DB_TYPE"].strip()
 POSTGRES_USER = os.getenv('POSTGRES_USER', '').strip()  # environ["POSTGRES_USER"].strip()
@@ -23,6 +24,12 @@ AZURE_CLIENTID = os.getenv('AZURE_CLIENTID', '').strip()  # environ["AZURE_CLIEN
 AZURE_TENANTID = os.getenv('AZURE_TENANTID', '').strip()  # environ["AZURE_TENANTID"].strip()
 AZURE_CLIENTSECRET = os.getenv('AZURE_CLIENTSECRET', '').strip()  # environ["AZURE_CLIENTSECRET"].strip()
 CSV_PATH = os.getenv('CSV_PATH', '').strip()  # environ["CSV_PATH"].strip()
+
+KEYCLOAK_URL = os.environ["KEYCLOAK_URL"].strip()
+KEYCLOAK_CLIENT_ID = os.environ["KEYCLOAK_CLIENT_ID"].strip()
+KEYCLOAK_CLIENT_SECRET = os.environ["KEYCLOAK_CLIENT_SECRET"].strip()
+COOKIE_SECRET = os.environ["COOKIE_SECRET"].strip()
+
 # SFTP_HOST = os.environ['SFTP_HOST'].rstrip()
 # SFTP_USER = os.environ['SFTP_USER'].rstrip()
 # SFTP_PASS = os.environ['SFTP_PASS'].rstrip()

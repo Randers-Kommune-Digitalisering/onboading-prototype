@@ -1,22 +1,18 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import keycloak from '@/keycloak'
 import UserInfo from '@/components/UserInfo.vue'
+import { getUserInfo } from '../../services/keycloakService.js'
 
-const userName = ref('')
-const userFullName = ref('')
-const userRole = ref('')
-const userEmail = ref('')
+const userFullName = ref('');
+const userRole = ref('');
 
-onMounted(() => {
-    if (keycloak.authenticated) {
-        userName.value = keycloak.tokenParsed?.preferred_username || 'User'
-        userFullName.value = keycloak.tokenParsed?.name || 'No name'
-        userEmail.value = keycloak.tokenParsed?.email || 'No email'
-        const clientRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
-        userRole.value = clientRoles.length > 0 ? clientRoles.join(', ') : 'No role'
-    }
-})
+getUserInfo().then(userInfo => {
+    userFullName.value = userInfo.name || 'No name'
+    userRole.value = userInfo.roles.length > 0 ? userInfo.roles.join(', ') : 'No role'
+}).catch(error => {
+    console.error('Error fetching user info:', error);
+});
+
 </script>
 
 <template>

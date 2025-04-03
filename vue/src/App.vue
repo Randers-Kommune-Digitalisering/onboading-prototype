@@ -4,7 +4,6 @@
     import Navbar from './components/Navbar.vue'
     import ProgressBar from './components/ProgressBar.vue'
     import CardList from './components/TaskList.vue'
-    import SignInButton from './components/SignInButton.vue'
 
     const currentComponent = ref(null)
 </script>
@@ -12,7 +11,6 @@
 <template>
 
     <Navbar />
-    <SignInButton />
         
     <div class="content">
 
