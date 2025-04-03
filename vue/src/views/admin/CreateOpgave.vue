@@ -195,11 +195,12 @@
                 inputFields.value.ForløbsskabelonID = forloeb_id.value
             else
                 inputFields.value.ForløbID = forloeb_id.value
+            if(inputFields.value.ansvarlig != "")
+                inputFields.value.ansvarligEmail = selectedAssistant.value.email
 
             const formData = { 
-                ...inputFields.value,
-                ansvarligEmail: selectedAssistant.value.email
-             }
+                ...inputFields.value
+            }
 
             if(isTemplate || addToTemplate.value)
                 delete formData.startdato, delete formData.slutdato, delete formData.booking
@@ -209,6 +210,7 @@
                     delete formData.booking
 
             const response = isEditing ? (isTemplate ? await updateOpgaveskabelon(opgaveId, formData) : await updateOpgave(opgaveId, formData)) : (isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData))
+            
             if(response !== null)
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
