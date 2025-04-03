@@ -5,7 +5,7 @@
     import { getUserInfo } from '../../services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
     import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
-    import { getAdminNames, getEmail } from '@/services/userService.js'
+    import { getAdminData, getEmail } from '@/services/userService.js'
 
     const route = useRoute()
     const router = useRouter()
@@ -75,16 +75,18 @@
 
     /* Admin search */
     const loggedInAdmin = ref('')
+    const loggedInAdminName = ref('')
     const isAdminLocked = ref(true)
     const adminList = ref([])
     const adminSearchResults = ref([])
     const isAdminSearchOpen = ref(false)
-
+    const selectedAdmin = ref(null)
 
     getUserInfo().then(userInfo => {
-        loggedInAdmin.value = userInfo.name || 'No name'
+        loggedInAdmin.value = userInfo.email || 'No mail'
+        loggedInAdminName.value = userInfo.name || 'No name'
+        selectAdmin({name: loggedInAdminName.value, mail: loggedInAdmin.value})
     })
-
 
     const searchAdmins = (searchString) => {
         if (isUserMailSearchOpen) {
@@ -96,18 +98,19 @@
         }
         isAdminSearchOpen.value = true
         return adminSearchResults.value = adminList.value
-            .filter(admin => admin.toLowerCase().includes(searchString.toLowerCase()))
+            .filter(admin => admin.name.toLowerCase().includes(searchString.toLowerCase()))
             .slice(0, 8)
     }
 
     const selectAdmin = (admin) => {
-        inputFields.value.admin = admin
+        selectedAdmin.value = admin
+        inputFields.value.admin = admin.name
         isAdminLocked.value = true
         isAdminSearchOpen.value = false
     }
 
     const toggleadminSearch = () => {
-        if(adminList.value.includes(inputFields.value.admin))
+        if(adminList.value.map(admin => admin.name).includes(inputFields.value.admin))
         {
             isAdminLocked.value = !isAdminLocked.value
             isAdminSearchOpen.value = false
@@ -117,7 +120,7 @@
     }
 
     const clearAdminIfNotSelected = () => {
-        if(!adminList.value.includes(inputFields.value.admin))
+        if(!adminList.value.map(admin => admin.name).includes(inputFields.value.admin))
         {
             inputFields.value.admin = ""
             isAdminLocked.value = false
@@ -156,11 +159,17 @@
             console.error('Error fetching forloebsskabeloner:', error)
         })
 
-        getAdminNames().then(data => {
-            adminList.value = data.data.admin_names
+        getAdminData().then(data => {
+            const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+            adminList.value = parsedData
+            //adminList.value = Array.isArray(parsedData) ? parsedData.map(admin => admin.name) : []
+            console.log('Logged in admin: ', loggedInAdmin.value)
+
             // Add admin name to list if not already present
-            if (!adminList.value.includes(loggedInAdmin.value))
-                adminList.value.push(loggedInAdmin.value)
+            if (!(parsedData.map(admin => admin.mail)).includes(loggedInAdmin.value))
+                adminList.value.push({name: loggedInAdminName.value, mail: loggedInAdmin.value})
+            
+
         }).catch(error => {
             console.error('Error fetching admin names:', error)
         })
@@ -170,8 +179,6 @@
         }).catch(error => {
             console.error('Error fetching emails:', error)
         })
-
-        selectAdmin(loggedInAdmin.value)
 
         if (isEditing) {
             getForloebById(forloeb_id).then(response => {
@@ -205,6 +212,8 @@
         isSubmitting.value = true
         try {
             const formData = { ...inputFields.value }
+            formData.admin = selectedAdmin.value.mail
+            
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
 
@@ -257,7 +266,7 @@
             
             <div class="itemSelector float-right" v-if="isAdminSearchOpen">
                 <span class="float-header small uppercase">Vælg en ansvarlig leder ...</span>
-                <div v-for="result in adminSearchResults" @click="selectAdmin(result)">{{result}}</div>
+                <div v-for="result in adminSearchResults" @click="selectAdmin(result)">{{result.name}}</div>
                 <div v-if="adminSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>

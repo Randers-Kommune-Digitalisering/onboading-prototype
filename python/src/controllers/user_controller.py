@@ -85,19 +85,22 @@ def get_and_save_azure_ad_data():
         return jsonify({"error": "Error processing data"}), 500
 
 
-def get_admin_names():
+def get_admin_data():
     local_file_path = r'C:\Users\DQA8932\Desktop\Onboarding\Brugeradministration-da.csv'
 
     if os.path.exists(local_file_path):
         logger.info(f"Local file {local_file_path} exists. Reading admin names from local file...")
         try:
             df = pd.read_csv(local_file_path, encoding='utf-16', delimiter=';')
-            logger.info(f"Columns in the CSV file: {df.columns.tolist()}")
-            admin_names = df['Navn'].tolist() if 'Navn' in df.columns else []
-            logger.info("Retrieved admin names from local file")
+            admin_data = [{"name": row['Navn'], "mail": row['Email']} for _, row in df.iterrows() if 'Navn' in df.columns and 'Email' in df.columns]
 
-            admin_names = list(set(admin_names))
-            return jsonify({"admin_names": admin_names}), 200
+            # Remove objects with missing data
+            admin_data = [entry for entry in admin_data if pd.notna(entry['name']) and pd.notna(entry['mail']) and entry['name'] and entry['mail']]
+            # Remove duplicates if any
+            admin_data = list({entry['name']: entry for entry in admin_data}.values())
+
+            # admin_data = list(set(admin_data))
+            return jsonify(admin_data), 200
 
         except Exception as e:
             logger.error(f"Error reading local file: {e}")

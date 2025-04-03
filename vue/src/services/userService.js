@@ -10,12 +10,11 @@ export const getEmail = () => {
     return axios.get(`${API_URL}/users/dq`);
 };
 
-export const getAdminNames = () => {
+export const getAdminData = () => {
     return axios.get(`${API_URL}/users/admin`);
 };
 
 export const getAnvarligNames = () => {
     return axios.get(`${API_URL}/users/fullname`);
-}
-  
+};  
   

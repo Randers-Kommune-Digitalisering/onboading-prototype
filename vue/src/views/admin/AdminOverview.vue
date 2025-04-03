@@ -11,14 +11,14 @@
 
 	onMounted( () => {	
 		getUserInfo().then(userInfo => {
-			const loggedInAdmin = userInfo.name || 'No name'
+			const loggedInAdmin = userInfo.email || 'No mail'
 
 			if(!loggedInAdmin) {
-					console.error("No admin name found")
+					console.error("No admin mail found")
 					return
 				}
 
-				const headers =  { adminname: loggedInAdmin }
+				const headers =  { adminmail: loggedInAdmin }
 				getForloebByAdmin({headers}).then( response => {
 					if (response.data == null)
 						return
