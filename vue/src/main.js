@@ -137,7 +137,9 @@ router.beforeEach((to, from, next) => {
                 next()
             }
         } else {
-            next()
+            returnRoleBasedUrl(userInfo).then(url => {
+                next(url)
+            })
         }
     }).catch(() => {
         next({ path: '/login' })
