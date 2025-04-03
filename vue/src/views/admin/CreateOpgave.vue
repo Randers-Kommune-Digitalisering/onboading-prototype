@@ -195,8 +195,8 @@
                 inputFields.value.ForløbsskabelonID = forloeb_id.value
             else
                 inputFields.value.ForløbID = forloeb_id.value
-            if(inputFields.value.ansvarlig != "")
-                inputFields.value.ansvarligEmail = selectedAssistant.value.email
+            if(!isTemplate)
+                inputFields.value.ansvarligEmail = selectedAssistant.value?.email ?? ""
 
             const formData = { 
                 ...inputFields.value

@@ -147,58 +147,66 @@
     }
 
     /* Instantiate */
-    onMounted(() => {
-        getForloebsskabeloner().then(data => {
-            templates.value = data.data
+    onMounted(async () => {
+        try {
+            const forloebsskabelonerResponse = await getForloebsskabeloner()
+            templates.value = forloebsskabelonerResponse.data
             if (template_id) {
                 const selectedTemplate = templates.value.find(template => template.ForløbsskabelonID === template_id)
-                if (selectedTemplate) 
+                if (selectedTemplate)
                     inputFields.value.ForløbsskabelonID = selectedTemplate.ForløbsskabelonID
             }
-        }).catch(error => {
+        } catch (error) {
             console.error('Error fetching forloebsskabeloner:', error)
-        })
+        }
 
-        getAdminData().then(data => {
-            const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+        try {
+            const adminDataResponse = await getAdminData()
+            const parsedData = typeof adminDataResponse.data === 'string' ? JSON.parse(adminDataResponse.data) : adminDataResponse.data
             adminList.value = parsedData
-            //adminList.value = Array.isArray(parsedData) ? parsedData.map(admin => admin.name) : []
+
             console.log('Logged in admin: ', loggedInAdmin.value)
 
             // Add admin name to list if not already present
-            if (!(parsedData.map(admin => admin.mail)).includes(loggedInAdmin.value))
-                adminList.value.push({name: loggedInAdminName.value, mail: loggedInAdmin.value})
-            
-
-        }).catch(error => {
+            if (!(parsedData.map(admin => admin.mail)).includes(loggedInAdmin.value)) {
+                adminList.value.push({ name: loggedInAdminName.value, mail: loggedInAdmin.value })
+            }
+        } catch (error) {
             console.error('Error fetching admin names:', error)
-        })
-
-        getEmail().then(data => {
-            userMailList.value = data.data.emails
-        }).catch(error => {
-            console.error('Error fetching emails:', error)
-        })
-
-        if (isEditing) {
-            getForloebById(forloeb_id).then(response => {
-                const formattedData = {
-                    ...response.data,
-                    startdate: response.data.startdate ? response.data.startdate.split('T')[0] : '',
-                    enddate: response.data.enddate ? response.data.enddate.split('T')[0] : ''
-                }
-                Object.assign(inputFields.value, formattedData)
-            }).catch(error => {
-                console.error('Error fetching forløb:', error)
-            })
         }
 
-        // getDQ().then(data => {
-        //     dqList.value = data.data.dq_numbers
-        //     console.log('DQs:', data.data)
-        // }).catch(error => {
+        try {
+            const emailResponse = await getEmail()
+            userMailList.value = emailResponse.data.emails
+        } catch (error) {
+            console.error('Error fetching emails:', error)
+        }
+
+        if (isEditing) {
+            try {
+                const forloebResponse = await getForloebById(forloeb_id)
+                selectedAdmin.value = adminList.value.find(admin => admin.mail === forloebResponse.data.admin)
+                const formattedData = {
+                    ...forloebResponse.data,
+                    startdate: forloebResponse.data.startdate ? forloebResponse.data.startdate.split('T')[0] : '',
+                    enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : ''
+                }
+                formattedData.admin = selectedAdmin.value.name
+                Object.assign(inputFields.value, formattedData)
+                console.log('Forløb data:', inputFields.value)
+            } catch (error) {
+                console.error('Error fetching forløb:', error)
+            }
+        }
+
+        // Uncomment if needed in the future
+        // try {
+        //     const dqResponse = await getDQ()
+        //     dqList.value = dqResponse.data.dq_numbers
+        //     console.log('DQs:', dqResponse.data)
+        // } catch (error) {
         //     console.error('Error fetching DQs:', error)
-        // })
+        // }
     })
 
     /* Submit */
