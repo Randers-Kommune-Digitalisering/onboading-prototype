@@ -21,6 +21,7 @@ import MedarbejderOverview from '@/views/ny_medarbejder/MedarbejderOverview.vue'
 import ForløbOverview from '@/views/ForløbOverview.vue'
 import TemplateOverview from '@/views/admin/TemplateOverview.vue'
 import Blank from '@/views/Blank.vue'
+import DownloadForløb from './views/DownloadForløb.vue'
 
 // Define routes
 const routes = [ 
@@ -97,6 +98,12 @@ const routes = [
         name: 'ForløbOverview',
         component: ForløbOverview,
         meta: { roles: ['Admin', 'Ansvarlig'] }
+    },
+    {
+        path: '/forloeb-download',
+        name: 'DownloadForloeb',
+        component: DownloadForløb,
+        meta: { roles: ['Admin', 'Ansvarlig'], hideNavbar: true }
     },
     {
         path: '/reload',
