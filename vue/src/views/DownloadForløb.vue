@@ -36,27 +36,28 @@
 </script>
 
 <template>
-    <div v-if="forloeb != null && opgaver != null" class="forloeb-details">
-        <p class="header">{{ forloeb.name }}</p>
-        <p class="faded">Onboardingforløb med start d. {{ formatDate(forloeb.startdate) }}</p>
+    <div class="forloeb-details">
+        <div v-if="forloeb != null && opgaver != null">
+            <p class="header">{{ forloeb.name }}</p>
+            <p class="faded">Onboardingforløb med start d. {{ formatDate(forloeb.startdate) }}</p>
 
-        <div v-for="opgave in opgaver" class="opgave">
-            <p class="faded">{{ formatDate(opgave.startdato) }}</p>
-            <p class="title">{{ opgave.title }}</p>
-            <p>{{ opgave.beskrivelse }}</p>
-            <p v-if="opgave.ansvarlig != ''">
-                <span class="faded">Ansvarlig:</span> {{ opgave.ansvarlig }}
-                (<a :href="'mailto:' + opgave.ansvarligEmail">{{ opgave.ansvarligEmail }}</a>)
-            </p>
-            <p v-if="opgave.resourcer.length > 0" class="faded">Ressourcer: 
-                <span v-for="resource in opgave.resourcer" :key="resource.id">
-                    <a :href="resource.url" target="_blank">
-                        {{ resource.name }}{{ opgave.resourcer.length - 1 !== opgave.resourcer.indexOf(resource) ? ', ' : '' }}
-                    </a>
-                </span>
-            </p>
+            <div v-for="opgave in opgaver" class="opgave">
+                <p class="faded">{{ formatDate(opgave.startdato) }}</p>
+                <p class="title">{{ opgave.title }}</p>
+                <p>{{ opgave.beskrivelse }}</p>
+                <p v-if="opgave.ansvarlig != ''">
+                    <span class="faded">Ansvarlig:</span> {{ opgave.ansvarlig }}
+                    (<a :href="'mailto:' + opgave.ansvarligEmail">{{ opgave.ansvarligEmail }}</a>)
+                </p>
+                <p v-if="opgave.resourcer.length > 0" class="faded">Ressourcer: 
+                    <span v-for="resource in opgave.resourcer" :key="resource.id">
+                        <a :href="resource.url" target="_blank">
+                            {{ resource.name }}{{ opgave.resourcer.length - 1 !== opgave.resourcer.indexOf(resource) ? ', ' : '' }}
+                        </a>
+                    </span>
+                </p>
+            </div>
         </div>
-
     </div>
 </template>
 

@@ -1,9 +1,10 @@
-from flask import request, jsonify
+from flask import make_response, request, jsonify
+from fpdf import FPDF
 from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource
 from utils.db_connection import get_db_client
 import logging
-
+from controllers.opgave_controller import get_opgave_by_forloeb_id
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +174,56 @@ def get_forloeb_by_admin(admin_name):
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
+
+
+def download_forloeb():
+    try:
+        # Get the forløb ID from the query parameters
+        forloeb_id = int(request.args.get('id'))
+
+        # Fetch forløb and opgaver data
+        forloeb = get_forloeb(forloeb_id)[0].json  # Extract JSON data from response
+        opgaver = get_opgave_by_forloeb_id(forloeb_id).json
+        logger.info(f"Fetched forløb: {forloeb}, opgaver: {opgaver}")
+
+        # Initialize FPDF
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+
+        # Add Forløb details
+        pdf.set_font("Arial", style="B", size=16)
+        pdf.cell(0, 10, forloeb['name'], ln=True, align="C")
+        pdf.ln(10)
+        pdf.set_font("Arial", size=12)
+        pdf.cell(0, 10, f"Onboardingforløb med start d. {forloeb['startdate']}", ln=True)
+        pdf.ln(10)
+
+        # Add a line separator
+        pdf.set_draw_color(0, 0, 0)
+        pdf.set_line_width(0.5)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.ln(10)
+
+        # Add Opgaver details
+        for opgave in opgaver:
+            pdf.set_font("Arial", style="B", size=14)
+            pdf.cell(0, 10, opgave['title'], ln=True)
+            pdf.set_font("Arial", size=12)
+            pdf.cell(0, 10, f"Startdato: {opgave['startdato']}", ln=True)
+            pdf.multi_cell(0, 10, opgave['beskrivelse'])
+            pdf.cell(0, 10, f"Ansvarlig: {opgave['ansvarlig']} ({opgave['ansvarligEmail']})", ln=True)
+            pdf.ln(10)
+
+        # Generate PDF content
+        response = make_response(pdf.output(dest='S').encode('latin1'))
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename={forloeb["name"]}.pdf'
+        return response
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 def update_forloeb(id):
