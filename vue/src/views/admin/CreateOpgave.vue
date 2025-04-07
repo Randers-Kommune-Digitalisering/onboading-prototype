@@ -3,8 +3,8 @@
     import { useRoute, useRouter } from 'vue-router'
 
     import { getUsers } from '@/services/userService.js'
-    import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService.js'
-    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveskabelonService.js'
+    import { createOpgave, getOpgaveById, updateOpgave, createOpgaveWithOpgaveskabelon } from '@/services/opgaveService.js'
+    import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon, getOpgaveskabeloner } from '@/services/opgaveskabelonService.js'
     import { getForloebById } from '@/services/forløbService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
 
@@ -18,6 +18,8 @@
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
+    const templates = ref([])
+    const selectedTemplate = ref("") // Bind this to the select element
 
     const inputFields = ref({
         title: "",
@@ -99,6 +101,37 @@
         textarea.value.style.height = (textarea.value.scrollHeight) + 'px'
     }
 
+    /* Use template */
+
+    const selectTemplate = (template) => {
+        console.log('Selected template:', template)
+        inputFields.value.title = template.title
+        inputFields.value.beskrivelse = template.beskrivelse
+        inputFields.value.startdato = template.startdato
+        inputFields.value.slutdato = template.slutdato
+        inputFields.value.booking = template.booking
+        if(addToTemplate)
+        {
+            inputFields.value.relativ_slutdag = template.relativ_slutdag
+            relativEndday.value = inputFields.value.relativ_slutdag
+        }
+    }
+
+    const selectNoTemplateIfNotSelected = () => {
+        if(selectedTemplate.value == "")
+            selectedTemplate.value = null
+    }
+
+    const setEndDateFromTemplate = () => {
+        if (selectedTemplate.value) {
+            const startDate = new Date(inputFields.value.startdato)
+            const daysToAdd = selectedTemplate.value.relativ_slutdag
+            var endDate = new Date(startDate)
+            endDate.setDate(endDate.getDate() + daysToAdd)
+            inputFields.value.slutdato = endDate.toISOString().split('T')[0]
+        }
+    }
+
     /* Instantiate */
 
     onMounted(() => {
@@ -108,15 +141,23 @@
             return
         }
 
+        // Get assistants
         if(!isTemplate && !addToTemplate.value)
             getUsers().then(response => {
                 assistantList.value = response.data
-                console.log('Assistant list:', assistantList.value)
             }).catch(error => {
                 console.error('Error fetching assistant names:', error)
             })
 
-        // In case we are editing an existing opgave
+        // Get templates
+        if(!isTemplate && !isEditing)
+            getOpgaveskabeloner().then(response => {
+                templates.value = response.data
+            }).catch(error => {
+                console.error('Error fetching forløbsskabeloner:', error)
+            })
+
+        // In case we are editing an existing opgave, get values
         if (isEditing) {
             if(isTemplate)
                 getOpgaveskabelonById(opgaveId).then(response => {
@@ -197,6 +238,8 @@
                 inputFields.value.ForløbID = forloeb_id.value
             if(!isTemplate)
                 inputFields.value.ansvarligEmail = selectedAssistant.value?.email ?? ""
+            if(selectedTemplate.value != null)
+                inputFields.value.OpgaveskabelonID = selectedTemplate.value.OpgaveskabelonID
 
             const formData = { 
                 ...inputFields.value
@@ -209,7 +252,19 @@
                 if(formData.booking == "")
                     delete formData.booking
 
-            const response = isEditing ? (isTemplate ? await updateOpgaveskabelon(opgaveId, formData) : await updateOpgave(opgaveId, formData)) : (isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData))
+            console.log('isEditing:', isEditing)
+            console.log('isTemplate:', isTemplate)
+            console.log('addToTemplate:', addToTemplate.value)
+            console.log('selectedTemplate:', selectedTemplate.value)
+            const response = isEditing ?
+                                (isTemplate ?
+                                    await updateOpgaveskabelon(opgaveId, formData)
+                                  : await updateOpgave(opgaveId, formData))
+                              : (isTemplate ?
+                                    await createOpgaveskabelon(formData)
+                                  : selectedTemplate.value != null ?
+                                        await createOpgaveWithOpgaveskabelon(formData)
+                                      : await createOpgave(formData))
             
             if(response !== null)
             {
@@ -241,6 +296,16 @@
     <form @submit.prevent="submitForm">
     <div class="formContainer">
 
+        <div v-if="!isEditing && !isTemplate" class="inputContainer">
+            <select id="template" name="template" v-model="selectedTemplate" @change="selectTemplate(selectedTemplate)" required>
+                <option value="" disabled selected hidden></option>
+                <option :value="null">Ingen skabelon</option>
+                <option v-for="template in templates" :value="template">{{template.title}}</option>
+            </select>
+            <label for="template" class="floating-label">Skabelon</label>
+            <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
+        </div>
+
         <div class="inputContainer">
             <input type="text" id="title" name="title" placeholder=" " v-model="inputFields.title" required>
             <label for="title" class="floating-label">Opgavens navn</label>
@@ -265,7 +330,7 @@
 
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
             <div class="flex-item">
-                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" required>
+                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" @change="setEndDateFromTemplate()" required>
                 <label for="startdate" class="floating-label">Startdato</label>
             </div>
             <div class="flex-item">
@@ -316,7 +381,7 @@
         </div>
 
         <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected()" :disabled="isSubmitting">{{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected();selectNoTemplateIfNotSelected()" :disabled="isSubmitting">{{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}</button>
         </div>
 
     </div>

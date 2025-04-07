@@ -101,14 +101,16 @@ def create_opgave_with_opgaveskabelon():
         if not opgaveskabelon:
             return jsonify({"error": "Opgaveskabelon not found"}), 404
 
-        new_opgave = Opgave(  # TODO: Set startdato relative to forløb startdate + relativ_startdag (same for slutdato)
-            title=opgaveskabelon.title,
-            beskrivelse=opgaveskabelon.beskrivelse,
-            ansvarlig="",
-            ansvarligEmail="",
-            startdato=opgaveskabelon.startdato,
-            slutdato=opgaveskabelon.slutdato,
-            result=False,
+        new_opgave = Opgave(
+            title=data.get('title', opgaveskabelon.title),
+            beskrivelse=data.get('beskrivelse', opgaveskabelon.beskrivelse),
+            ansvarlig=data.get('ansvarlig', ""),
+            ansvarligEmail=data.get('ansvarligEmail', ""),
+            startdato=datetime.fromisoformat(data['startdato']) if 'startdato' in data else None,
+            slutdato=datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else None,
+            relativ_startdag=data['relativ_startdag'] if 'relativ_startdag' in data else None,
+            relativ_slutdag=data['relativ_slutdag'] if 'relativ_slutdag' in data else None,
+            result=data.get('result', False),
             timestamp=datetime.now()
         )
 

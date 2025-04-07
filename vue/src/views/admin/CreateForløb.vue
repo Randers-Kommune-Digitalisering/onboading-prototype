@@ -130,9 +130,7 @@
     
     const selectNoTemplateIfNotSelected = () => {
         if(inputFields.value.ForløbsskabelonID == "")
-        {
             inputFields.value.ForløbsskabelonID = null
-        }
     }
 
     const setEndDateFromTemplate = () => {
