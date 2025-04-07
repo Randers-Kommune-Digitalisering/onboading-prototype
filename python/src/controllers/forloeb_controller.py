@@ -184,21 +184,19 @@ def download_forloeb():
         # Fetch forløb and opgaver data
         forloeb = get_forloeb(forloeb_id)[0].json  # Extract JSON data from response
         opgaver = get_opgave_by_forloeb_id(forloeb_id).json
-        logger.info(f"Fetched forløb: {forloeb}, opgaver: {opgaver}")
 
         # Initialize FPDF
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
+        pdf.set_font("Arial", size=11)
 
         # Add Forløb details
-        pdf.set_font("Arial", style="B", size=16)
-        pdf.cell(0, 10, forloeb['name'], ln=True, align="C")
-        pdf.ln(10)
-        pdf.set_font("Arial", size=12)
-        pdf.cell(0, 10, f"Onboardingforløb med start d. {forloeb['startdate']}", ln=True)
-        pdf.ln(10)
+        pdf.set_font("Arial", style="B", size=18)
+        pdf.cell(0, 10, forloeb['name'], ln=True)
+        pdf.set_font("Arial", size=11)
+        pdf.cell(0, 10, f"Onboardingforløb med start d. {datetime.strptime(forloeb['startdate'], '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')}", ln=True)
+        pdf.ln(5)
 
         # Add a line separator
         pdf.set_draw_color(0, 0, 0)
@@ -208,12 +206,27 @@ def download_forloeb():
 
         # Add Opgaver details
         for opgave in opgaver:
-            pdf.set_font("Arial", style="B", size=14)
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_font("Arial", style="B", size=13)
             pdf.cell(0, 10, opgave['title'], ln=True)
-            pdf.set_font("Arial", size=12)
-            pdf.cell(0, 10, f"Startdato: {opgave['startdato']}", ln=True)
-            pdf.multi_cell(0, 10, opgave['beskrivelse'])
-            pdf.cell(0, 10, f"Ansvarlig: {opgave['ansvarlig']} ({opgave['ansvarligEmail']})", ln=True)
+
+            pdf.set_text_color(100, 100, 100)
+            pdf.set_font("Arial", size=11)
+            pdf.cell(0, 3, f"Startdato: {datetime.strptime(opgave['startdato'], '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')}", ln=True)
+            
+            pdf.set_text_color(0, 0, 0)
+            pdf.multi_cell(0, 20, opgave['beskrivelse'])
+
+            if opgave.get('resourcer') and len(opgave['resourcer']) > 0:
+                pdf.set_text_color(100, 100, 100)
+                pdf.cell(0, 10, "Ressourcer: ", ln=True)
+                resources_text = ", ".join([f"{resource['name']} ({resource['url']})" for resource in opgave.get('resourcer', [])])
+                pdf.set_text_color(100, 100, 255)
+                pdf.multi_cell(0, 3, resources_text)
+
+            if opgave['ansvarlig']:
+                pdf.set_text_color(100, 100, 100)
+                pdf.cell(0, 10, f"Ansvarlig: {opgave['ansvarlig']} ({opgave.get('ansvarligEmail', '')})", ln=True)
             pdf.ln(10)
 
         # Generate PDF content
