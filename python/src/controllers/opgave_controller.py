@@ -10,7 +10,7 @@ def create_opgave():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'result', 'timestamp']
+        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'ansvarligEmail', 'result', 'timestamp']
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
@@ -18,6 +18,7 @@ def create_opgave():
             title=data['title'],
             beskrivelse=data['beskrivelse'],
             ansvarlig=data['ansvarlig'],
+            ansvarligEmail=data['ansvarligEmail'],
             startdato=datetime.fromisoformat(data['startdato']) if 'startdato' in data else None,
             slutdato=datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else None,
             relativ_startdag=data['relativ_startdag'] if 'relativ_startdag' in data else None,
@@ -71,6 +72,7 @@ def get_all_opgaver():
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
                 'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
@@ -103,6 +105,7 @@ def create_opgave_with_opgaveskabelon():
             title=opgaveskabelon.title,
             beskrivelse=opgaveskabelon.beskrivelse,
             ansvarlig="",
+            ansvarligEmail="",
             startdato=opgaveskabelon.startdato,
             slutdato=opgaveskabelon.slutdato,
             result=False,
@@ -169,6 +172,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
                 'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
@@ -204,6 +208,7 @@ def get_opgave(opgave_id):
                 } for ressource in opgave.ressource
             ],
             'ansvarlig': opgave.ansvarlig,
+            'ansvarligEmail': opgave.ansvarligEmail,
             'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
             'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
             'relativ_startdag': opgave.relativ_startdag,
@@ -241,6 +246,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
                 'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
@@ -277,6 +283,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat(),
                 'slutdato': opgave.slutdato.isoformat(),
                 'relativ_startdag': opgave.relativ_startdag,
@@ -293,10 +300,10 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         session.close()
 
 
-def get_opgave_by_admin(adminmail):
+def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad naming
     session = db_client.get_session()
     try:
-        query = session.query(Opgave).filter(Opgave.ansvarlig == adminmail)
+        query = session.query(Opgave).filter(Opgave.ansvarligEmail == adminmail)
         opgave = query.all()
 
         if not opgave:
@@ -315,6 +322,7 @@ def get_opgave_by_admin(adminmail):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat(),
                 'slutdato': opgave.slutdato.isoformat(),
                 'relativ_startdag': opgave.relativ_startdag,
@@ -358,6 +366,7 @@ def get_opgave_by_forloeb_id(forlob_id):
                     } for ressource in opgave.ressource
                 ],
                 'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
                 'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
@@ -386,6 +395,7 @@ def update_opgave(opgave_id):
         opgave.title = data.get('title', opgave.title)
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
         opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
+        opgave.ansvarligEmail = data.get('ansvarligEmail', opgave.ansvarligEmail)
         opgave.startdato = datetime.fromisoformat(data['startdato']) if 'startdato' in data else opgave.startdato
         opgave.slutdato = datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else opgave.slutdato
         opgave.relativ_startdag = data.get('relativ_startdag', opgave.relativ_startdag)

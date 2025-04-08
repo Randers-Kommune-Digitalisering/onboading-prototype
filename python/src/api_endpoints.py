@@ -38,7 +38,8 @@ from controllers.forloeb_controller import (
 )
 
 from controllers.user_controller import (
-    get_admin_names,
+    get_admin_data,
+    get_user_data,
     get_email,
     get_dq_numbers,
     get_fullname,
@@ -144,9 +145,7 @@ def create_forloeb_endpoint():
 
 @api_endpoints.route('/forloeb', methods=['GET'])
 def get_all_forloeb_endpoint():
-    # logger.info(f"Headers: {request.headers}")
-    admin_name = request.headers.get('adminname')
-    # logger.info(f"Adminname: {admin_name}")
+    admin_name = request.headers.get('adminmail')
     if admin_name:
         return get_forloeb_by_admin(admin_name)
     return get_all_forloeb()
@@ -262,6 +261,11 @@ def delete_opgaveskabelon_endpoint(opgaveskabelon_id):
     return delete_opgaveskabelon(opgaveskabelon_id)
 
 
+@api_endpoints.route('/users', methods=['GET'])
+def get_user_data_endpoint():
+    return get_user_data()
+
+
 @api_endpoints.route('/users/email', methods=['GET'])
 def get_email_endpoint():
     return get_email()
@@ -283,8 +287,8 @@ def get_and_save_azure_ad_data_endpoint():
 
 
 @api_endpoints.route('/users/admin', methods=['GET'])
-def get_all_admin_names_endpoint():
-    return get_admin_names()
+def get_all_admin_data_endpoint():
+    return get_admin_data()
 
 
 @api_endpoints.route('/healthz', methods=['GET'])

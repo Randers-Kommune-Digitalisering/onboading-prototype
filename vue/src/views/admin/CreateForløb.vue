@@ -5,7 +5,7 @@
     import { getUserInfo } from '../../services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
     import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
-    import { getAdminNames, getEmail } from '@/services/userService.js'
+    import { getAdminData, getEmail } from '@/services/userService.js'
 
     const route = useRoute()
     const router = useRouter()
@@ -75,16 +75,18 @@
 
     /* Admin search */
     const loggedInAdmin = ref('')
+    const loggedInAdminName = ref('')
     const isAdminLocked = ref(true)
     const adminList = ref([])
     const adminSearchResults = ref([])
     const isAdminSearchOpen = ref(false)
-
+    const selectedAdmin = ref(null)
 
     getUserInfo().then(userInfo => {
-        loggedInAdmin.value = userInfo.name || 'No name'
+        loggedInAdmin.value = userInfo.email || 'No mail'
+        loggedInAdminName.value = userInfo.name || 'No name'
+        selectAdmin({name: loggedInAdminName.value, mail: loggedInAdmin.value})
     })
-
 
     const searchAdmins = (searchString) => {
         if (isUserMailSearchOpen) {
@@ -96,18 +98,19 @@
         }
         isAdminSearchOpen.value = true
         return adminSearchResults.value = adminList.value
-            .filter(admin => admin.toLowerCase().includes(searchString.toLowerCase()))
+            .filter(admin => admin.name.toLowerCase().includes(searchString.toLowerCase()))
             .slice(0, 8)
     }
 
     const selectAdmin = (admin) => {
-        inputFields.value.admin = admin
+        selectedAdmin.value = admin
+        inputFields.value.admin = admin.name
         isAdminLocked.value = true
         isAdminSearchOpen.value = false
     }
 
     const toggleadminSearch = () => {
-        if(adminList.value.includes(inputFields.value.admin))
+        if(adminList.value.map(admin => admin.name).includes(inputFields.value.admin))
         {
             isAdminLocked.value = !isAdminLocked.value
             isAdminSearchOpen.value = false
@@ -117,7 +120,7 @@
     }
 
     const clearAdminIfNotSelected = () => {
-        if(!adminList.value.includes(inputFields.value.admin))
+        if(!adminList.value.map(admin => admin.name).includes(inputFields.value.admin))
         {
             inputFields.value.admin = ""
             isAdminLocked.value = false
@@ -144,54 +147,66 @@
     }
 
     /* Instantiate */
-    onMounted(() => {
-        getForloebsskabeloner().then(data => {
-            templates.value = data.data
+    onMounted(async () => {
+        try {
+            const forloebsskabelonerResponse = await getForloebsskabeloner()
+            templates.value = forloebsskabelonerResponse.data
             if (template_id) {
                 const selectedTemplate = templates.value.find(template => template.ForløbsskabelonID === template_id)
-                if (selectedTemplate) 
+                if (selectedTemplate)
                     inputFields.value.ForløbsskabelonID = selectedTemplate.ForløbsskabelonID
             }
-        }).catch(error => {
+        } catch (error) {
             console.error('Error fetching forloebsskabeloner:', error)
-        })
-
-        getAdminNames().then(data => {
-            adminList.value = data.data.admin_names
-            // Add admin name to list if not already present
-            if (!adminList.value.includes(loggedInAdmin.value))
-                adminList.value.push(loggedInAdmin.value)
-        }).catch(error => {
-            console.error('Error fetching admin names:', error)
-        })
-
-        getEmail().then(data => {
-            userMailList.value = data.data.emails
-        }).catch(error => {
-            console.error('Error fetching emails:', error)
-        })
-
-        selectAdmin(loggedInAdmin.value)
-
-        if (isEditing) {
-            getForloebById(forloeb_id).then(response => {
-                const formattedData = {
-                    ...response.data,
-                    startdate: response.data.startdate ? response.data.startdate.split('T')[0] : '',
-                    enddate: response.data.enddate ? response.data.enddate.split('T')[0] : ''
-                }
-                Object.assign(inputFields.value, formattedData)
-            }).catch(error => {
-                console.error('Error fetching forløb:', error)
-            })
         }
 
-        // getDQ().then(data => {
-        //     dqList.value = data.data.dq_numbers
-        //     console.log('DQs:', data.data)
-        // }).catch(error => {
+        try {
+            const adminDataResponse = await getAdminData()
+            const parsedData = typeof adminDataResponse.data === 'string' ? JSON.parse(adminDataResponse.data) : adminDataResponse.data
+            adminList.value = parsedData
+
+            console.log('Logged in admin: ', loggedInAdmin.value)
+
+            // Add admin name to list if not already present
+            if (!(parsedData.map(admin => admin.mail)).includes(loggedInAdmin.value)) {
+                adminList.value.push({ name: loggedInAdminName.value, mail: loggedInAdmin.value })
+            }
+        } catch (error) {
+            console.error('Error fetching admin names:', error)
+        }
+
+        try {
+            const emailResponse = await getEmail()
+            userMailList.value = emailResponse.data.emails
+        } catch (error) {
+            console.error('Error fetching emails:', error)
+        }
+
+        if (isEditing) {
+            try {
+                const forloebResponse = await getForloebById(forloeb_id)
+                selectedAdmin.value = adminList.value.find(admin => admin.mail === forloebResponse.data.admin)
+                const formattedData = {
+                    ...forloebResponse.data,
+                    startdate: forloebResponse.data.startdate ? forloebResponse.data.startdate.split('T')[0] : '',
+                    enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : ''
+                }
+                formattedData.admin = selectedAdmin.value.name
+                Object.assign(inputFields.value, formattedData)
+                console.log('Forløb data:', inputFields.value)
+            } catch (error) {
+                console.error('Error fetching forløb:', error)
+            }
+        }
+
+        // Uncomment if needed in the future
+        // try {
+        //     const dqResponse = await getDQ()
+        //     dqList.value = dqResponse.data.dq_numbers
+        //     console.log('DQs:', dqResponse.data)
+        // } catch (error) {
         //     console.error('Error fetching DQs:', error)
-        // })
+        // }
     })
 
     /* Submit */
@@ -205,6 +220,8 @@
         isSubmitting.value = true
         try {
             const formData = { ...inputFields.value }
+            formData.admin = selectedAdmin.value.mail
+            
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
 
@@ -257,7 +274,7 @@
             
             <div class="itemSelector float-right" v-if="isAdminSearchOpen">
                 <span class="float-header small uppercase">Vælg en ansvarlig leder ...</span>
-                <div v-for="result in adminSearchResults" @click="selectAdmin(result)">{{result}}</div>
+                <div v-for="result in adminSearchResults" @click="selectAdmin(result)">{{result.name}}</div>
                 <div v-if="adminSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>

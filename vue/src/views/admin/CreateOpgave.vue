@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 
-    import { getAnvarligNames } from '@/services/userService.js'
+    import { getUsers } from '@/services/userService.js'
     import { createOpgave, getOpgaveById, updateOpgave } from '@/services/opgaveService.js'
     import { createOpgaveskabelon, getOpgaveskabelonById, updateOpgaveskabelon } from '@/services/opgaveskabelonService.js'
     import { getForloebById } from '@/services/forløbService.js'
@@ -38,6 +38,7 @@
     const assistantList = ref([])
     const assistantSearchResults = ref([])
     const isAssistantSearchOpen = ref(false)
+    const selectedAssistant = ref(null)
 
     const relativStartday = ref(null)
     const relativEndday = ref(null)
@@ -51,18 +52,20 @@
         }
         isAssistantSearchOpen.value = true
         return assistantSearchResults.value = assistantList.value
-            .filter(assistant => assistant.toLowerCase().includes(searchString.toLowerCase()))
+            .filter(assistant => assistant.name.toLowerCase().includes(searchString.toLowerCase()))
             .slice(0, 8)
     }
 
     const selectAssistant = (assistant) => {
-        inputFields.value.ansvarlig = assistant
+        inputFields.value.ansvarlig = assistant.name
+        selectedAssistant.value = assistant
+        console.log('Selected assistant:', selectedAssistant.value)
         isAssistantLocked.value = true
         isAssistantSearchOpen.value = false
     }
 
     const toggleassistantSearch = () => {
-        if(assistantList.value.includes(inputFields.value.ansvarlig))
+        if(assistantList.value.map(user => user.name).includes(inputFields.value.ansvarlig))
         {
             isAssistantLocked.value = !isAssistantLocked.value
             isAssistantSearchOpen.value = false
@@ -72,9 +75,10 @@
     }
 
     const clearAssistantIfNotSelected = () => {
-        if(!assistantList.value.includes(inputFields.value.ansvarlig))
+        if(!assistantList.value.map(user => user.name).includes(inputFields.value.ansvarlig))
         {
             inputFields.value.ansvarlig = ""
+            selectedAssistant.value = null
             isAssistantLocked.value = false
             isAssistantSearchOpen.value = false
         }
@@ -105,8 +109,9 @@
         }
 
         if(!isTemplate && !addToTemplate.value)
-            getAnvarligNames().then(response => {
-                assistantList.value = response.data.fullnames
+            getUsers().then(response => {
+                assistantList.value = response.data
+                console.log('Assistant list:', assistantList.value)
             }).catch(error => {
                 console.error('Error fetching assistant names:', error)
             })
@@ -190,8 +195,12 @@
                 inputFields.value.ForløbsskabelonID = forloeb_id.value
             else
                 inputFields.value.ForløbID = forloeb_id.value
+            if(!isTemplate)
+                inputFields.value.ansvarligEmail = selectedAssistant.value?.email ?? ""
 
-            const formData = { ...inputFields.value }
+            const formData = { 
+                ...inputFields.value
+            }
 
             if(isTemplate || addToTemplate.value)
                 delete formData.startdato, delete formData.slutdato, delete formData.booking
@@ -201,6 +210,7 @@
                     delete formData.booking
 
             const response = isEditing ? (isTemplate ? await updateOpgaveskabelon(opgaveId, formData) : await updateOpgave(opgaveId, formData)) : (isTemplate ? await createOpgaveskabelon(formData) : await createOpgave(formData))
+            
             if(response !== null)
             {
                 if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
@@ -243,7 +253,7 @@
             
             <div class="itemSelector float-right" v-if="isAssistantSearchOpen">
                 <span class="float-header small uppercase">Vælg en ansvarlig medarbejder ...</span>
-                <div v-for="result in assistantSearchResults" @click="selectAssistant(result)">{{result}}</div>
+                <div v-for="result in assistantSearchResults" @click="selectAssistant(result)">{{result.name}}</div>
                 <div v-if="assistantSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>

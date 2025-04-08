@@ -45,7 +45,7 @@
 </script>
 
 <template>
-    <p :class="'indent-tiny bold uppercase p-header-adjust' + ((adminView && !templateView) || largeHeaderAdjust ? '-large' : '')">{{ (title ?? (adminView ? 'Aktuelle' : 'Dine') + ' opgaver' ) }} </p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ (title ?? (adminView ? 'Aktuelle' : 'Dine') + ' opgaver' ) }} </p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
             :adminView="adminView"

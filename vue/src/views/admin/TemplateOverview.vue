@@ -30,21 +30,20 @@
 	const fetchTemplates = async () => {
 
 		let userInfo = await getUserInfo()
-		const loggedInAdmin = userInfo.name || null
+		const loggedInAdmin = userInfo.email || null
 		
 		if(!loggedInAdmin) {
 			console.error("No admin name found")
 			return
 		}
 
-		const headers =  { adminname: loggedInAdmin }
+		const headers =  { adminmail: loggedInAdmin }
 		let response
 
-		if (selectedType.value === TemplateType.Forloebsskabelon) {
+		if (selectedType.value === TemplateType.Forloebsskabelon)
 			response = await getForloebsskabeloner({headers})
-		} else {
+		else
 			response = await getOpgaveskabeloner({headers})
-		}
 
 		if (response.data == null)
 			return

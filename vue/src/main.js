@@ -128,30 +128,46 @@ router.beforeEach((to, from, next) => {
             const hasAccess = requiredRoles.some(role => userRoles.includes(role))
 
             if (!hasAccess) {
-                // TODO: What if user does not have any roles?
+                // User does not have access to requested route
+                returnRoleBasedUrl(userInfo).then(url => {
+                    next(url)
+                })
+                
             } else {
                 next()
             }
         } else {
-            next()
+            returnRoleBasedUrl(userInfo).then(url => {
+                next(url)
+            })
         }
     }).catch(() => {
         next({ path: '/login' })
     })
 })
 
-getUserInfo().then(userInfo => {
-    let userRoles = userInfo.roles
+const returnRoleBasedUrl = async (_userInfo = null) => {
+    try {
+        const userInfo = _userInfo ?? await getUserInfo()
+        let userRoles = userInfo.roles
 
-    // TODO: Only push to overview if user is not on other accepted page
-    if (userRoles.includes('Admin') && currentPath === '/') {
-        router.push('/admin-overview')
-    } else if (userRoles.includes('Ansvarlig') && currentPath === '/') {
-        router.push('/ansvarlig-overview')
-    } else if (userRoles.includes('Ny medarbejder') && currentPath === '/') {
-        router.push('/medarbejder-overview')
+        if (userRoles.includes('Admin'))
+            return '/admin-overview'
+        else if (userRoles.includes('Ansvarlig'))
+            return '/ansvarlig-overview'
+        else if (userRoles.includes('Ny medarbejder'))
+            return '/medarbejder-overview'
+        else
+            return '/login'
+        
+    } catch {
+        return '/login'
     }
-    // TODO: What if user does not have any roles?
-})
+}
+
+if (currentPath === '/')
+    returnRoleBasedUrl().then(url => {
+        router.push(url)
+    })
 
 app.mount('#app')
