@@ -519,6 +519,8 @@ button[type="submit"] {
     }
     .button.hollow.red { border: 0.1rem solid var(--color-button-red); color: var(--color-button-red) }
     .button.hollow.red:hover { border: 0.1rem solid var(--color-button-red-hover); color: var(--color-button-red-hover) }
+    .button.dashed { border: 0.1rem dashed var(--color-button); color: var(--color-button) }
+    .button.dashed:hover { border: 0.1rem dashed var(--color-button-hover); color: var(--color-button-hover) }
 
 .formContainer {
     position: relative;

@@ -153,6 +153,32 @@
             console.log(error)
         }
     })
+
+    const downloadForloeb = async () => {
+        try {
+            // Wait for the server to generate the PDF
+            const response = await fetch(`api/forloeb-download?id=${forloeb_id.value}`)
+            if (!response.ok) {
+                throw new Error('Failed to download file')
+            }
+
+            // Ensure the response is a valid PDF
+            const blob = await response.blob();
+            if (blob.type !== 'application/pdf') {
+                throw new Error('Invalid PDF file')
+            }
+
+            // Create a download link and trigger the download
+            const downloadLink = document.createElement('a')
+            downloadLink.href = URL.createObjectURL(blob)
+            downloadLink.download = `${forloeb.value.name}.pdf`
+            document.body.appendChild(downloadLink)
+            downloadLink.click()
+            document.body.removeChild(downloadLink)
+        } catch (error) {
+            console.error('Error downloading file:', error)
+        }
+    }
 </script>
 <template>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">Oversigt</p>
@@ -173,12 +199,13 @@
         <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate && !isForloebCompleted">+ Tilføj opgave</router-link>
         <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
         <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`" class="button hollow">Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
+        <div @click="downloadForloeb()" class="button hollow dashed" v-if="!isTemplate">Download PDF</div>
         <div @click="completeCourse()" class="button hollow red" v-if="!isTemplate && !isForloebCompleted">Afslut forløb</div>
         <div @click="deleteCourse()" class="button red hollow" v-if="isTemplate || isForloebCompleted">Slet {{ isTemplate ? 'skabelon' : 'forløb' }}</div>
         <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
     </div>
     <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
-    <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView || ansvarligEmail != null" :largeHeaderAdjust="(!showDetails && ansvarligEmail == null) || adminView && !templateView" />
+    <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView || ansvarligEmail != null" :largeHeaderAdjust="(!showDetails && ansvarligEmail == null) || adminView" />
     <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_future" :adminView="adminView || ansvarligEmail != null" title="Kommende opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" itemColor="777371" />
     <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_completed" :adminView="adminView || ansvarligEmail != null" title="Afsluttede opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" :dark="true" itemColor="617a5d" />
 </template>
