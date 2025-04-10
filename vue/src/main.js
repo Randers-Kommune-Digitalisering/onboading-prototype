@@ -41,7 +41,7 @@ const routes = [
         path: '/create-ressource',
         name: 'CreateRessource',
         component: CreateRessource,
-        meta: { roles: ['Admin'] }
+        meta: { roles: ['Admin', 'Ansvarlig'] }
     },
     {
         path: '/create-forloebsskabelon',

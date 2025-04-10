@@ -10,6 +10,11 @@
             type: Boolean,
             default: false
         },
+        ansvarligView:
+        {
+            type: Boolean,
+            default: false
+        },
         title:
         {
             type: String,
@@ -49,6 +54,7 @@
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
             :adminView="adminView"
+            :ansvarligView="ansvarligView"
             :id="task.OpgaveID ?? task.OpgaveskabelonID"
             :title="task.title"
             :header="task.header ?? task.beskrivelse"

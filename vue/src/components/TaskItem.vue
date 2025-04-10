@@ -2,14 +2,12 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
-    import { getRessourcesByOpgaveID, getRessourcesByOpgaveskabelonID  } from '@/services/ressourceService.js'
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
 
     const router = useRouter()
 
     const cardRef = ref(null)
-    const ressourceList = ref([])
     const isFutureTask = ref(false)
 
     const expandCard = () => {
@@ -96,6 +94,10 @@
             type: Boolean,
             default: false
         },
+        ansvarligView: {
+            type: Boolean,
+            default: false
+        },
         expandByDefault: {
             type: Boolean,
             default: false
@@ -160,19 +162,6 @@
     /* Instantiate */
 
     onMounted(() => {
-        // if(props.isTemplate)
-        //     getRessourcesByOpgaveskabelonID(props.id).then(response => {
-        //         ressourceList.value = response.data
-        //     }).catch(error => {
-        //         console.error('Error fetching ressources:', error)
-        //     })
-        // else
-        //     getRessourcesByOpgaveID(props.id).then(response => {
-        //         ressourceList.value = response.data
-        //     }).catch(error => {
-        //         console.error('Error fetching ressources:', error)
-        //     })
-
         isFutureTask.value = new Date(props.startdate) > new Date()
     })
 </script>
@@ -248,7 +237,7 @@
 
             <div class="ressources" v-if="props.ressources.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
-                <a v-if="!props.adminView" v-for="ressource in props.ressources" :href="ressource.url" target="_blank" class="link">
+                <a v-if="!props.adminView && !props.ansvarligView" v-for="ressource in props.ressources" :href="ressource.url" target="_blank" class="link">
                     <i class="fa-solid fa-up-right-from-square"></i>
                     {{ ressource.name }}
                 </a>
@@ -259,9 +248,9 @@
             </div>
 
             <div class="buttons">
-                <router-link class="button" v-if="adminView" :to="`/create-ressource?${isTemplate ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
+                <router-link class="button" v-if="adminView || ansvarligView" :to="`/create-ressource?${isTemplate ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
                 <router-link class="button hollow" v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${isTemplate ? '&template=true' : ''}`">Redigér</router-link>
-                <div :class="['button', 'hollow', {'red': props.result}]" v-if="!templateView && ((!props.adminView && props.responsible == '') || props.adminView)" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
+                <div :class="['button', 'hollow', {'red': props.result}]" v-if="!templateView && ((!props.adminView && props.responsible == '')) || (adminView || ansvarligView)" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
                 <div class="button hollow red" v-if="adminView" @click="deleteTask()">Slet</div>
             </div>
         </div>
