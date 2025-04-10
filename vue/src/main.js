@@ -21,7 +21,8 @@ import MedarbejderOverview from '@/views/ny_medarbejder/MedarbejderOverview.vue'
 import ForløbOverview from '@/views/ForløbOverview.vue'
 import TemplateOverview from '@/views/admin/TemplateOverview.vue'
 import Blank from '@/views/Blank.vue'
-import DownloadForløb from './views/DownloadForløb.vue'
+import DownloadForløb from '@/views/DownloadForløb.vue'
+import Login from '@/views/Login.vue'
 
 // Define routes
 const routes = [ 
@@ -110,6 +111,12 @@ const routes = [
         name: 'Reload',
         component: Blank,
         meta: { roles: ['Admin', 'Ansvarlig', 'Ny medarbejder'] }
+    },
+    {
+        path: '/login',
+        name: 'Login',
+        component: Login,
+        meta: { hideNavbar: true }
     }
 ]
 
@@ -127,30 +134,34 @@ const currentRoute = window.location.pathname + window.location.search
 router.addRoute({ path: currentRoute })
 
 router.beforeEach((to, from, next) => {
-    getUserInfo().then(userInfo => {
-        let userRoles = userInfo.roles
+    if(to.path === '/login')
+        next()
+    
+    else
+        getUserInfo().then(userInfo => {
+            let userRoles = userInfo.roles
 
-        if (to.matched.some(record => record.meta.roles)) {
-            const requiredRoles = to.meta.roles
-            const hasAccess = requiredRoles.some(role => userRoles.includes(role))
+            if (to.matched.some(record => record.meta.roles)) {
+                const requiredRoles = to.meta.roles
+                const hasAccess = requiredRoles.some(role => userRoles.includes(role))
 
-            if (!hasAccess) {
-                // User does not have access to requested route
+                if (!hasAccess) {
+                    // User does not have access to requested route
+                    returnRoleBasedUrl(userInfo).then(url => {
+                        next(url)
+                    })
+                    
+                } else {
+                    next()
+                }
+            } else {
                 returnRoleBasedUrl(userInfo).then(url => {
                     next(url)
                 })
-                
-            } else {
-                next()
             }
-        } else {
-            returnRoleBasedUrl(userInfo).then(url => {
-                next(url)
-            })
-        }
-    }).catch(() => {
-        next({ path: '/login' })
-    })
+        }).catch(() => {
+            next({ path: '/login' })
+        })
 })
 
 const returnRoleBasedUrl = async (_userInfo = null) => {
