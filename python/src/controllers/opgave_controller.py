@@ -314,6 +314,8 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
         opgave_data = [
             {
                 'OpgaveID': opgave.OpgaveID,
+                'ForløbID': opgave.ForløbID,
+                'ForløbsskabelonID': opgave.ForløbsskabelonID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
                 'resourcer': [

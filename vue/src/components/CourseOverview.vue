@@ -15,29 +15,23 @@
     const props = defineProps({
         showDetails: {
             type: Boolean,
-            required: false,
             default: false
+        },
+        userInfo: {
+            type: Object,
+            required: true
         },
         userEmail: {
-            type: String,
-            required: false
+            type: String
         },
         ansvarligEmail: {
-            type: String,
-            required: false
+            type: String
         },
         id: {
-            type: Number,
-            required: false
-        },
-        adminView: {
-            type: Boolean,
-            required: false,
-            default: false
+            type: Number
         },
         isTemplate: {
             type: Boolean,
-            required: false,
             default: false
         }
     })
@@ -55,21 +49,29 @@
 
     const fetchOpgaver = async () => {
         try {
-            const headers = { usermail: props.userEmail ?? props.ansvarligEmail }
-
-            if (props.userEmail || props.ansvarligEmail || (props.id && props.adminView)) {
-                const forloeb_response =  props.ansvarligEmail ? null
-                                        : props.userEmail ? await getForloebByEmail({ headers }) 
-                                        : props.isTemplate ? await getForloebsskabelonById(props.id, { headers })
+            if (props.userInfo) {
+                const headers = { usermail: props.userInfo.email }
+                // Get forloeb
+                                        // As ansvarlig fetch no forløb unless id is provided (fetch opgaver only)
+                const forloeb_response =  props.userInfo.isAnsvarlig && !props.id ? null
+                                        // As medarbejder fetch forløb by email
+                                        : props.userInfo.isMedarbejder ? await getForloebByEmail({ headers })
+                                        // If template fetch by skabelon id
+                                        : props.isTemplate ? await getForloebsskabelonById(props.id)
+                                        // Otherwise fetch by id and user email (for admins and ansvarlig users)
                                         : await getForloebById(props.id, { headers })
                 
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
-
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
-                const opgaver_response =  props.ansvarligEmail ? await getOpgaverByAnsvarligEmail({ headers }) 
+
+                // Get opgaver
+                                        // As ansvarlig fetch opgaver
+                const opgaver_response =  props.userInfo.isAnsvarlig && !props.id ? await getOpgaverByAnsvarligEmail({ headers }) 
+                                        // If template fetch by skabelon id
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
-                                        : await getOpgaverByForloebID(forloeb_id.value, { headers })
+                                        // Otherwise fetch by forløb id and user email (for medarbejder users, admins and ansvarlig users)
+                                        : await getOpgaverByForloebID(forloeb_id.value)
 
                 if (opgaver_response?.data == null)
                 {
@@ -108,7 +110,7 @@
                 isOpgaverFetched.value = true
 
             } else {
-                console.log('Please provide user email')
+                console.log('No user info provided')
             }
 
         } catch (error) {
@@ -181,7 +183,9 @@
     }
 </script>
 <template>
-    <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">Oversigt</p>
+    <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
+        Oversigt
+    </p>
     <CourseItem v-if="forloeb != null && isOpgaverFetched && showDetails"
                 :disableInteraction="true" 
                 :dark="true" 
@@ -193,19 +197,86 @@
                 :startDate="new Date(forloeb.startdate)" 
                 :deadline="new Date(forloeb.enddate)"
                 :tasks="opgaver_all" />
+
     <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate ? 4.5 : 7.2" :dark="true" />
-    <ProgressBar v-if="!showDetails && !ansvarligEmail" :percentage="completedPercentage"></ProgressBar>
-    <div class="buttons" v-if="adminView">
-        <router-link :to="`/create-opgave?id=${forloeb_id}`" class="button" v-if="!isTemplate && !isForloebCompleted">+ Tilføj opgave</router-link>
-        <router-link :to="`/create-opgave?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Tilføj opgave</router-link>
-        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`" class="button hollow">Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}</router-link>
-        <div @click="downloadForloeb()" class="button hollow dashed" v-if="!isTemplate">Download PDF</div>
-        <div @click="completeCourse()" class="button hollow red" v-if="!isTemplate && !isForloebCompleted">Afslut forløb</div>
-        <div @click="deleteCourse()" class="button red hollow" v-if="isTemplate || isForloebCompleted">Slet {{ isTemplate ? 'skabelon' : 'forløb' }}</div>
-        <router-link :to="`/create-forloeb?tid=${forloeb_id}`" class="button" v-if="isTemplate">+ Opret forløb med skabelon</router-link>
+    <ProgressBar v-if="forloeb != null  && !showDetails" :percentage="completedPercentage"></ProgressBar>
+    
+    <!-- Admin actions -->
+    <div class="buttons" v-if="userInfo.isAdmin">
+
+        <router-link :to="`/create-opgave?id=${forloeb_id}`"
+                     class="button" v-if="!isTemplate && !isForloebCompleted">
+                        + Tilføj opgave
+        </router-link>
+
+        <router-link :to="`/create-opgave?tid=${forloeb_id}`"
+                     class="button"
+                     v-if="isTemplate">
+                        + Tilføj opgave
+        </router-link>
+
+        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`"
+                     class="button hollow">
+                        Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}
+        </router-link>
+
+        <div @click="downloadForloeb()"
+             class="button hollow dashed"
+             v-if="!isTemplate">
+                Download PDF
+        </div>
+
+        <div @click="completeCourse()"
+             class="button hollow red"
+             v-if="!isTemplate && !isForloebCompleted">
+                Afslut forløb
+        </div>
+
+        <div @click="deleteCourse()"
+             class="button red hollow"
+             v-if="isTemplate || isForloebCompleted">
+                Slet {{ isTemplate ? 'skabelon' : 'forløb' }}
+        </div>
+
+        <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
+                     class="button"
+                     v-if="isTemplate">
+                        + Opret forløb med skabelon
+        </router-link>
+
     </div>
-    <TaskList v-if="forloeb != null && isTemplate" :tasks="opgaver_template" :adminView="adminView" title="Alle opgaver" :expandFirstItem="false" :templateView="true" />
-    <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_ongoing" :adminView="adminView" :ansvarligView="ansvarligEmail != null" :largeHeaderAdjust="(!showDetails && ansvarligEmail == null) || adminView" />
-    <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_future" :adminView="adminView" :ansvarligView="ansvarligEmail != null" title="Kommende opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" itemColor="777371" />
-    <TaskList v-if="(forloeb != null || ansvarligEmail != null) && !isTemplate" :tasks="opgaver_completed" :adminView="adminView" :ansvarligView="ansvarligEmail != null" title="Afsluttede opgaver" :largeHeaderAdjust="true" :expandFirstItem="false" :dark="true" itemColor="617a5d" />
+
+    <TaskList v-if="forloeb != null && isTemplate"
+              :tasks="opgaver_template"
+              :isFetchingTasks="!isOpgaverFetched"
+              :userInfo="userInfo"
+              title="Alle opgaver"
+              :expandFirstItem="false"
+              :templateView="true" />
+
+    <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+              :tasks="opgaver_ongoing"
+              :isFetchingTasks="!isOpgaverFetched"
+              :userInfo="userInfo"
+              :title="!userInfo.isMedarbejder && id != null ? 'Aktuelle opgaver' : 'Dine opgaver'"
+              :largeHeaderAdjust="userInfo.isAdmin || id != null" />
+
+    <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+              :tasks="opgaver_future"
+              :isFetchingTasks="!isOpgaverFetched"
+              :userInfo="userInfo"
+              title="Kommende opgaver"
+              :largeHeaderAdjust="true"
+              :expandFirstItem="false"
+              itemColor="777371" />
+
+    <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+              :tasks="opgaver_completed"
+              :isFetchingTasks="!isOpgaverFetched"
+              :userInfo="userInfo"
+              title="Afsluttede opgaver"
+              :largeHeaderAdjust="true"
+              :expandFirstItem="false"
+              :dark="true"
+              itemColor="617a5d" />
 </template>

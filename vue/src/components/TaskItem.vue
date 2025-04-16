@@ -51,6 +51,17 @@
             type: Number,
             required: true
         },
+        userInfo: {
+            type: Object,
+            required: true
+        },
+        forloebId: {
+            type: Number,
+            default: null
+        },
+        user: {
+            type: String
+        },
         title: {
             type: String,
             required: true
@@ -76,7 +87,10 @@
         deadline: {
             type: Date
         },
-        responsible: {
+        ansvarlig: {
+            type: String
+        },
+        ansvarligEmail: {
             type: String
         },
         booking: {
@@ -90,21 +104,12 @@
             type: String,
             default: '000'
         },
-        adminView: {
-            type: Boolean,
-            default: false
-        },
-        ansvarligView: {
-            type: Boolean,
-            default: false
-        },
         expandByDefault: {
             type: Boolean,
             default: false
         },
         dark: {
             type: Boolean,
-            required: false,
             default: false
         },
         templateView: {
@@ -118,7 +123,6 @@
         ressources:
         {
             type: Array,
-            required: false,
             default: []
         }
     })
@@ -217,9 +221,14 @@
 
                 <div v-if="!templateView">
                     <div class="icon"><i class="fa-solid fa-user"></i></div>
-                    <div class="text">
+                    
+                    <div class="text" v-if="forloebId != null && (userInfo.isAnsvarlig && userInfo.email == ansvarligEmail)">
+                        <div class="small faded">Medarbejder</div>
+                        <div>{{ user ?? 'Ingen medarbejder' }}</div>
+                    </div>
+                    <div class="text" v-else>
                         <div class="small faded">Ansvarlig</div>
-                        <div>{{ responsible ? returnFirstAndLastName(responsible) : 'Ingen ansvarlig' }}</div>
+                        <div>{{ ansvarlig ? returnFirstAndLastName(ansvarlig) : 'Ingen ansvarlig' }}</div>
                     </div>
                 </div>
 
@@ -237,23 +246,58 @@
 
             <div class="ressources" v-if="props.ressources.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
-                <a v-if="!props.adminView && !props.ansvarligView" v-for="ressource in props.ressources" :href="ressource.url" target="_blank" class="link">
-                    <i class="fa-solid fa-up-right-from-square"></i>
-                    {{ ressource.name }}
+
+                <a v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail"
+                   v-for="ressource in ressources"
+                   :href="ressource.url"
+                   target="_blank"
+                   class="link">
+                        <i class="fa-solid fa-up-right-from-square"></i>
+                        {{ ressource.name }}
                 </a>
-                <router-link v-else v-for="ressource in props.ressources" :to="`/create-ressource?id=${ressource.RessourceID}&edit=true`" class="link">
-                    <i class="fa-solid fa-up-right-from-square"></i>
-                    {{ ressource.name }}
+                <router-link v-else v-for="ressource in ressources"
+                             :to="`/create-ressource?id=${ressource.RessourceID}&edit=true`" 
+                             class="link">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                {{ ressource.name }}
                 </router-link>
+
             </div>
 
             <div class="buttons">
-                <router-link class="button" v-if="adminView || ansvarligView" :to="`/create-ressource?${isTemplate ? 't' : ''}id=${id}`">+ Tilføj ressource</router-link>
-                <router-link class="button hollow" v-if="adminView" :to="`/create-opgave?edit=true&id=${id}${isTemplate ? '&template=true' : ''}`">Redigér</router-link>
-                <div :class="['button', 'hollow', {'red': props.result}]" v-if="!templateView && ((!props.adminView && props.responsible == '')) || (adminView || ansvarligView)" @click="completeTask(!props.result)">Markér {{ props.result ? 'ej ' :'' }} gennemført</div>
-                <div class="button hollow red" v-if="adminView" @click="deleteTask()">Slet</div>
+
+                <router-link class="button"
+                             v-if="isTemplate || userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail)"
+                             :to="`/create-ressource?${isTemplate ? 't' : ''}id=${id}`">
+                                + Tilføj ressource
+                </router-link>
+
+                <router-link class="button hollow"
+                             v-if="isTemplate || userInfo?.isAdmin"
+                             :to="`/create-opgave?edit=true&id=${id}${isTemplate ? '&template=true' : ''}`">
+                                Redigér
+                </router-link>
+
+                <div :class="['button', 'hollow', {'red': result}]"
+                     v-if="!templateView && (userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail))"
+                     @click="completeTask(!result)">
+                        Markér {{ result ? 'ej ' :'' }} gennemført
+                </div>
+
+                <div class="button hollow red"
+                     v-if="isTemplate || userInfo?.isAdmin"
+                     @click="deleteTask()">
+                        Slet
+                </div>
+
+                <router-link class="button hollow"
+                             v-if="userInfo?.email == ansvarligEmail && forloebId != null"
+                             :to="`/forloeb-overview?id=${forloebId}`">
+                                Gå til forløb
+                </router-link>
+            
             </div>
-        </div>
-    </div>
+        </div><!-- /card-content -->
+    </div><!-- /card -->
 
 </template>

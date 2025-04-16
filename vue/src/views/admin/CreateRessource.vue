@@ -71,10 +71,22 @@
             const response = isEditing ? await updateRessource(opgave_id, formData) : await createRessource(formData)
             if(response !== null)
             {
-                if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
+				if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
                     router.back()
+				else if(isTemplate)
+				{
+					router.back()
+					router.replace({ path: '/template-overview', query: { view: '1' } })
+				}
 				else if (router.getRoutes()[router.getRoutes().length-1].name == "Reload")
 					router.back(2)
+                else
+                {
+                    router.back()
+					router.replace({ path: router.getRoutes()[router.getRoutes().length-1].url })
+                    //var query = isTemplate ? { tid: forloeb_id.value } : { id: forloeb_id.value }
+                    //router.replace({ path: '/forloeb-overview', query: query })
+                }
             }
             else
                 console.log('Response:', response)

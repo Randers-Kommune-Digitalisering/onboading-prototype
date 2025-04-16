@@ -40,6 +40,7 @@ def create_forloeb():
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
                     ansvarlig=opgave.ansvarlig,
+                    ansvarligEmail=opgave.ansvarligEmail,
                     startdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag),  # Adding relative days
                     slutdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag) + timedelta(days=opgave.relativ_slutdag),
                     result=opgave.result,
