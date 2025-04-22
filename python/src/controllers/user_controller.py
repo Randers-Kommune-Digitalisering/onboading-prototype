@@ -27,7 +27,7 @@ def get_user_data():
         logger.error(f"Error processing CSV file: {e}")
         return jsonify({"error": "Error processing CSV file"}), 500
 
-    logger.info(f"Retrieved data: {data}")
+    # logger.info(f"Retrieved data: {data}")
     return jsonify(data), 200
 
 
@@ -46,7 +46,7 @@ def get_email():
         logger.error(f"Error processing CSV file: {e}")
         return jsonify({"error": "Error processing CSV file"}), 500
 
-    logger.info(f"Retrieved emails: {emails}")
+    # logger.info(f"Retrieved emails: {emails}")
     return jsonify({"emails": emails}), 200
 
 
@@ -65,7 +65,7 @@ def get_dq_numbers():
         logger.error(f"Error processing CSV file: {e}")
         return jsonify({"error": "Error processing CSV file"}), 500
 
-    logger.info(f"Retrieved DQ numbers: {dq_numbers}")
+    # logger.info(f"Retrieved DQ numbers: {dq_numbers}")
     return jsonify({"dq_numbers": dq_numbers}), 200
 
 
@@ -85,7 +85,7 @@ def get_fullname():
         logger.error(f"Error processing CSV file: {e}")
         return jsonify({"error": "Error processing CSV file"}), 500
 
-    logger.info(f"Retrieved full names: {fullnames}")
+    # logger.info(f"Retrieved full names: {fullnames}")
     return jsonify({"fullnames": fullnames}), 200
 
 
@@ -126,36 +126,35 @@ def get_and_save_azure_ad_data():
 def get_admin_data():
     absolute_path = SD_CSV_PATH
 
-    if os.path.exists(absolute_path):
-        logger.info(f"Local file {absolute_path} exists. Reading admin names from local file...")
-        try:
-            df = pd.read_csv(absolute_path, encoding='utf-16', delimiter=';')
-            admin_data = [{"name": row['Navn'], "mail": row['Email']} for _, row in df.iterrows() if 'Navn' in df.columns and 'Email' in df.columns]
+    if not os.path.exists(absolute_path):
+        logger.info("Retrieving admin names from SFTP...")
+        sftp_client = SFTPClient(SFTP_HOST, SFTP_USER, SFTP_PASS)
+        conn = sftp_client.get_connection()
 
-            # Remove objects with missing data
-            admin_data = [entry for entry in admin_data if pd.notna(entry['name']) and pd.notna(entry['mail']) and entry['name'] and entry['mail']]
-            # Remove duplicates if any
-            admin_data = list({entry['name']: entry for entry in admin_data}.values())
+        if conn:
+            admin_data = handle_files(conn)
+            logger.info(f"Admin data retrieved: {admin_data}")
+            with open(absolute_path, 'w', encoding='utf-16') as file:
+                file.write(admin_data)
+            if not admin_data:
+                logger.error("Error retrieving admin data from SFTP")
+                return jsonify({"error": "Error retrieving admin data from SFTP"}), 500
+        else:
+            logger.error("Error establishing SFTP connection")
+            return jsonify({"error": "Error establishing SFTP connection"}), 500
 
-            # admin_data = list(set(admin_data))
-            return jsonify(admin_data), 200
+    try:
+        df = pd.read_csv(absolute_path, encoding='utf-16', delimiter=';')
+        admin_data = [{"name": row['Navn'], "mail": row['Email']} for _, row in df.iterrows() if 'Navn' in df.columns and 'Email' in df.columns]
 
-        except Exception as e:
-            logger.error(f"Error reading local file: {e}")
-            return jsonify({"error": "Error reading local file"}), 500
+        # Remove objects with missing data
+        admin_data = [entry for entry in admin_data if pd.notna(entry['name']) and pd.notna(entry['mail']) and entry['name'] and entry['mail']]
+        # Remove duplicates if any
+        admin_data = list({entry['name']: entry for entry in admin_data}.values())
 
-    logger.info("Retrieving admin names from SFTP...")
-    sftp_client = SFTPClient(SFTP_HOST, SFTP_USER, SFTP_PASS)
-    conn = sftp_client.get_connection()
+        # admin_data = list(set(admin_data))
+        return jsonify(admin_data), 200
 
-    if conn:
-        admin_names = handle_files(conn)
-        if not admin_names:
-            logger.error("Error retrieving admin names from SFTP")
-            return jsonify({"error": "Error retrieving admin names from SFTP"}), 500
-    else:
-        logger.error("Error establishing SFTP connection")
-        return jsonify({"error": "Error establishing SFTP connection"}), 500
-
-    admin_names = list(set(admin_names))
-    return jsonify({"admin_names": admin_names}), 200
+    except Exception as e:
+        logger.error(f"Error reading local file: {e}")
+        return jsonify({"error": "Error reading local file"}), 500
