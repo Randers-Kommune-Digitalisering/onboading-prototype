@@ -5,7 +5,7 @@
     import { getUserInfo } from '../../services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
     import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
-    import { getAdminData, getEmail } from '@/services/userService.js'
+    import { getAdminData, getUsers } from '@/services/userService.js'
 
     const route = useRoute()
     const router = useRouter()
@@ -23,15 +23,15 @@
         startdate: "",
         enddate: "",
         name: "",
-        privateEmail: '',
-        userdq: ''
+        // privateEmail: '',
+        userdq: ""
     })
 
     // const dqList = ref([])
 
     /* User mail search */
     const isUserMailValid = ref(true)
-    const userMailList = ref([])
+    const userList = ref([])
     const userMailSearchResults = ref([])
     const isUserMailSearchOpen = ref(false)
 
@@ -46,25 +46,27 @@
         isUserMailSearchOpen.value = true
         searchString = searchString.replace(/Æ/gi, 'a').replace(/Ø/gi, 'o').replace(/Å/gi, 'a')
         let spacelessSearchString = searchString.replace(/ /g, '.')
-        const searchResults = userMailList.value.filter(userMail =>
-            userMail.toLowerCase().startsWith(searchString.toLowerCase()) ||
-            userMail.toLowerCase().startsWith(spacelessSearchString.toLowerCase())
+        const searchResults = userList.value.filter(userMail =>
+            userMail.email.toLowerCase().startsWith(searchString.toLowerCase()) ||
+            userMail.email.toLowerCase().startsWith(spacelessSearchString.toLowerCase())
         )
         return userMailSearchResults.value = searchResults
     }
 
-    const selectUserMail = (userMail) => {
-        inputFields.value.usermail = userMail
+    const selectUserMail = (user) => {
+        console.log('Selected user mail:', user)
+        inputFields.value.usermail = user.email
+        inputFields.value.userdq = user.dq
         isUserMailSearchOpen.value = false
         evaluateEmail()
     }
 
-    const getEmailType = () => {
-        if (inputFields.value.usermail.includes('@randers.dk')) {
-            return 'randersmail'
-        }
-        return 'private'
-    }
+    // const getEmailType = () => {
+    //     if (inputFields.value.usermail.includes('@randers.dk')) {
+    //         return 'randersmail'
+    //     }
+    //     return 'private'
+    // }
 
     const evaluateEmail = () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -146,6 +148,7 @@
 
     /* Instantiate */
     onMounted(async () => {
+        // Get templates
         try {
             const forloebsskabelonerResponse = await getForloebsskabeloner()
             templates.value = forloebsskabelonerResponse.data
@@ -158,6 +161,7 @@
             console.error('Error fetching forloebsskabeloner:', error)
         }
 
+        // Get admin list
         try {
             const adminDataResponse = await getAdminData()
             const parsedData = typeof adminDataResponse.data === 'string' ? JSON.parse(adminDataResponse.data) : adminDataResponse.data
@@ -173,13 +177,15 @@
             console.error('Error fetching admin names:', error)
         }
 
+        // Get user list
         try {
-            const emailResponse = await getEmail()
-            userMailList.value = emailResponse.data.emails
+            const userResponse = await getUsers()
+            userList.value = userResponse.data
         } catch (error) {
             console.error('Error fetching emails:', error)
         }
 
+        // Get item to edit
         if (isEditing) {
             try {
                 const forloebResponse = await getForloebById(forloeb_id)
@@ -223,13 +229,13 @@
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
 
-            if (getEmailType() === 'private')
-            {
-                formData.privateEmail = formData.usermail
-                delete formData.usermail
-            }
-            else 
-                delete formData.privateEmail
+            // if (getEmailType() === 'private')
+            // {
+            //     formData.privateEmail = formData.usermail
+            //     delete formData.usermail
+            // }
+            // else 
+            //     delete formData.privateEmail
 
             const response = isEditing ? await updateForloeb(forloeb_id, formData) : await createForloeb(formData)
             if(response.data.uid)
@@ -260,7 +266,7 @@
 
             <div class="itemSelector float-right" v-if="isUserMailSearchOpen">
                 <span class="float-header small uppercase">Vælg en mailadresse ...</span>
-                <div v-for="result in userMailSearchResults" @click="selectUserMail(result)" class="small">{{result}}</div>
+                <div v-for="result in userMailSearchResults" @click="selectUserMail(result)" class="small">{{result.email}}</div>
                 <div v-if="userMailSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>

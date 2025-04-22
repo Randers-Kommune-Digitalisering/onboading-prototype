@@ -42,6 +42,7 @@
 
     const forloeb = ref(null)
     const forloeb_id = ref(null)
+    const userTitle = ref(null)
     const isForloebCompleted = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
@@ -68,6 +69,8 @@
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
+                console.log(forloeb.value)
+                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value.userdq : forloeb.value?.usermail
 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
@@ -195,7 +198,7 @@
                 :dark="true" 
                 :id="!isTemplate ? forloeb_id : null" 
                 :tid="!isTemplate ? forloeb_id : null" 
-                :title="forloeb.usermail || 'Skabelon'" 
+                :title="userTitle" 
                 :name="forloeb.name" 
                 :duration="forloeb.varighed" 
                 :startDate="new Date(forloeb.startdate)" 
