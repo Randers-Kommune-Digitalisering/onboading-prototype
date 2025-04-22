@@ -33,6 +33,10 @@
         isTemplate: {
             type: Boolean,
             default: false
+        },
+        expandItem: {
+            type: Number,
+            default: null
         }
     })
 
@@ -252,6 +256,7 @@
               :userInfo="userInfo"
               title="Alle opgaver"
               :expandFirstItem="false"
+              :expandItem="expandItem"
               :templateView="true" />
 
     <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
@@ -259,7 +264,9 @@
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
               :title="!userInfo.isMedarbejder && id != null ? 'Aktuelle opgaver' : 'Dine opgaver'"
-              :largeHeaderAdjust="userInfo.isAdmin || id != null" />
+              :largeHeaderAdjust="userInfo.isAdmin || id != null"
+              :expandFirstItem="false"
+              :expandItem="expandItem" />
 
     <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
               :tasks="opgaver_future"
@@ -268,6 +275,7 @@
               title="Kommende opgaver"
               :largeHeaderAdjust="true"
               :expandFirstItem="false"
+              :expandItem="expandItem"
               itemColor="777371" />
 
     <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
@@ -277,6 +285,7 @@
               title="Afsluttede opgaver"
               :largeHeaderAdjust="true"
               :expandFirstItem="false"
+              :expandItem="expandItem"
               :dark="true"
               itemColor="617a5d" />
 </template>

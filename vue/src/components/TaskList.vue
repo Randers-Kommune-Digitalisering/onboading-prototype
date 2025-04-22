@@ -31,6 +31,11 @@
             type: Boolean,
             default: true
         },
+        expandItem:
+        {
+            type: Number,
+            default: null
+        },
         dark:
         {
             type: Boolean,
@@ -68,7 +73,7 @@
             :ansvarligEmail="task.ansvarligEmail"
             :booking="task.booking ? new Date(new Date(task.booking)) : null"
             :color="props.itemColor != null ? props.itemColor : (!templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-            :expandByDefault="expandFirstItem && index == 0"
+            :expandByDefault="expandFirstItem && index == 0 || expandItem === task.OpgaveID || expandItem === task.OpgaveskabelonID"
             :dark="dark"
             :templateView="templateView"
             :isTemplate="task.OpgaveskabelonID != null"

@@ -8,6 +8,8 @@
     const route = useRoute()
     const id = parseInt(route.query.id || route.query.tid, 10)
     const isTemplate = route.query.tid !== undefined
+	const _expandItem = route.query.item
+	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
 
     const adminView = ref(false)
     const ansvarligView = ref(false)
@@ -38,7 +40,7 @@
                         :id="id"
                         :showDetails="true"
                         :userInfo="userInfo"
-                        :adminView="adminView"
-                        :isTemplate="isTemplate" />
+                        :isTemplate="isTemplate"
+                        :expandItem="expandItem" />
     </div>
 </template>

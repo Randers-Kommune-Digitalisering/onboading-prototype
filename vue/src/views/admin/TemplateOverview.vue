@@ -12,6 +12,8 @@
 	const route = useRoute()
 	const router = useRouter()
 	const view = route.query.view
+	const _expandItem = route.query.item
+	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
 
 	const TemplateType = {
 		Forloebsskabelon: 0,
@@ -83,7 +85,8 @@
 			  title=""
 			  :expandFirstItem="false"
 			  :templateView="true"
-			  :userInfo="{}" />
+			  :userInfo="{}"
+			  :expandItem="expandItem" />
 </template>
 
 <style scoped>

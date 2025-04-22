@@ -1,11 +1,12 @@
 <script setup>
     import { ref, onMounted } from 'vue'
-    import { useRouter } from 'vue-router'
+    import { useRouter, useRoute } from 'vue-router'
 
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
 
     const router = useRouter()
+    const route = useRoute()
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
@@ -44,6 +45,19 @@
 
     const returnDagOrDage = (days) => {
         return days > 1 ? 'dage' : 'dag'
+    }
+
+    function scrollTo()
+    {
+        setTimeout(function()
+        {
+            const item = cardRef.value
+            let rect = item.getBoundingClientRect()
+            let calc = rect.top - (window.innerHeight / 2) + (item.offsetHeight / 2)
+            window.scrollBy({
+                left: 0, top: calc, 
+                behavior: "smooth" })
+        }, 50) // Wait ms before scrolling
     }
 
     var props = defineProps({
@@ -167,6 +181,9 @@
 
     onMounted(() => {
         isFutureTask.value = new Date(props.startdate) > new Date()
+        if (props.expandByDefault) {
+            scrollTo()
+        }
     })
 </script>
 

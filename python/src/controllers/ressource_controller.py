@@ -86,6 +86,8 @@ def get_ressource(ressource_id):
             return jsonify({"error": "Ressource not found"}), 404
 
         result = {
+            "OpgaveID": ressource.OpgaveID,
+            "OpgaveskabelonID": ressource.OpgaveskabelonID,
             "RessourceID": ressource.RessourceID,
             "name": ressource.name,
             "url": ressource.url

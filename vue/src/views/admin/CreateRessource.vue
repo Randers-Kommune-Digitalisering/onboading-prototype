@@ -7,9 +7,10 @@
     const route = useRoute()
 	const router = useRouter()
 
-	const opgave_id = parseInt(route.query.id ?? route.query.tid, 10)
+	const id = parseInt(route.query.id ?? route.query.tid, 10)
     const isTemplate = route.query.id == null
 	const isEditing = route.query.edit == 'true'
+	const opgaveId = ref(isEditing ? null : id)
     const isSubmitting = ref(false)
 	const isUrlValid = ref(true)
 
@@ -34,17 +35,17 @@
 	/* Instantiate */
 
 	onMounted(() => {
-        if(!opgave_id) {
+        if(!id) {
             console.error('No ID provided')
             router.back()
             return
         }
 		console.log('Editing:', isEditing)
 		if(isEditing) {
-			getRessourceById(opgave_id).then(response => {
-				console.log('Ressource response:', response)
+			getRessourceById(id).then(response => {
 				inputFields.value.name = response.data.name
 				inputFields.value.url = response.data.url
+				opgaveId.value = response.data.OpgaveID ?? response.data.OpgaveskabelonID
 			}).catch(error => {
 				console.error('Error fetching ressource:', error)
 			})
@@ -62,32 +63,15 @@
         isSubmitting.value = true
         try {
 			if (isTemplate)
-				inputFields.value.OpgaveskabelonID = opgave_id
+				inputFields.value.OpgaveskabelonID = id
 			else if (!isEditing)
-				inputFields.value.OpgaveID = opgave_id
+				inputFields.value.OpgaveID = id
 
             const formData = { ...inputFields.value }
 
-            const response = isEditing ? await updateRessource(opgave_id, formData) : await createRessource(formData)
+            const response = isEditing ? await updateRessource(id, formData) : await createRessource(formData)
             if(response !== null)
-            {
-				if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
-                    router.back()
-				else if(isTemplate)
-				{
-					router.back()
-					router.replace({ path: '/template-overview', query: { view: '1' } })
-				}
-				else if (router.getRoutes()[router.getRoutes().length-1].name == "Reload")
-					router.back(2)
-                else
-                {
-                    router.back()
-					router.replace({ path: router.getRoutes()[router.getRoutes().length-1].url })
-                    //var query = isTemplate ? { tid: forloeb_id.value } : { id: forloeb_id.value }
-                    //router.replace({ path: '/forloeb-overview', query: query })
-                }
-            }
+				returnToPrevious()
             else
                 console.log('Response:', response)
 
@@ -99,17 +83,30 @@
 
 	const deleteItem = () =>
 	{
-		console.log('Deleting ressource:', opgave_id)
-		deleteRessource(opgave_id)
+		console.log('Deleting ressource:', id)
+		deleteRessource(id)
 		.then(response => {
-			if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
-				router.back()
-			else if (router.getRoutes()[router.getRoutes().length-1].name == "Reload")
-				router.back(2)
+			returnToPrevious()
 		})
 		.catch(error => {
 			console.error('Error deleting ressource:', error)
 		})
+	}
+
+	const returnToPrevious = () =>
+	{
+		// Get last route
+		let lastUrl = router.options.history.state.back
+		let lastRoute = router.getRoutes().find(route => route.path == lastUrl.split('?')[0])
+		lastRoute.query = Object.fromEntries(new URLSearchParams(lastUrl.split('?')[1]))
+
+		// Add query params
+		lastRoute.query = { ...lastRoute.query, item: opgaveId.value }
+		if (isTemplate)
+			lastRoute.query.view = '1'
+
+		// Go back
+		router.replace({ path: lastRoute.path, query: lastRoute.query })
 	}
 	
 </script>
