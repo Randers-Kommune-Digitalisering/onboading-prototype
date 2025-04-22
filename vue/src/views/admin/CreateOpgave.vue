@@ -61,7 +61,7 @@
     const selectAssistant = (assistant) => {
         inputFields.value.ansvarlig = assistant.name
         selectedAssistant.value = assistant
-        console.log('Selected assistant:', selectedAssistant.value)
+        //console.log('Selected assistant:', selectedAssistant.value)
         isAssistantLocked.value = true
         isAssistantSearchOpen.value = false
     }
@@ -104,7 +104,6 @@
     /* Use template */
 
     const selectTemplate = (template) => {
-        console.log('Selected template:', template)
         inputFields.value.title = template.title
         inputFields.value.beskrivelse = template.beskrivelse
         inputFields.value.startdato = template.startdato
@@ -251,11 +250,7 @@
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
                 if(formData.booking == "")
                     delete formData.booking
-
-            console.log('isEditing:', isEditing)
-            console.log('isTemplate:', isTemplate)
-            console.log('addToTemplate:', addToTemplate.value)
-            console.log('selectedTemplate:', selectedTemplate.value)
+            
             const response = isEditing ?
                                 (isTemplate ?
                                     await updateOpgaveskabelon(opgaveId, formData)
@@ -267,25 +262,29 @@
                                       : await createOpgave(formData))
             
             if(response !== null)
-            {
-                if (router.getRoutes()[router.getRoutes().length-1].name == "ForløbOverview")
-                    router.back()
-                else if(isTemplate)
-                    router.replace({ path: '/template-overview', query: { view: '1' } })
-                else
-                {
-                    var query = addToTemplate.value ? { tid: forloeb_id.value } : { id: forloeb_id.value }
-                    router.replace({ path: '/forloeb-overview', query: query })
-                }
-            }
+                returnToPrevious(response?.data?.OpgaveID)
             else
-                console.log('Response:', response)
+                console.error('Response:', response)
 
         } catch (error) {            
-            console.log('Error:', error.response?.data?.error ?? error)
+            console.error('Error:', error.response?.data?.error ?? error)
         }
         isSubmitting.value = false
     }
+
+    const returnToPrevious = (id = null) =>
+	{
+		// Get last route
+		let lastUrl = router.options.history.state.back
+		let lastRoute = router.getRoutes().find(route => route.path == lastUrl.split('?')[0])
+		lastRoute.query = Object.fromEntries(new URLSearchParams(lastUrl.split('?')[1]))
+
+		// Add query params
+		lastRoute.query = { ...lastRoute.query, item: id ?? opgaveId }
+
+		// Go back
+		router.replace({ path: lastRoute.path, query: lastRoute.query })
+	}
 </script>
 
 <template>

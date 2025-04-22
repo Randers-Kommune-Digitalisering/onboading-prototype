@@ -110,12 +110,12 @@ body {
     z-index: 100;
 }
 
-a {
+a, .link {
     text-decoration: none;
     color: var(--color-text);
 }
 
-a.disabled, .button.disabled {
+a.disabled, .button.disabled, .link.disabled {
     cursor: default;
     pointer-events: none;
 }
@@ -418,17 +418,18 @@ a.disabled, .button.disabled {
         border-right: 0.2rem solid var(--color-background);
     }
 
-    .card-content > .ressources > a {
+    .card-content > .ressources > .link {
         border-radius: 0.2rem;
         color: var(--color-button);
+        cursor: pointer;
     }
 
-    .card-content > .ressources > a:hover {
+    .card-content > .ressources > .link:hover {
         color: var(--color-button-hover);
         text-decoration: underline;
     }
 
-    .card-content > .ressources > a > i {
+    .card-content > .ressources > .link > i {
         margin-right: 0.5rem;
         font-size: 0.8em;
         transform: translateY(-0.03rem);

@@ -1,12 +1,11 @@
 <script setup>
     import { ref, onMounted } from 'vue'
-    import { useRouter, useRoute } from 'vue-router'
+    import { useRouter } from 'vue-router'
 
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
 
     const router = useRouter()
-    const route = useRoute()
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
@@ -141,7 +140,8 @@
         }
     })
 
-    /* Complete task */
+    /* Task operations */
+
     const completeTask = (result = true) => {
         updateOpgave(props.id, { result: result }).then(response => {
             const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
@@ -175,6 +175,34 @@
             }).catch(error => {
                 console.error('Error deleting task:', error)
             })
+    }
+
+    const gotoRessource = (id) => {
+        const currentQuery = router.currentRoute.value.query
+        let updateQuery = { ...currentQuery, item: props.id }
+
+        let newQuery = {}
+        if(props.isTemplate)
+            newQuery.tid = id != null ? id : props.id
+        else
+            newQuery.id = id != null ? id : props.id
+        if(id != null)
+            newQuery.edit = true
+
+        router.replace({ query: updateQuery }).then(() => {
+            router.push({ path: '/create-ressource', query: newQuery })
+        })
+    }
+
+    const gotoTask = () => {
+        const currentQuery = router.currentRoute.value.query
+        let updateQuery = { ...currentQuery, item: props.id }
+        if (props.isTemplate) 
+            updateQuery.template = true
+
+        router.replace({ query: updateQuery }).then(() => {
+            router.push({ path: '/create-opgave', query: { id: props.id, edit: true } })
+        })
     }
 
     /* Instantiate */
@@ -272,28 +300,28 @@
                         <i class="fa-solid fa-up-right-from-square"></i>
                         {{ ressource.name }}
                 </a>
-                <router-link v-else v-for="ressource in ressources"
-                             :to="`/create-ressource?id=${ressource.RessourceID}&edit=true`" 
+                <span v-else v-for="ressource in ressources"
+                             @click="gotoRessource(ressource.RessourceID)" 
                              class="link">
                                 <i class="fa-solid fa-pen-to-square"></i>
                                 {{ ressource.name }}
-                </router-link>
+                </span>
 
             </div>
 
             <div class="buttons">
 
-                <router-link class="button"
-                             v-if="isTemplate || userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail)"
-                             :to="`/create-ressource?${isTemplate ? 't' : ''}id=${id}`">
-                                + Tilføj ressource
-                </router-link>
+                <div class="button"
+                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail)"
+                     @click="gotoRessource()">
+                        + Tilføj ressource
+                </div>
 
-                <router-link class="button hollow"
-                             v-if="isTemplate || userInfo?.isAdmin"
-                             :to="`/create-opgave?edit=true&id=${id}${isTemplate ? '&template=true' : ''}`">
-                                Redigér
-                </router-link>
+                <div class="button hollow"
+                     v-if="isTemplate || userInfo?.isAdmin"
+                     @click="gotoTask()">
+                        Redigér
+            </div>
 
                 <div :class="['button', 'hollow', {'red': result}]"
                      v-if="!templateView && (userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail))"

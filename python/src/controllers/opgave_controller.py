@@ -47,7 +47,7 @@ def create_opgave():
 
         session.add(new_opgave)
         session.commit()
-        return jsonify({"message": "Opgave created successfully"}), 201
+        return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -139,7 +139,7 @@ def create_opgave_with_opgaveskabelon():
             session.add(new_ressource)
         session.commit()
 
-        return jsonify({"message": "Opgave created successfully with Opgaveskabelon"}), 201
+        return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
