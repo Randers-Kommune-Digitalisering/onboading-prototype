@@ -69,7 +69,6 @@
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
-                console.log(forloeb.value)
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value.userdq : forloeb.value?.usermail
 
                 // Get opgaver
@@ -82,7 +81,7 @@
 
                 if (opgaver_response?.data == null)
                 {
-                    console.log('No tasks found')
+                    console.warn('No tasks found')
                     isOpgaverFetched.value = true
                     return
                 }
@@ -117,11 +116,11 @@
                 isOpgaverFetched.value = true
 
             } else {
-                console.log('No user info provided')
+                console.warn('No user info provided')
             }
 
         } catch (error) {
-            console.log(error)
+            console.error(error)
             isOpgaverFetched.value = true
         }
     }
@@ -159,7 +158,7 @@
         try {
             fetchOpgaver()
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     })
 

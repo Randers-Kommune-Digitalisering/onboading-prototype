@@ -23,7 +23,6 @@ export const getOpgaverByForloebID = async (forloebID, config) => {
 };
 
 export const getOpgaverByAnsvarligEmail = (config) => {
-  console.log('config', config);
   return axios.get(`${API_URL}/opgave/admin`, config);
 };
 

@@ -54,7 +54,7 @@
     }
 
     const selectUserMail = (user) => {
-        console.log('Selected user mail:', user)
+        //console.log('Selected user mail:', user)
         inputFields.value.usermail = user.email
         inputFields.value.userdq = user.dq
         isUserMailSearchOpen.value = false
@@ -166,8 +166,7 @@
             const adminDataResponse = await getAdminData()
             const parsedData = typeof adminDataResponse.data === 'string' ? JSON.parse(adminDataResponse.data) : adminDataResponse.data
             adminList.value = parsedData
-
-            console.log('Logged in admin: ', loggedInAdmin.value)
+            //console.log('Logged in admin: ', loggedInAdmin.value)
 
             // Add admin name to list if not already present
             if (!(parsedData.map(admin => admin.mail)).includes(loggedInAdmin.value)) {
@@ -197,7 +196,6 @@
                 }
                 formattedData.admin = selectedAdmin.value.name
                 Object.assign(inputFields.value, formattedData)
-                console.log('Forløb data:', inputFields.value)
             } catch (error) {
                 console.error('Error fetching forløb:', error)
             }
@@ -239,16 +237,13 @@
 
             const response = isEditing ? await updateForloeb(forloeb_id, formData) : await createForloeb(formData)
             if(response.data.uid)
-            {
-                console.log('Redirecting to:', `/forloeb-overview?id=${response.data.uid}`)
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
-            }
+            
         } catch (error) {
-            if (error.response?.data?.error) {
-                console.log('Error:', error.response.data.error)
-            } else {
-                console.log('Error:', error)
-            }
+            if (error.response?.data?.error)
+                console.error('Error:', error.response.data.error)
+            else 
+                console.error('Error:', error)
         }
         isSubmitting.value = false
     }

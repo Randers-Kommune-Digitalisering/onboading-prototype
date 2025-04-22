@@ -77,7 +77,7 @@
                 completedPercentage.value = props.tasks.length > 0 ? Math.round((props.tasks.filter(opgave => opgave.result).length / props.tasks.length) * 100) : 0
         }
         catch (error) {
-            console.log(error)
+            console.error(error)
         }
     })
 
