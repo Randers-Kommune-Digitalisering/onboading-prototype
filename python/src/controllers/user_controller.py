@@ -13,8 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_user_data():
+    absolute_path = AZURE_CSV_PATH
+    if not os.path.exists(absolute_path):
+        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
+        get_and_save_azure_ad_data()
+
     try:
-        absolute_path = AZURE_CSV_PATH
         data = transform_ad_data(absolute_path)
         if not data:
             logger.error("Error retrieving data from CSV")
@@ -28,10 +32,12 @@ def get_user_data():
 
 
 def get_email():
-    logger.info("Retrieving randers emails from Azure AD'...")
+    absolute_path = AZURE_CSV_PATH
+    if not os.path.exists(absolute_path):
+        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
+        get_and_save_azure_ad_data()
 
     try:
-        absolute_path = AZURE_CSV_PATH
         emails = transform_ad_email(absolute_path)
         if not emails:
             logger.error("Error retrieving emails from CSV")
@@ -45,10 +51,12 @@ def get_email():
 
 
 def get_dq_numbers():
-    logger.info("Retrieving DQ Numbers from Azure AD'...")
+    absolute_path = AZURE_CSV_PATH
+    if not os.path.exists(absolute_path):
+        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
+        get_and_save_azure_ad_data()
 
     try:
-        absolute_path = AZURE_CSV_PATH
         dq_numbers = transform_ad_dq_number(absolute_path)
         if not dq_numbers:
             logger.error("Error retrieving DQ numbers from CSV")
@@ -62,10 +70,12 @@ def get_dq_numbers():
 
 
 def get_fullname():
-    logger.info("Retrieving user FullName from Azure AD'...")
+    absolute_path = AZURE_CSV_PATH
+    if not os.path.exists(absolute_path):
+        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
+        get_and_save_azure_ad_data()
 
     try:
-        absolute_path = AZURE_CSV_PATH
         logger.info(f"Absolute path to CSV file: {absolute_path}")
         fullnames = transform_ad_fullname(absolute_path)
         if not fullnames:
@@ -79,6 +89,16 @@ def get_fullname():
     return jsonify({"fullnames": fullnames}), 200
 
 
+def azure_data_exists():
+    absolute_path = AZURE_CSV_PATH
+    if os.path.exists(absolute_path):
+        logger.info(f"Local file {absolute_path} exists.")
+        return True
+    else:
+        logger.info(f"Local file {absolute_path} does not exist.")
+        return False
+
+
 def get_and_save_azure_ad_data():
     logger.info("Retrieving data from Azure AD and save to CSV...")
 
@@ -88,16 +108,19 @@ def get_and_save_azure_ad_data():
 
         if not users:
             logger.error("Error retrieving data from Azure AD")
-            return jsonify({"error": "Error retrieving data from Azure AD"}), 500
+            return None
+            # return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
         df = pd.DataFrame(users)
-        csv_filename = 'file'
-        df_to_csv(df, csv_filename)
-        logger.info(f"Data saved to {csv_filename}.csv")
-        return jsonify({"message": f"Data saved to {csv_filename}.csv"}), 200
+        csv_filename = AZURE_CSV_PATH
+        df_to_csv(df, csv_filename.split(".")[0])
+        logger.info(f"Data saved to {csv_filename}")
+        return True
+        # return jsonify({"message": f"Data saved to {csv_filename}"}), 200
     except Exception as e:
         logger.error(f"Error processing data: {e}")
-        return jsonify({"error": "Error processing data"}), 500
+        return None
+        # return jsonify({"error": "Error processing data"}), 500
 
 
 def get_admin_data():

@@ -7,6 +7,7 @@ from authlib.integrations.flask_client import OAuth
 from utils.logging import set_logging_configuration
 from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK
 from api_endpoints import api_endpoints
+from controllers.user_controller import azure_data_exists, get_and_save_azure_ad_data
 
 set_logging_configuration()
 
@@ -51,6 +52,10 @@ def create_app():
                 return user_info, 200
             else:
                 return redirect(url_for('login'))
+
+    # Import Azure data
+    if not azure_data_exists():
+        get_and_save_azure_ad_data()
 
     health = HealthCheck()
 
