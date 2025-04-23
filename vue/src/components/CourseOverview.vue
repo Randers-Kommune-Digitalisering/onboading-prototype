@@ -42,6 +42,7 @@
 
     const forloeb = ref(null)
     const forloeb_id = ref(null)
+    const userTitle = ref(null)
     const isForloebCompleted = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
@@ -68,6 +69,7 @@
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
+                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value.userdq : forloeb.value?.usermail
 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
@@ -79,7 +81,7 @@
 
                 if (opgaver_response?.data == null)
                 {
-                    console.log('No tasks found')
+                    console.warn('No tasks found')
                     isOpgaverFetched.value = true
                     return
                 }
@@ -114,11 +116,11 @@
                 isOpgaverFetched.value = true
 
             } else {
-                console.log('No user info provided')
+                console.warn('No user info provided')
             }
 
         } catch (error) {
-            console.log(error)
+            console.error(error)
             isOpgaverFetched.value = true
         }
     }
@@ -156,7 +158,7 @@
         try {
             fetchOpgaver()
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     })
 
@@ -195,7 +197,7 @@
                 :dark="true" 
                 :id="!isTemplate ? forloeb_id : null" 
                 :tid="!isTemplate ? forloeb_id : null" 
-                :title="forloeb.usermail || 'Skabelon'" 
+                :title="userTitle" 
                 :name="forloeb.name" 
                 :duration="forloeb.varighed" 
                 :startDate="new Date(forloeb.startdate)" 

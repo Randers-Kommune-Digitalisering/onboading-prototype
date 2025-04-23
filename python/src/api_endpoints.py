@@ -44,7 +44,7 @@ from controllers.user_controller import (
     get_email,
     get_dq_numbers,
     get_fullname,
-    get_and_save_azure_ad_data
+    # get_and_save_azure_ad_data
 )
 
 from controllers.ressource_controller import (
@@ -287,9 +287,9 @@ def get_fullname_endpoint():
     return get_fullname()
 
 
-@api_endpoints.route('/users/azure', methods=['GET'])
-def get_and_save_azure_ad_data_endpoint():
-    return get_and_save_azure_ad_data()
+# @api_endpoints.route('/users/azure', methods=['GET'])
+# def get_and_save_azure_ad_data_endpoint():
+#     return get_and_save_azure_ad_data()
 
 
 @api_endpoints.route('/users/admin', methods=['GET'])

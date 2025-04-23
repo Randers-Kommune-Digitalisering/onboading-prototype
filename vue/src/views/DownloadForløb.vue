@@ -23,7 +23,6 @@
         getOpgaverByForloebID(id).then((response) => {
             opgaver.value = response.data
             opgaver.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
-            console.log('Opgaver:', opgaver.value)
         }).catch((error) => {
             console.error('Error fetching opgaver data:', error)
         })
