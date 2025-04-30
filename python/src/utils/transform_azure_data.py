@@ -28,7 +28,7 @@ def transform_ad_data(file_path):
                 }
                 for _, row in filtered_df.iterrows()
             ]
-            logger.info(f"Transformed AD data: {data}")
+            # logger.info(f"Transformed AD data: {data}")
             return data
     except Exception as e:
         logger.error(f"Error handling files: {e}")

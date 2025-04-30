@@ -43,10 +43,10 @@
                 router.push({ path: 'forloeb-overview', query: { tid: response.data.uid } })
             }
             else
-                console.log('Response:', response)
+                console.error('Response:', response)
 
         } catch (error) {            
-            console.log('Error:', error.response?.data?.error ?? error)
+            console.error('Error:', error.response?.data?.error ?? error)
         }
         isSubmitting.value = false
     }

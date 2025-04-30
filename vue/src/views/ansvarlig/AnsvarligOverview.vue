@@ -1,20 +1,24 @@
 <script setup>
-  import { ref, onMounted } from 'vue'
+	import { ref} from 'vue'
 
-  import { getUserInfo } from '../../services/keycloakService.js'
-  import CourseOverview from '@/components/CourseOverview.vue'
+	import { getUserInfo } from '../../services/keycloakService.js'
+	import CourseOverview from '@/components/CourseOverview.vue'
 
-  const userEmail = ref('')
+	const userInfo = ref(null)
 
-  getUserInfo().then(userInfo => {
-    userEmail.value = userInfo.email || 'No email'
-  }).catch(error => {
-      console.error('Error fetching user info:', error);
-  });
+	getUserInfo().then(response => {
+		if (!userInfo) {
+			console.error('User info not found in response:', response)
+			return
+		}
+		userInfo.value = response
+	}).catch(error => {
+		console.error('Error fetching user info:', error)
+	})
 </script>
 
 <template>
-  <div v-if="userEmail != null && userEmail != ''">
-    <CourseOverview :ansvarligEmail="userEmail" />
-  </div>
+	<div v-if="userInfo && userInfo.email && userInfo.email != ''">
+		<CourseOverview :userInfo="userInfo" />
+	</div>
 </template>

@@ -3,22 +3,23 @@
 
     const props = defineProps({
         tasks: {
-            type: Array,
-            required: false
+            type: Array
         },
-        adminView: {
+        isFetchingTasks: {
             type: Boolean,
             default: false
         },
-        ansvarligView:
-        {
+        isFetchingTasksError: {
             type: Boolean,
             default: false
+        },
+        userInfo : {
+            type: Object,
+            required: true
         },
         title:
         {
-            type: String,
-            required: false
+            type: String
         },
         largeHeaderAdjust:
         {
@@ -29,6 +30,11 @@
         {
             type: Boolean,
             default: true
+        },
+        expandItem:
+        {
+            type: Number,
+            default: null
         },
         dark:
         {
@@ -50,12 +56,12 @@
 </script>
 
 <template>
-    <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ (title ?? (adminView ? 'Aktuelle' : 'Dine') + ' opgaver' ) }} </p>
+    <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ (title ?? 'Opgaver' ) }} </p>
     <div class="card-list" v-if="tasks && tasks.length > 0">
         <Card v-for="(task, index) in tasks"
-            :adminView="adminView"
-            :ansvarligView="ansvarligView"
+            :userInfo="userInfo"
             :id="task.OpgaveID ?? task.OpgaveskabelonID"
+            :forloebId="task.ForløbID"
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"
@@ -63,10 +69,11 @@
             :relativeEnddate="task.relativ_slutdag"
             :startdate="task.startdato ? new Date(new Date(task.startdato)) : null"
             :deadline="task.slutdato ? new Date(new Date(task.slutdato)) : null"
-            :responsible="task.ansvarlig"
+            :ansvarlig="task.ansvarlig"
+            :ansvarligEmail="task.ansvarligEmail"
             :booking="task.booking ? new Date(new Date(task.booking)) : null"
             :color="props.itemColor != null ? props.itemColor : (!templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-            :expandByDefault="expandFirstItem && index == 0"
+            :expandByDefault="expandFirstItem && index == 0 || expandItem === task.OpgaveID || expandItem === task.OpgaveskabelonID"
             :dark="dark"
             :templateView="templateView"
             :isTemplate="task.OpgaveskabelonID != null"
@@ -74,7 +81,8 @@
             :ressources="task.resourcer" />
     </div><!-- /card-list -->
     <div v-else>
-        <p class="indent-tiny">Ingen opgaver fundet.</p>
+        <p class="indent-tiny" v-if="isFetchingTasks">Indlæser ...</p>
+        <p class="indent-tiny" v-else>Ingen opgaver fundet.</p>
     </div>
 
 </template>

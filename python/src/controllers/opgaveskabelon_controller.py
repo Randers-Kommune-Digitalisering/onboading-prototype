@@ -21,7 +21,7 @@ def create_opgaveskabelon():
         )
         session.add(new_opgaveskabelon)
         session.commit()
-        return jsonify({"message": "Opgaveskabelon created successfully"}), 201
+        return jsonify({"message": "Opgaveskabelon created successfully", "OpgaveID": new_opgaveskabelon.OpgaveskabelonID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

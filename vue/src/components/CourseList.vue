@@ -30,7 +30,7 @@
         <Card v-for="course in courses"
             :id="course.ForløbID"
             :tid="course.ForløbsskabelonID"
-            :title="course.usermail ?? course.privateEmail"
+            :title="course.userdq != '' ? course.userdq : course.usermail"
             :name="course.name"
             :startDate="new Date(course.startdate)"
             :deadline="new Date(course.enddate)"

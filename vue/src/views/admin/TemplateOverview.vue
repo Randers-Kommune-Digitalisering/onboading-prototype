@@ -12,6 +12,8 @@
 	const route = useRoute()
 	const router = useRouter()
 	const view = route.query.view
+	const _expandItem = route.query.item
+	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
 
 	const TemplateType = {
 		Forloebsskabelon: 0,
@@ -33,7 +35,7 @@
 		const loggedInAdmin = userInfo.email || null
 		
 		if(!loggedInAdmin) {
-			console.error("No admin name found")
+			console.error("No admin email found")
 			return
 		}
 
@@ -78,7 +80,13 @@
         <router-link v-if="selectedType==TemplateType.Opgaveskabelon" :to="`/create-opgave?template=true`" class="button">+ Opret opgaveskabelon</router-link>
     </div>
   	<CourseList v-if="selectedType==TemplateType.Forloebsskabelon" :courses="forloebTemplates" title="" />
-	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon" :tasks="opgaveTemplates" title="" :expandFirstItem="false" :templateView="true" :adminView="true" />
+	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon"
+			  :tasks="opgaveTemplates"
+			  title=""
+			  :expandFirstItem="false"
+			  :templateView="true"
+			  :userInfo="{}"
+			  :expandItem="expandItem" />
 </template>
 
 <style scoped>

@@ -47,7 +47,7 @@ def create_opgave():
 
         session.add(new_opgave)
         session.commit()
-        return jsonify({"message": "Opgave created successfully"}), 201
+        return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -139,7 +139,7 @@ def create_opgave_with_opgaveskabelon():
             session.add(new_ressource)
         session.commit()
 
-        return jsonify({"message": "Opgave created successfully with Opgaveskabelon"}), 201
+        return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -314,6 +314,8 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
         opgave_data = [
             {
                 'OpgaveID': opgave.OpgaveID,
+                'ForløbID': opgave.ForløbID,
+                'ForløbsskabelonID': opgave.ForløbsskabelonID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
                 'resourcer': [
