@@ -2,22 +2,9 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource
 from utils.db_connection import get_db_client
-from utils.mail_service import send_mail
+from utils.mail_service import send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
 
 db_client = get_db_client()
-
-
-def create_mail(new_opgave):
-    subject = "Ny opgave tildelt i onboardingforløb"
-    message = (
-        f"Hej {new_opgave['ansvarlig']}," + "\n\n" +
-        f"Du er blevet tildelt en ny opgave: {new_opgave['title']}." + "\n" +
-        "Du er ansvarlig for opgaven, og skal derfor hjælpe den nye medarbejder med at løse denne." + "\n\n" +
-        f"Opgaven har deadline d. {new_opgave['slutdato'].strftime('%d/%m %H:%M')}." + "\n" +
-        (f"Der er registret en kalenderbooking d. {new_opgave['booking'].strftime('%d/%m %H:%M')}" + ".\n" if new_opgave['booking'] is not None else "") +
-        "\nVenlig hilsen,\nPersonale og HR"
-    )
-    return subject, message
 
 
 def create_opgave():
@@ -64,7 +51,7 @@ def create_opgave():
 
         # Send mail notification to the responsible person
         if new_opgave.get('ansvarligEmail') is not None and new_opgave.get('ansvarligEmail') != "":
-            subject, message = create_mail(new_opgave)
+            subject, message = create_mail_ansvarlig(new_opgave)
             mail = send_mail(new_opgave['ansvarligEmail'], subject, message)
             if 'error' in mail:
                 return jsonify({"error": "Failed to send email"}), 500
@@ -435,7 +422,7 @@ def update_opgave(opgave_id):
 
         # Send mail notification to the responsible person
         if is_new_ansvarlig and opgave.get('ansvarligEmail') is not None and opgave.get('ansvarligEmail') != "":
-            subject, message = create_mail(opgave)
+            subject, message = create_mail_ansvarlig(opgave)
             mail = send_mail(opgave['ansvarligEmail'], subject, message)
             if 'error' in mail:
                 return jsonify({"error": "Failed to send email"}), 500
@@ -460,6 +447,35 @@ def delete_opgave(opgave_id):
         return jsonify({"message": "Opgave deleted successfully"}), 200
     except Exception as e:
         session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def notify_expired_tasks():
+    session = db_client.get_session()
+    try:
+        now = datetime.now()
+        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result is False).all()
+
+        for opgave in opgaver:
+            forloeb = session.query(Forløb).filter_by(ForløbID=opgave['ForløbID']).first()
+            if not forloeb:
+                return jsonify({"error": "Forløb not found"}), 404
+
+            subject, message = create_mail_expired(forloeb, opgave)
+            mail = send_mail(forloeb['usermail'], subject, message)
+            if 'error' in mail:
+                return jsonify({"error": "Failed to send email"}), 500
+
+            if opgave['ansvarligEmail'] is None or opgave['ansvarligEmail'] == "":
+                subject, message = create_mail_expired_ansvarlig(opgave)
+                mail = send_mail(opgave['ansvarligEmail'], subject, message)
+                if 'error' in mail:
+                    return jsonify({"error": "Failed to send email"}), 500
+
+        return jsonify({"message": "Expired tasks notifications sent successfully"}), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()

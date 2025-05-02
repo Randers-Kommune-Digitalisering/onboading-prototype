@@ -13,7 +13,8 @@ from controllers.opgave_controller import (
     get_all_opgaver,
     get_opgave_by_forloebsskabelon_id_admin,
     get_opgave_by_forloeb_id_admin,
-    get_opgave_by_admin
+    get_opgave_by_admin,
+    notify_expired_tasks
 )
 
 from controllers.forloebsskabelon_controller import (
@@ -295,6 +296,11 @@ def get_fullname_endpoint():
 @api_endpoints.route('/users/admin', methods=['GET'])
 def get_all_admin_data_endpoint():
     return get_admin_data()
+
+
+@api_endpoints.route('/cron/notify-expired-tasks', methods=['GET'])
+def notify_expired_tasks_endpoint():
+    return notify_expired_tasks()
 
 
 @api_endpoints.route('/healthz', methods=['GET'])
