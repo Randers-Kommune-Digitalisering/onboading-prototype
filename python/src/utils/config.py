@@ -32,6 +32,9 @@ KEYCLOAK_CLIENT_ID = os.environ["KEYCLOAK_CLIENT_ID"].strip()
 KEYCLOAK_CLIENT_SECRET = os.environ["KEYCLOAK_CLIENT_SECRET"].strip()
 COOKIE_SECRET = os.environ["COOKIE_SECRET"].strip()
 
+MAIL_SERVICE_URL = os.environ["MAIL_SERVICE_URL"].strip()
+MAIL_SERVICE_SENDER = os.environ["MAIL_SERVICE_SENDER"].strip()
+
 # SFTP_HOST = os.environ['SFTP_HOST'].rstrip()
 # SFTP_USER = os.environ['SFTP_USER'].rstrip()
 # SFTP_PASS = os.environ['SFTP_PASS'].rstrip()
