@@ -7,7 +7,6 @@ def send_mail(recipient_email, subject, message):
     Sends an email via an API request.
     Parameters:
         sender_email (str): The sender's email address.
-        recipient_email (str): The recipient's email address.
         subject (str): The subject of the email.
         message (str): The body of the email.
     """
