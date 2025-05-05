@@ -58,7 +58,7 @@ def create_mail_expired(forloeb, opgave):
     message = (
         f"Hej {forloeb['userdq']}," + "\n\n" +
         f"Du har en opgave fra dit onboardingforløb som er overskredet: {opgave['title']}." + "\n" +
-        "Vær opmærksom at opgaven skal markeres som genneført i onboardingmodulet" + 
+        "Vær opmærksom at opgaven skal markeres som genneført i onboardingmodulet" +
         (f" af den ansvarlige medarbejder {opgave['ansvarlig']}." if opgave['ansvarlig'] is not None else ", og at det er dit ansvar at gøre dette.") + "\n\n" +
         f"Opgaven havde deadline d. {opgave['slutdato'].strftime('%d/%m %H:%M')}." + "\n" +
         "\nVenlig hilsen,\nPersonale og HR"
