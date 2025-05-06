@@ -29,6 +29,12 @@ def send_mail(recipient_email, subject, message):
 
 
 def create_mail_ansvarlig(new_opgave):
+    new_opgave = {
+        "ansvarlig": new_opgave.ansvarlig,
+        "title": new_opgave.title,
+        "slutdato": new_opgave.slutdato,
+        "booking": new_opgave.booking
+    }
     subject = "Ny opgave tildelt i onboardingforløb"
     message = (
         f"Hej {new_opgave['ansvarlig']}," + "\n\n" +
@@ -42,6 +48,12 @@ def create_mail_ansvarlig(new_opgave):
 
 
 def create_mail_expired_ansvarlig(opgave):
+    opgave = {
+        "ansvarlig": opgave.ansvarlig,
+        "title": opgave.title,
+        "slutdato": opgave.slutdato,
+        "booking": opgave.booking
+    }
     subject = "Deadline overskredet for opgave i onboardingforløb"
     message = (
         f"Hej {opgave['ansvarlig']}," + "\n\n" +
@@ -54,6 +66,15 @@ def create_mail_expired_ansvarlig(opgave):
 
 
 def create_mail_expired(forloeb, opgave):
+    forloeb = {
+        "userdq": forloeb.userdq,
+    }
+    opgave = {
+        "ansvarlig": opgave.ansvarlig,
+        "title": opgave.title,
+        "slutdato": opgave.slutdato,
+        "booking": opgave.booking
+    }
     subject = "Deadline overskredet for opgave i onboardingforløb"
     message = (
         f"Hej {forloeb['userdq']}," + "\n\n" +

@@ -3,8 +3,10 @@ from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource
 from utils.db_connection import get_db_client
 from utils.mail_service import send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
+import logging
 
 db_client = get_db_client()
+logger = logging.getLogger(__name__)
 
 
 def create_opgave():
@@ -50,11 +52,11 @@ def create_opgave():
         session.commit()
 
         # Send mail notification to the responsible person
-        if new_opgave.get('ansvarligEmail') is not None and new_opgave.get('ansvarligEmail') != "":
+        if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            mail = send_mail(new_opgave['ansvarligEmail'], subject, message)
+            mail = send_mail(new_opgave.ansvarligEmail, subject, message)
             if 'error' in mail:
-                return jsonify({"error": "Failed to send email"}), 500
+                logger.error(f"Failed to send email: {mail['error']}")
 
         return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -147,6 +149,13 @@ def create_opgave_with_opgaveskabelon():
             )
             session.add(new_ressource)
         session.commit()
+
+        # Send mail notification to the responsible person
+        if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
+            subject, message = create_mail_ansvarlig(new_opgave)
+            mail = send_mail(new_opgave.ansvarligEmail, subject, message)
+            if 'error' in mail:
+                logger.error(f"Failed to send email: {mail['error']}")
 
         return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -421,9 +430,9 @@ def update_opgave(opgave_id):
         session.commit()
 
         # Send mail notification to the responsible person
-        if is_new_ansvarlig and opgave.get('ansvarligEmail') is not None and opgave.get('ansvarligEmail') != "":
+        if is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
-            mail = send_mail(opgave['ansvarligEmail'], subject, message)
+            mail = send_mail(opgave.ansvarligEmail, subject, message)
             if 'error' in mail:
                 return jsonify({"error": "Failed to send email"}), 500
 
@@ -459,18 +468,18 @@ def notify_expired_tasks():
         opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result is False).all()
 
         for opgave in opgaver:
-            forloeb = session.query(Forløb).filter_by(ForløbID=opgave['ForløbID']).first()
+            forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
             if not forloeb:
                 return jsonify({"error": "Forløb not found"}), 404
 
             subject, message = create_mail_expired(forloeb, opgave)
-            mail = send_mail(forloeb['usermail'], subject, message)
+            mail = send_mail(forloeb.usermail, subject, message)
             if 'error' in mail:
                 return jsonify({"error": "Failed to send email"}), 500
 
-            if opgave['ansvarligEmail'] is None or opgave['ansvarligEmail'] == "":
+            if opgave.ansvarligEmail is None or opgave.ansvarligEmail == "":
                 subject, message = create_mail_expired_ansvarlig(opgave)
-                mail = send_mail(opgave['ansvarligEmail'], subject, message)
+                mail = send_mail(opgave.ansvarligEmail, subject, message)
                 if 'error' in mail:
                     return jsonify({"error": "Failed to send email"}), 500
 
