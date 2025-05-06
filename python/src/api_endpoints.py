@@ -298,7 +298,7 @@ def get_all_admin_data_endpoint():
     return get_admin_data()
 
 
-@api_endpoints.route('/cron/notify-expired-tasks', methods=['GET'])
+@api_endpoints.route('/cron/notify-expired-tasks', methods=['POST'])
 def notify_expired_tasks_endpoint():
     return notify_expired_tasks()
 
