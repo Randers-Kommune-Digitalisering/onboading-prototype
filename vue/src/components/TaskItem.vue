@@ -301,10 +301,10 @@
                         {{ ressource.name }}
                 </a>
                 <span v-else v-for="ressource in ressources"
-                             @click="gotoRessource(ressource.RessourceID)" 
-                             class="link">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                                {{ ressource.name }}
+                      @click="gotoRessource(ressource.RessourceID)" 
+                      class="link">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        {{ ressource.name }}
                 </span>
 
             </div>
@@ -324,7 +324,11 @@
             </div>
 
                 <div :class="['button', 'hollow', {'red': result}]"
-                     v-if="!templateView && (userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail))"
+                     v-if="!templateView && 
+                            (userInfo?.isAdmin ||
+                                (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail) ||
+                                (userInfo?.isMedarbejder && ansvarligEmail == '')
+                            )"
                      @click="completeTask(!result)">
                         Markér {{ result ? 'ej ' :'' }} gennemført
                 </div>

@@ -21,9 +21,6 @@
             type: Object,
             required: true
         },
-        userEmail: {
-            type: String
-        },
         ansvarligEmail: {
             type: String
         },
@@ -266,7 +263,7 @@
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
               :title="!userInfo.isMedarbejder && id != null ? 'Aktuelle opgaver' : 'Dine opgaver'"
-              :largeHeaderAdjust="userInfo.isAdmin || id != null"
+              :largeHeaderAdjust="userInfo.isAdmin || userInfo.isMedarbejder || id != null"
               :expandFirstItem="false"
               :expandItem="expandItem" />
 
