@@ -3,7 +3,7 @@ import axios from 'axios';
 var USER_INFO = null;
 const adminString = 'Admin';
 const ansvarligString = 'Ansvarlig';
-const medarbejderString = 'Medarbejder';
+const medarbejderString = 'Ny medarbejder';
 
 export const getUserInfoFromBackend = () => {
     return axios.get(`api/userinfo`);

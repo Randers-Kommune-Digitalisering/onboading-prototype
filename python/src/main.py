@@ -19,7 +19,7 @@ def create_app():
     if DISABLE_KEYCLOAK:
         @app.route('/api/userinfo')
         def user_info():
-            user_info = {'name': 'Test Testsen', 'email': 'test@test.dk', 'roles': ['Admin']}
+            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Admin']}
             return user_info, 200
     else:
         app.secret_key = COOKIE_SECRET
@@ -30,7 +30,7 @@ def create_app():
 
         @app.before_request
         def check_authenticated():
-            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics']:
+            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics', '/api/cron/notify-expired-tasks']:
                 return redirect(url_for("login"))
 
         @app.route("/login")

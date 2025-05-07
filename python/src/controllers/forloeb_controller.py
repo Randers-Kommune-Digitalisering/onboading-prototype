@@ -183,8 +183,8 @@ def download_forloeb():
         forloeb_id = int(request.args.get('id'))
 
         # Fetch forløb and opgaver data
-        forloeb = get_forloeb(forloeb_id)[0].json  # Extract JSON data from response
-        opgaver = get_opgave_by_forloeb_id(forloeb_id).json
+        forloeb = get_forloeb(forloeb_id)[0].get_json()  # Extract JSON data from response
+        opgaver = get_opgave_by_forloeb_id(forloeb_id).get_json()
 
         # Initialize FPDF
         pdf = FPDF()
