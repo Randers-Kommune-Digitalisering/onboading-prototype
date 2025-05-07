@@ -41,6 +41,7 @@
     const forloeb_id = ref(null)
     const userTitle = ref(null)
     const isForloebCompleted = ref(false)
+    const isForloebFetched = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
     const completedPercentage = ref(0)
@@ -62,7 +63,8 @@
                                         : props.isTemplate ? await getForloebsskabelonById(props.id)
                                         // Otherwise fetch by id and user email (for admins and ansvarlig users)
                                         : await getForloebById(props.id, { headers })
-                
+
+                isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
@@ -118,6 +120,7 @@
 
         } catch (error) {
             console.error(error)
+            isForloebFetched.value = true
             isOpgaverFetched.value = true
         }
     }
@@ -186,6 +189,12 @@
     }
 </script>
 <template>
+    <p v-if="forloeb == null && isForloebFetched" class="indent-tiny bold uppercase p-header-adjust">
+        Ingen forløb
+    </p>
+    <p v-if="forloeb == null && isForloebFetched" class="indent-tiny">
+        Det ser ikke ud til at du har et onboardingforløb tilknyttet. Kontakt din leder eller administrator hvis du mener dette er en fejl.
+    </p>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt
     </p>
