@@ -48,7 +48,7 @@ def create_app():
         def user_info():
             if 'user' in session:
                 user_info = session['user']
-                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', [])
+                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', ["Ny medarbejder"])
                 return user_info, 200
             else:
                 return redirect(url_for('login'))
