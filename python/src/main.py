@@ -30,7 +30,7 @@ def create_app():
 
         @app.before_request
         def check_authenticated():
-            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics']:
+            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics', '/api/cron/notify-expired-tasks']:
                 return redirect(url_for("login"))
 
         @app.route("/login")
