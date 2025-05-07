@@ -477,7 +477,7 @@ def notify_expired_tasks():
             if 'error' in mail:
                 return jsonify({"error": "Failed to send email"}), 500
 
-            if opgave.ansvarligEmail is None or opgave.ansvarligEmail == "":
+            if opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
                 subject, message = create_mail_expired_ansvarlig(opgave)
                 mail = send_mail(opgave.ansvarligEmail, subject, message)
                 if 'error' in mail:
