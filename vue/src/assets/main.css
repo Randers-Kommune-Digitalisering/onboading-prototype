@@ -241,8 +241,15 @@ a.disabled, .button.disabled, .link.disabled {
     transition-duration: 400ms;
 }
 
+.notification {
+    background-color: var(--color-card-faded);
+    color: var(--color-card-text);
+    padding: 0.5rem 1rem!important;
+    border-radius: 0.35rem;
+}
+
 @media only screen and (min-width: 768px) {
-    .card {
+    .card, .notification {
         max-width: 38rem;
     }
 }

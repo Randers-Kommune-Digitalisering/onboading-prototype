@@ -19,6 +19,6 @@
 
 <template>
 	<div v-if="userInfo && userInfo.email && userInfo.email != ''">
-		<CourseOverview :userInfo="userInfo" />
+		<CourseOverview :userInfo="userInfo" :ansvarligView="true" />
 	</div>
 </template>

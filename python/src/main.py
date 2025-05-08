@@ -19,7 +19,7 @@ def create_app():
     if DISABLE_KEYCLOAK:
         @app.route('/api/userinfo')
         def user_info():
-            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Admin']}
+            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Ny medarbejder', 'Ansvarlig']}
             return user_info, 200
     else:
         app.secret_key = COOKIE_SECRET

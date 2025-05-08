@@ -11,31 +11,16 @@
             "alias": ['/forloeb-overview'],
             "icon": "fa-solid fa-list-check"
         },
-        // {
-        //     "title": "Opret opgave",
-        //     "url": "/create-opgave",
-        //     "icon": "fa-solid fa-plus"
-        // },
         {
             "title": "Opret forløb",
             "url": "/create-forloeb",
             "icon": "fa-solid fa-square-plus"
         },
-        // {
-        //     "title": "Opret ressource",
-        //     "url": "/create-ressource",
-        //     "icon": "fa-solid fa-plus"
-        // },
         {
             "title": "Skabeloner",
             "url": "/template-overview",
             "icon": "fa-solid fa-folder"
         },
-        // {
-        //     "title": "Opret opgaveskabelon",
-        //     "url": "/create-opgaveskabelon",
-        //     "icon": "fa-solid fa-plus"
-        // },
         {
             "title": "Hjælp",
             "url": "/admin-start",
@@ -43,11 +28,16 @@
         }
     ]
 
-    const medarbejderMenuItems = [
+    const defaultMenuItems = [
         {
-            "title": "Opgaver",
+            "title": "Mit forløb",
             "url": "/medarbejder-overview",
             "icon": "fa-solid fa-list-check"
+        },
+        {
+            "title": "Mine ansvar",
+            "url": "/ansvarlig-overview",
+            "icon": "fa-solid fa-chalkboard-user"
         },
         {
             "title": "Hjælp",
@@ -58,9 +48,9 @@
 
     const ansvarligMenuItems = [
         {
-            "title": "Overblik",
+            "title": "Mine ansvar",
             "url": "/ansvarlig-overview",
-            "icon": "fa-solid fa-list-check"
+            "icon": "fa-solid fa-chalkboard-user"
         },
         {
             "title": "Hjælp",
@@ -80,10 +70,8 @@
             // Filter menu items based on roles
             if (clientRoles.includes('Admin')) {
                 menuItems.value = adminMenuItems
-            } else if (clientRoles.includes('Ny medarbejder')) {
-                menuItems.value = medarbejderMenuItems
-            } else if (clientRoles.includes('Ansvarlig')) {
-                menuItems.value = ansvarligMenuItems
+            } else if (clientRoles.includes('Ny medarbejder') || clientRoles.includes('Ansvarlig')) {
+                menuItems.value = defaultMenuItems
             }
 
             // Set selected = true for landing page (URL)

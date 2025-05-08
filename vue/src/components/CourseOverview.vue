@@ -21,9 +21,6 @@
             type: Object,
             required: true
         },
-        ansvarligEmail: {
-            type: String
-        },
         id: {
             type: Number
         },
@@ -34,6 +31,10 @@
         expandItem: {
             type: Number,
             default: null
+        },
+        ansvarligView: {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -56,9 +57,9 @@
                 const headers = { usermail: props.userInfo.email }
                 // Get forloeb
                                         // As ansvarlig fetch no forløb unless id is provided (fetch opgaver only)
-                const forloeb_response =  props.userInfo.isAnsvarlig && !props.id ? null
+                const forloeb_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? null
                                         // As medarbejder fetch forløb by email
-                                        : props.userInfo.isMedarbejder ? await getForloebByEmail({ headers })
+                                        : props.userInfo.isMedarbejder && !props.id ? await getForloebByEmail({ headers })
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getForloebsskabelonById(props.id)
                                         // Otherwise fetch by id and user email (for admins and ansvarlig users)
@@ -68,11 +69,11 @@
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
-                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value.userdq : forloeb.value?.usermail
+                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
-                const opgaver_response =  props.userInfo.isAnsvarlig && !props.id ? await getOpgaverByAnsvarligEmail({ headers }) 
+                const opgaver_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? await getOpgaverByAnsvarligEmail({ headers }) 
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
                                         // Otherwise fetch by forløb id and user email (for medarbejder users, admins and ansvarlig users)
@@ -189,11 +190,8 @@
     }
 </script>
 <template>
-    <p v-if="forloeb == null && isForloebFetched" class="indent-tiny bold uppercase p-header-adjust">
-        Ingen forløb
-    </p>
-    <p v-if="forloeb == null && isForloebFetched" class="indent-tiny">
-        Det ser ikke ud til at du har et onboardingforløb tilknyttet. Kontakt din leder eller administrator hvis du mener dette er en fejl.
+    <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView" class="indent-tiny notification">
+        <span class="bold">OBS</span>: Det ser ikke ud til, at du har et onboardingforløb tilknyttet.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.
     </p>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt
@@ -272,7 +270,7 @@
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
               :title="!userInfo.isMedarbejder && id != null ? 'Aktuelle opgaver' : 'Dine opgaver'"
-              :largeHeaderAdjust="userInfo.isAdmin || userInfo.isMedarbejder || id != null"
+              :largeHeaderAdjust="userInfo.isAdmin || ( userInfo.isMedarbejder && !props.ansvarligView ) || id != null"
               :expandFirstItem="false"
               :expandItem="expandItem" />
 

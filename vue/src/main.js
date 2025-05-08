@@ -60,7 +60,7 @@ const routes = [
         path: '/ansvarlig-overview',
         name: 'AnsvarligOverview',
         component: AnsvarligOverview,
-        meta: { roles: ['Ansvarlig'] }
+        meta: { roles: ['Admin', 'Ansvarlig', 'Ny medarbejder'] }
     },
     {
         path: '/admin-start',
@@ -74,7 +74,6 @@ const routes = [
         component: TemplateOverview,
         meta: { roles: ['Admin'] }
     },
-    
     {
         path: '/ansvarlig-start',
         name: 'AnsvarligStart',
@@ -91,9 +90,8 @@ const routes = [
         path: '/medarbejder-overview',
         name: 'MedarbejderOverview',
         component: MedarbejderOverview,
-        meta: { roles: ['Ny medarbejder'] }
+        meta: { roles: ['Ny medarbejder', 'Ansvarlig'] }
     },
-    
     {
         path: '/forloeb-overview',
         name: 'ForløbOverview',
