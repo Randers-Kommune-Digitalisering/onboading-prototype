@@ -72,7 +72,7 @@
             type: Number,
             default: null
         },
-        user: {
+        username: {
             type: String
         },
         title: {
@@ -197,11 +197,11 @@
     const gotoTask = () => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
-        if (props.isTemplate) 
-            updateQuery.template = true
+        // if (props.isTemplate) 
+        //     updateQuery.template = true
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-opgave', query: { id: props.id, edit: true } })
+            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate } })
         })
     }
 
@@ -269,7 +269,7 @@
                     
                     <div class="text" v-if="forloebId != null && (userInfo.isAnsvarlig && userInfo.email == ansvarligEmail)">
                         <div class="small faded">Medarbejder</div>
-                        <div>{{ user ?? 'Ingen medarbejder' }}</div>
+                        <div>{{ username ?? 'Ukendt medarbejder' }}</div>
                     </div>
                     <div class="text" v-else>
                         <div class="small faded">Ansvarlig</div>

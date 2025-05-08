@@ -17,6 +17,10 @@
             type: Object,
             required: true
         },
+        username: {
+            type: String,
+            default: null
+        },
         title:
         {
             type: String
@@ -62,6 +66,7 @@
             :userInfo="userInfo"
             :id="task.OpgaveID ?? task.OpgaveskabelonID"
             :forloebId="task.ForløbID"
+            :username="task.name"
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"

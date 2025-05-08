@@ -329,31 +329,39 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
         if not opgave:
             return jsonify({"error": "No opgave found for the specified usermail"}), 404
 
-        opgave_data = [
-            {
-                'OpgaveID': opgave.OpgaveID,
-                'ForløbID': opgave.ForløbID,
-                'ForløbsskabelonID': opgave.ForløbsskabelonID,
-                'title': opgave.title,
-                'beskrivelse': opgave.beskrivelse,
+        opgave_data = []
+        for opg in opgave:
+            forloeb_name = None
+            if opg.ForløbID:
+                forloeb = session.query(Forløb).filter_by(ForløbID=opg.ForløbID).first()
+                if forloeb:
+                    forloeb_name = forloeb.name
+
+            opgave_data.append({
+                'OpgaveID': opg.OpgaveID,
+                'ForløbID': opg.ForløbID,
+                'ForløbsskabelonID': opg.ForløbsskabelonID,
+                'name': forloeb_name,
+                'title': opg.title,
+                'beskrivelse': opg.beskrivelse,
                 'resourcer': [
                     {
                         'RessourceID': ressource.RessourceID,
                         'name': ressource.name,
                         'url': ressource.url
-                    } for ressource in opgave.ressource
+                    } for ressource in opg.ressource
                 ],
-                'ansvarlig': opgave.ansvarlig,
-                'ansvarligEmail': opgave.ansvarligEmail,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
-                'relativ_startdag': opgave.relativ_startdag,
-                'relativ_slutdag': opgave.relativ_slutdag,
-                'result': opgave.result,
-                'booking': opgave.booking.isoformat() if opgave.booking else None,
-                'timestamp': opgave.timestamp.isoformat()
-            } for opgave in opgave
-        ]
+                'ansvarlig': opg.ansvarlig,
+                'ansvarligEmail': opg.ansvarligEmail,
+                'startdato': opg.startdato.isoformat(),
+                'slutdato': opg.slutdato.isoformat(),
+                'relativ_startdag': opg.relativ_startdag,
+                'relativ_slutdag': opg.relativ_slutdag,
+                'result': opg.result,
+                'booking': opg.booking.isoformat() if opg.booking else None,
+                'timestamp': opg.timestamp.isoformat()
+            })
+
         return jsonify(opgave_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -417,8 +425,9 @@ def update_opgave(opgave_id):
         is_new_ansvarlig = opgave.ansvarlig != data.get('ansvarlig', opgave.ansvarlig)
         opgave.title = data.get('title', opgave.title)
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
-        opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
-        opgave.ansvarligEmail = data.get('ansvarligEmail', opgave.ansvarligEmail)
+        if is_new_ansvarlig:
+            opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
+            opgave.ansvarligEmail = data.get('ansvarligEmail', opgave.ansvarligEmail)
         opgave.startdato = datetime.fromisoformat(data['startdato']) if 'startdato' in data else opgave.startdato
         opgave.slutdato = datetime.fromisoformat(data['slutdato']) if 'slutdato' in data else opgave.slutdato
         opgave.relativ_startdag = data.get('relativ_startdag', opgave.relativ_startdag)
@@ -434,7 +443,7 @@ def update_opgave(opgave_id):
             subject, message = create_mail_ansvarlig(opgave)
             mail = send_mail(opgave.ansvarligEmail, subject, message)
             if 'error' in mail:
-                return jsonify({"error": "Failed to send email"}), 500
+                logger.error(f"Failed to send email: {mail['error']}")
 
         return jsonify({"message": "Opgave updated successfully"}), 200
     except Exception as e:
