@@ -70,7 +70,7 @@
 			<span>Forløbsskabeloner</span>
 		</div>
 		<div @click="selectTemplateType(TemplateType.Opgaveskabelon)" :class="['navItem', {'selected': selectedType==TemplateType.Opgaveskabelon}]">
-			<i class="fa-solid fa-list-check fa-xl"></i>
+			<i class="fa-solid fa-list-ul fa-xl"></i>
 			<span>Opgaveskabeloner</span>
 		</div>
 	</div>

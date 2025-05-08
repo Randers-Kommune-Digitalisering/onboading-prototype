@@ -12,6 +12,11 @@
             "icon": "fa-solid fa-list-check"
         },
         {
+            "title": "Mine ansvar",
+            "url": "/ansvarlig-overview",
+            "icon": "fa-solid fa-chalkboard-user"
+        },
+        {
             "title": "Opret forløb",
             "url": "/create-forloeb",
             "icon": "fa-solid fa-square-plus"
@@ -42,19 +47,6 @@
         {
             "title": "Hjælp",
             "url": "/medarbejder-start",
-            "icon": "fa-solid fa-message"
-        }
-    ]
-
-    const ansvarligMenuItems = [
-        {
-            "title": "Mine ansvar",
-            "url": "/ansvarlig-overview",
-            "icon": "fa-solid fa-chalkboard-user"
-        },
-        {
-            "title": "Hjælp",
-            "url": "/ansvarlig-start",
             "icon": "fa-solid fa-message"
         }
     ]

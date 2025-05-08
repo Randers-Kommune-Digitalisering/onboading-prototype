@@ -212,7 +212,7 @@
     <ProgressBar v-if="forloeb != null  && !showDetails" :percentage="completedPercentage"></ProgressBar>
     
     <!-- Admin actions -->
-    <div class="buttons" v-if="userInfo.isAdmin">
+    <div class="buttons" v-if="userInfo.isAdmin && !props.ansvarligView && forloeb != null && isOpgaverFetched">
 
         <router-link :to="`/create-opgave?id=${forloeb_id}`"
                      class="button" v-if="!isTemplate && !isForloebCompleted">
@@ -270,7 +270,7 @@
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
               :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
-              :largeHeaderAdjust="userInfo.isAdmin || ( userInfo.isMedarbejder && !props.ansvarligView ) || id != null"
+              :largeHeaderAdjust="userInfo.isAdmin && !props.ansvarligView && id != null"
               :expandFirstItem="false"
               :expandItem="expandItem" />
 
