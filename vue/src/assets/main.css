@@ -120,6 +120,15 @@ a.disabled, .button.disabled, .link.disabled {
     pointer-events: none;
 }
 
+p > a {
+    color: var(--color-button);
+    font-weight: 600;
+}
+p > a:hover {
+    color: var(--color-button-hover);
+    text-decoration: underline;
+}
+
 @media only screen and (min-width: 768px) {
     .navbar {
         position: fixed;
@@ -250,7 +259,7 @@ a.disabled, .button.disabled, .link.disabled {
 }
 
 @media only screen and (min-width: 768px) {
-    .card, .notification {
+    .card, .notification, .textbox {
         max-width: 38rem;
     }
 }
