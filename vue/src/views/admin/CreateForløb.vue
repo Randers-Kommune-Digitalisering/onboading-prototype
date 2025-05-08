@@ -36,6 +36,17 @@
     const isUserMailSearchOpen = ref(false)
 
     const searchUserMails = (searchString) => {
+        if (searchString.includes('@')) {
+            let domain = searchString.split('@')[1]
+            let domainLength = domain.length
+            if (domainLength > 0) {
+                let localDomain = ("randers.dk").substring(0, domainLength)
+                if(localDomain !== domain) {
+                    isUserMailSearchOpen.value = false
+                    return
+                }
+            }
+        }
         if (isAdminSearchOpen) {
             isAdminSearchOpen.value = false
         }
