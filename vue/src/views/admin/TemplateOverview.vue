@@ -2,7 +2,7 @@
 	import { ref, onMounted, watch } from 'vue'
 	import { useRoute, useRouter } from 'vue-router'
 
-	import { getUserInfo } from '../../services/keycloakService.js'
+	import { getUserInfo } from '@/services/keycloakService.js'
 	import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
 	import { getOpgaveskabeloner } from '@/services/opgaveskabelonService.js'
 

@@ -2,7 +2,7 @@
     import { ref, onMounted, watch } from 'vue'
     import { useRoute } from 'vue-router'
 
-    import { getUserInfo } from '../services/keycloakService.js'
+    import { getUserInfo } from '@/services/keycloakService.js'
 
     const adminMenuItems = [
         {
@@ -28,7 +28,7 @@
         },
         {
             "title": "Hjælp",
-            "url": "/admin-start",
+            "url": "/admin-help",
             "icon": "fa-solid fa-message"
         }
     ]
@@ -46,7 +46,7 @@
         },
         {
             "title": "Hjælp",
-            "url": "/medarbejder-start",
+            "url": "/help",
             "icon": "fa-solid fa-message"
         }
     ]

@@ -1,7 +1,7 @@
 <script setup>
 	import { ref} from 'vue'
 
-	import { getUserInfo } from '../../services/keycloakService.js'
+	import { getUserInfo } from '@/services/keycloakService.js'
 	import CourseOverview from '@/components/CourseOverview.vue'
 
 	const userInfo = ref(null)

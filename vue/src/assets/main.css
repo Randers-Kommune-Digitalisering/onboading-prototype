@@ -246,6 +246,7 @@ a.disabled, .button.disabled, .link.disabled {
     color: var(--color-card-text);
     padding: 0.5rem 1rem!important;
     border-radius: 0.35rem;
+    margin-bottom: 2rem;
 }
 
 @media only screen and (min-width: 768px) {

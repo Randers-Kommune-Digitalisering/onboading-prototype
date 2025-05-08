@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 
 import UserInfo from '@/components/UserInfo.vue'
-import { getUserInfo } from '../../services/keycloakService.js'
+import { getUserInfo } from '@/services/keycloakService.js'
 
 const userFullName = ref('');
 const userRole = ref('');

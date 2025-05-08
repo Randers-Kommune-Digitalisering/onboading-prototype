@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
 
-    import { getUserInfo } from '../../services/keycloakService.js'
+    import { getUserInfo } from '@/services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
     import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
     import { getAdminData, getUsers } from '@/services/userService.js'
