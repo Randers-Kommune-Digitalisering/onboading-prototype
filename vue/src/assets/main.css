@@ -315,12 +315,14 @@ a.disabled, .button.disabled, .link.disabled {
     font-weight: 600;
 
     margin-top:0;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
+.card-title ~ .card-subtitle {
+    margin-top: 0.4rem;
+}
 .card-subtitle {
     font-size:0.85em;
     color: var(--color-navbar-item-hover);

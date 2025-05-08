@@ -98,7 +98,7 @@
                 <p class="card-title">
                     {{ name != '' ? name :  'Forløb uden titel' }}
                 </p>
-                <p class="card-subtitle">
+                <p v-if="title" class="card-subtitle">
                     {{ title }}
                 </p>
             </div>
