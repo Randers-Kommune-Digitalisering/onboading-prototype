@@ -14,7 +14,7 @@
         {
             "title": "Mine ansvar",
             "url": "/ansvarlig-overview",
-            "icon": "fa-solid fa-chalkboard-user"
+            "icon": "fa-solid fa-hand-holding-hand"
         },
         {
             "title": "Opret forløb",
@@ -42,7 +42,7 @@
         {
             "title": "Mine ansvar",
             "url": "/ansvarlig-overview",
-            "icon": "fa-solid fa-chalkboard-user"
+            "icon": "fa-solid fa-hand-holding-hand"
         },
         {
             "title": "Hjælp",
