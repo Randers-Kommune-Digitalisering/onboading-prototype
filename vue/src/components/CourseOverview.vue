@@ -269,7 +269,7 @@
               :tasks="opgaver_ongoing"
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
-              :title="!userInfo.isMedarbejder && id != null ? 'Aktuelle opgaver' : 'Dine opgaver'"
+              :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
               :largeHeaderAdjust="userInfo.isAdmin || ( userInfo.isMedarbejder && !props.ansvarligView ) || id != null"
               :expandFirstItem="false"
               :expandItem="expandItem" />
