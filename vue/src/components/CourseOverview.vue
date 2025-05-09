@@ -42,6 +42,7 @@
     const forloeb_id = ref(null)
     const userTitle = ref(null)
     const isForloebCompleted = ref(false)
+    const isForloebOngoing = ref(false)
     const isForloebFetched = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
@@ -68,6 +69,7 @@
                 isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
+                isForloebOngoing.value = forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
 
@@ -192,6 +194,9 @@
 <template>
     <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView" class="indent-tiny notification">
         <span class="bold">OBS</span>: Det ser ikke ud til, at du har et onboardingforløb tilknyttet.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.
+    </p>
+    <p v-if="forloeb != null && isForloebFetched && userInfo.isAdmin && isForloebOngoing && !forloeb.usermail.includes('@randers.dk')" class="indent-tiny notification yellow">
+        <span class="bold">OBS</span>: Forløbet er oprettet med medarbejderens private mailadresse. Husk at opdatere til medarbejderens nye Randers-mail, så onboardingforløbet kan tilgås.
     </p>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt

@@ -19,6 +19,8 @@
     --color-button-hover-dark: #2e2c5c;
     --color-button-red: #be3b3b;
     --color-button-red-hover: #963333;
+    --color-button-yellow: #bca002;
+    --color-button-yellow-hover: #a58b02;
     --color-button-disabled: rgb(237, 229, 220, 0);
     --color-input-bg: rgb(241, 237, 232);
     --color-input-focus-bg: rgb(248, 246, 244);
@@ -257,6 +259,14 @@ p > a:hover {
     border-radius: 0.35rem;
     margin-bottom: 2rem;
 }
+    .notification.red {
+        background-color: var(--color-button-red);
+        color: var(--color-button-text);
+    }
+    .notification.yellow {
+        background-color: var(--color-button-yellow);
+        color: var(--color-button-text);
+    }
 
 @media only screen and (min-width: 768px) {
     .card, .notification, .textbox {
