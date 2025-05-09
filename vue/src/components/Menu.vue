@@ -7,12 +7,16 @@ defineExpose({ setAlert })
 
 const adminMenuItems = [
     {
-        "title": "Leder Introduktion",
-        "url": "/admin-start"
-    },
-    {
         "title": "Leder oversigt",
         "url": "/admin-overview"
+    },
+    {
+        "title": "Mine ansvar",
+        "url": "/ansvarlig-overview"
+    },
+    {
+        "title": "Leder hjælp",
+        "url": "/admin-help"
     },
     {
         "title": "Opret opgave",
@@ -36,25 +40,18 @@ const adminMenuItems = [
     }
 ]
 
-const medabrjederMenuItems = [
+const defaultMenuItems = [
     {
-        "title": "Medarbejder Introduktion",
-        "url": "/medarbejder-start"
-    },
-    {
-        "title": "Se onboardings opgaver",
+        "title": "Mit forløb",
         "url": "/medarbejder-overview"
-    }
-]
-
-const ansvarligMenuItems = [
-    {
-        "title": "Ansvarlig Introduktion",
-        "url": "/ansvarlig-start"
     },
     {
-        "title": "Ansvarlig oversigt",
+        "title": "Mine ansvar",
         "url": "/ansvarlig-overview"
+    },
+    {
+        "title": "Hjælp",
+        "url": "/help"
     }
 ]
 
@@ -65,13 +62,10 @@ onMounted(() => {
         const clientRoles = keycloak.tokenParsed?.resource_access?.[keycloak.clientId]?.roles || []
 
         // Filter menu items based on roles
-        if (clientRoles.includes('Admin')) {
+        if (clientRoles.includes('Admin'))
             menuItems.value = adminMenuItems
-        } else if (clientRoles.includes('Ny medarbejder')) {
-            menuItems.value = medabrjederMenuItems
-        } else if (clientRoles.includes('Ansvarlig')) {
-            menuItems.value = ansvarligMenuItems
-        }
+        else
+            menuItems.value = defaultMenuItems
 
         // Set selected = true for landing page (URL)
         const landingPageIndex = menuItems.value.findIndex(x => x.url == new URL(location.href).pathname)
