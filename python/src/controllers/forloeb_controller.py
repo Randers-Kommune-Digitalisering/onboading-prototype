@@ -134,7 +134,7 @@ def get_forloeb_with_opgaver():
 def get_forloeb_by_email(mail):
     session = db_client.get_session()
     try:
-        forloeb = session.query(Forløb).filter_by(usermail=mail).first()
+        forloeb = session.query(Forløb).filter(Forløb.usermail.ilike(mail.lower())).first()
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
@@ -214,7 +214,7 @@ def download_forloeb():
             pdf.set_text_color(100, 100, 100)
             pdf.set_font("Arial", size=11)
             pdf.cell(0, 3, f"Startdato: {datetime.strptime(opgave['startdato'], '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')}", ln=True)
-            
+
             pdf.set_text_color(0, 0, 0)
             pdf.multi_cell(0, 20, opgave['beskrivelse'])
 

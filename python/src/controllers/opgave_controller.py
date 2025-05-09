@@ -323,7 +323,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
 def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad naming
     session = db_client.get_session()
     try:
-        query = session.query(Opgave).filter(Opgave.ansvarligEmail == adminmail)
+        query = session.query(Opgave).filter(Opgave.ansvarligEmail.ilike(adminmail.lower()))
         opgave = query.all()
 
         if not opgave:
