@@ -270,7 +270,7 @@
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
               :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
-              :largeHeaderAdjust="userInfo.isAdmin && !props.ansvarligView && id != null"
+              :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
               :expandFirstItem="false"
               :expandItem="expandItem" />
 
