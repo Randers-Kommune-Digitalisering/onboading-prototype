@@ -61,7 +61,6 @@
     const selectAssistant = (assistant) => {
         inputFields.value.ansvarlig = assistant.name
         selectedAssistant.value = assistant
-        //console.log('Selected assistant:', selectedAssistant.value)
         isAssistantLocked.value = true
         isAssistantSearchOpen.value = false
     }
@@ -186,6 +185,7 @@
                     Object.assign(inputFields.value, formattedData)
                     relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
+                    isAssistantLocked.value = response.data.ansvarligEmail != ""
                 })
                 .then(() => getForloebValues())
                 .then(() => resizeTextareToFitContent())

@@ -19,6 +19,8 @@
     --color-button-hover-dark: #2e2c5c;
     --color-button-red: #be3b3b;
     --color-button-red-hover: #963333;
+    --color-button-yellow: #bca002;
+    --color-button-yellow-hover: #a58b02;
     --color-button-disabled: rgb(237, 229, 220, 0);
     --color-input-bg: rgb(241, 237, 232);
     --color-input-focus-bg: rgb(248, 246, 244);
@@ -118,6 +120,15 @@ a, .link {
 a.disabled, .button.disabled, .link.disabled {
     cursor: default;
     pointer-events: none;
+}
+
+p > a {
+    color: var(--color-button);
+    font-weight: 600;
+}
+p > a:hover {
+    color: var(--color-button-hover);
+    text-decoration: underline;
 }
 
 @media only screen and (min-width: 768px) {
@@ -241,8 +252,24 @@ a.disabled, .button.disabled, .link.disabled {
     transition-duration: 400ms;
 }
 
+.notification {
+    background-color: var(--color-card-faded);
+    color: var(--color-card-text);
+    padding: 0.5rem 1rem!important;
+    border-radius: 0.35rem;
+    margin-bottom: 2rem;
+}
+    .notification.red {
+        background-color: var(--color-button-red);
+        color: var(--color-button-text);
+    }
+    .notification.yellow {
+        background-color: var(--color-button-yellow);
+        color: var(--color-button-text);
+    }
+
 @media only screen and (min-width: 768px) {
-    .card {
+    .card, .notification, .textbox {
         max-width: 38rem;
     }
 }
@@ -307,12 +334,14 @@ a.disabled, .button.disabled, .link.disabled {
     font-weight: 600;
 
     margin-top:0;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
+.card-title ~ .card-subtitle {
+    margin-top: 0.4rem;
+}
 .card-subtitle {
     font-size:0.85em;
     color: var(--color-navbar-item-hover);

@@ -2,7 +2,7 @@
 	import { ref, onMounted, watch } from 'vue'
 	import { useRoute, useRouter } from 'vue-router'
 
-	import { getUserInfo } from '../../services/keycloakService.js'
+	import { getUserInfo } from '@/services/keycloakService.js'
 	import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
 	import { getOpgaveskabeloner } from '@/services/opgaveskabelonService.js'
 
@@ -70,7 +70,7 @@
 			<span>Forløbsskabeloner</span>
 		</div>
 		<div @click="selectTemplateType(TemplateType.Opgaveskabelon)" :class="['navItem', {'selected': selectedType==TemplateType.Opgaveskabelon}]">
-			<i class="fa-solid fa-list-check fa-xl"></i>
+			<i class="fa-solid fa-list-ul fa-xl"></i>
 			<span>Opgaveskabeloner</span>
 		</div>
 	</div>

@@ -21,9 +21,6 @@
             type: Object,
             required: true
         },
-        ansvarligEmail: {
-            type: String
-        },
         id: {
             type: Number
         },
@@ -34,6 +31,10 @@
         expandItem: {
             type: Number,
             default: null
+        },
+        ansvarligView: {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -41,6 +42,8 @@
     const forloeb_id = ref(null)
     const userTitle = ref(null)
     const isForloebCompleted = ref(false)
+    const isForloebOngoing = ref(false)
+    const isForloebFetched = ref(false)
     const isOpgaverFetched = ref(false)
     const opgaver_all = ref([])
     const completedPercentage = ref(0)
@@ -55,22 +58,24 @@
                 const headers = { usermail: props.userInfo.email }
                 // Get forloeb
                                         // As ansvarlig fetch no forløb unless id is provided (fetch opgaver only)
-                const forloeb_response =  props.userInfo.isAnsvarlig && !props.id ? null
+                const forloeb_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? null
                                         // As medarbejder fetch forløb by email
-                                        : props.userInfo.isMedarbejder ? await getForloebByEmail({ headers })
+                                        : props.userInfo.isMedarbejder && !props.id ? await getForloebByEmail({ headers })
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getForloebsskabelonById(props.id)
                                         // Otherwise fetch by id and user email (for admins and ansvarlig users)
                                         : await getForloebById(props.id, { headers })
-                
+
+                isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
                 isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
+                isForloebOngoing.value = forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
-                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value.userdq : forloeb.value?.usermail
+                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
-                const opgaver_response =  props.userInfo.isAnsvarlig && !props.id ? await getOpgaverByAnsvarligEmail({ headers }) 
+                const opgaver_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? await getOpgaverByAnsvarligEmail({ headers }) 
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
                                         // Otherwise fetch by forløb id and user email (for medarbejder users, admins and ansvarlig users)
@@ -118,6 +123,7 @@
 
         } catch (error) {
             console.error(error)
+            isForloebFetched.value = true
             isOpgaverFetched.value = true
         }
     }
@@ -186,6 +192,12 @@
     }
 </script>
 <template>
+    <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView" class="indent-tiny notification">
+        <span class="bold">OBS</span>: Det ser ikke ud til, at du har et onboardingforløb tilknyttet.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.
+    </p>
+    <p v-if="forloeb != null && isForloebFetched && userInfo.isAdmin && isForloebOngoing && !forloeb.usermail.includes('@randers.dk')" class="indent-tiny notification yellow">
+        <span class="bold">OBS</span>: Forløbet er oprettet med medarbejderens private mailadresse. Husk at opdatere til medarbejderens nye Randers-mail, så onboardingforløbet kan tilgås.
+    </p>
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt
     </p>
@@ -205,7 +217,7 @@
     <ProgressBar v-if="forloeb != null  && !showDetails" :percentage="completedPercentage"></ProgressBar>
     
     <!-- Admin actions -->
-    <div class="buttons" v-if="userInfo.isAdmin">
+    <div class="buttons" v-if="userInfo.isAdmin && !props.ansvarligView && forloeb != null && isOpgaverFetched">
 
         <router-link :to="`/create-opgave?id=${forloeb_id}`"
                      class="button" v-if="!isTemplate && !isForloebCompleted">
@@ -262,8 +274,8 @@
               :tasks="opgaver_ongoing"
               :isFetchingTasks="!isOpgaverFetched"
               :userInfo="userInfo"
-              :title="!userInfo.isMedarbejder && id != null ? 'Aktuelle opgaver' : 'Dine opgaver'"
-              :largeHeaderAdjust="userInfo.isAdmin || userInfo.isMedarbejder || id != null"
+              :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
+              :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
               :expandFirstItem="false"
               :expandItem="expandItem" />
 

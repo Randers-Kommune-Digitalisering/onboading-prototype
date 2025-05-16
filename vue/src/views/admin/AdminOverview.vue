@@ -1,7 +1,7 @@
 <script setup>
 	import { ref, onMounted } from 'vue'
 
-	import { getUserInfo } from '../../services/keycloakService.js'
+	import { getUserInfo } from '@/services/keycloakService.js'
 	import { getForloebByAdmin } from '@/services/forløbService.js'
 	import CourseList from '@/components/CourseList.vue'
 

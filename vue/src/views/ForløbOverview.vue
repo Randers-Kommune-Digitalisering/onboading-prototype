@@ -2,7 +2,7 @@
 <script setup>
     import { useRoute } from 'vue-router'
     import CourseOverview from '@/components/CourseOverview.vue'
-    import { getUserInfo } from '../services/keycloakService'
+    import { getUserInfo } from '@/services/keycloakService'
     import { ref } from 'vue'
 
     const route = useRoute()

@@ -2,7 +2,7 @@
     import { ref, onMounted } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
 
-    import { getUserInfo } from '../../services/keycloakService.js'
+    import { getUserInfo } from '@/services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
     import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
     import { getAdminData, getUsers } from '@/services/userService.js'
@@ -36,6 +36,17 @@
     const isUserMailSearchOpen = ref(false)
 
     const searchUserMails = (searchString) => {
+        if (searchString.includes('@')) {
+            let domain = searchString.split('@')[1]
+            let domainLength = domain.length
+            if (domainLength > 0) {
+                let localDomain = ("randers.dk").substring(0, domainLength)
+                if(localDomain !== domain) {
+                    isUserMailSearchOpen.value = false
+                    return
+                }
+            }
+        }
         if (isAdminSearchOpen) {
             isAdminSearchOpen.value = false
         }
@@ -54,9 +65,9 @@
     }
 
     const selectUserMail = (user) => {
-        //console.log('Selected user mail:', user)
         inputFields.value.usermail = user.email
         inputFields.value.userdq = user.dq
+        inputFields.value.name = user.name
         isUserMailSearchOpen.value = false
         evaluateEmail()
     }
@@ -166,7 +177,6 @@
             const adminDataResponse = await getAdminData()
             const parsedData = typeof adminDataResponse.data === 'string' ? JSON.parse(adminDataResponse.data) : adminDataResponse.data
             adminList.value = parsedData
-            //console.log('Logged in admin: ', loggedInAdmin.value)
 
             // Add admin name to list if not already present
             if (!(parsedData.map(admin => admin.mail)).includes(loggedInAdmin.value)) {
@@ -200,15 +210,6 @@
                 console.error('Error fetching forløb:', error)
             }
         }
-
-        // Uncomment if needed in the future
-        // try {
-        //     const dqResponse = await getDQ()
-        //     dqList.value = dqResponse.data.dq_numbers
-        //     console.log('DQs:', dqResponse.data)
-        // } catch (error) {
-        //     console.error('Error fetching DQs:', error)
-        // }
     })
 
     /* Submit */
@@ -266,6 +267,11 @@
             </div>
         </div>
 
+        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen  }]">
+            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required>
+            <label for="name" class="floating-label">Medarbejder navn</label>
+        </div>
+
         <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen }]">
             <input type="text" id="admin" name="admin" placeholder=" " @input="searchAdmins(inputFields.admin)" v-model="inputFields.admin" class="locked" required :disabled="isAdminLocked">
             <label for="admin" class="floating-label">Ansvarlig leder</label>
@@ -297,11 +303,6 @@
                 <input type="date" id="enddate" name="enddate" v-model="inputFields.enddate" required>
                 <label for="enddate" class="floating-label">Slutdato</label>
             </div>
-        </div>
-
-        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen  }]">
-            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required>
-            <label for="name" class="floating-label">Forløbets navn</label>
         </div>
 
         <div class="inputContainer submit">

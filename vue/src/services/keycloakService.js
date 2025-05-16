@@ -2,8 +2,6 @@ import axios from 'axios';
 
 var USER_INFO = null;
 const adminString = 'Admin';
-const ansvarligString = 'Ansvarlig';
-const medarbejderString = 'Ny medarbejder';
 
 export const getUserInfoFromBackend = () => {
     return axios.get(`api/userinfo`);
@@ -15,8 +13,8 @@ export async function getUserInfo() {
       const res = await getUserInfoFromBackend();
       USER_INFO = res.data;
       USER_INFO.isAdmin = USER_INFO.roles.includes(adminString);
-      USER_INFO.isAnsvarlig = USER_INFO.roles.includes(ansvarligString);
-      USER_INFO.isMedarbejder = USER_INFO.roles.includes(medarbejderString);
+      USER_INFO.isAnsvarlig = true;
+      USER_INFO.isMedarbejder = !USER_INFO.isAdmin;
     }
     return USER_INFO;
 }

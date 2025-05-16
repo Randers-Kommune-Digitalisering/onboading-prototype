@@ -2,7 +2,7 @@
     import { ref, onMounted, watch } from 'vue'
     import { useRoute } from 'vue-router'
 
-    import { getUserInfo } from '../services/keycloakService.js'
+    import { getUserInfo } from '@/services/keycloakService.js'
 
     const adminMenuItems = [
         {
@@ -11,60 +11,42 @@
             "alias": ['/forloeb-overview'],
             "icon": "fa-solid fa-list-check"
         },
-        // {
-        //     "title": "Opret opgave",
-        //     "url": "/create-opgave",
-        //     "icon": "fa-solid fa-plus"
-        // },
+        {
+            "title": "Mine ansvar",
+            "url": "/ansvarlig-overview",
+            "icon": "fa-solid fa-hand-holding-hand"
+        },
         {
             "title": "Opret forløb",
             "url": "/create-forloeb",
             "icon": "fa-solid fa-square-plus"
         },
-        // {
-        //     "title": "Opret ressource",
-        //     "url": "/create-ressource",
-        //     "icon": "fa-solid fa-plus"
-        // },
         {
             "title": "Skabeloner",
             "url": "/template-overview",
             "icon": "fa-solid fa-folder"
         },
-        // {
-        //     "title": "Opret opgaveskabelon",
-        //     "url": "/create-opgaveskabelon",
-        //     "icon": "fa-solid fa-plus"
-        // },
         {
             "title": "Hjælp",
-            "url": "/admin-start",
+            "url": "/admin-help",
             "icon": "fa-solid fa-message"
         }
     ]
 
-    const medarbejderMenuItems = [
+    const defaultMenuItems = [
         {
-            "title": "Opgaver",
+            "title": "Mit forløb",
             "url": "/medarbejder-overview",
             "icon": "fa-solid fa-list-check"
         },
         {
-            "title": "Hjælp",
-            "url": "/medarbejder-start",
-            "icon": "fa-solid fa-message"
-        }
-    ]
-
-    const ansvarligMenuItems = [
-        {
-            "title": "Overblik",
+            "title": "Mine ansvar",
             "url": "/ansvarlig-overview",
-            "icon": "fa-solid fa-list-check"
+            "icon": "fa-solid fa-hand-holding-hand"
         },
         {
             "title": "Hjælp",
-            "url": "/ansvarlig-start",
+            "url": "/help",
             "icon": "fa-solid fa-message"
         }
     ]
@@ -80,10 +62,8 @@
             // Filter menu items based on roles
             if (clientRoles.includes('Admin')) {
                 menuItems.value = adminMenuItems
-            } else if (clientRoles.includes('Ny medarbejder')) {
-                menuItems.value = medarbejderMenuItems
-            } else if (clientRoles.includes('Ansvarlig')) {
-                menuItems.value = ansvarligMenuItems
+            } else if (clientRoles.includes('Ny medarbejder') || clientRoles.includes('Ansvarlig')) {
+                menuItems.value = defaultMenuItems
             }
 
             // Set selected = true for landing page (URL)
