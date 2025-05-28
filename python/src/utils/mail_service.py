@@ -16,8 +16,8 @@ def send_mail(recipient_email, subject, message):
     payload = {
         "from": MAIL_SERVICE_SENDER,
         "to": recipient_email,
-        "subject": subject,
-        "text": message
+        "title": subject,
+        "body": message
     }
 
     try:
