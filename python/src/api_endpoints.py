@@ -69,10 +69,14 @@ from controllers.opgaveskabelon_controller import (
 logger = logging.getLogger(__name__)
 
 db_client = get_db_client()
+engine = db_client.engine
+
+
 try:
-    Base.metadata.create_all(db_client.engine)
+    Base.metadata.create_all(engine)
+    db_client.ensure_all_columns_exist()
 except Exception as e:
-    print(f"Error creating tables: {e}")
+    print(f"Error creating tables or columns: {e}")
 
 
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')

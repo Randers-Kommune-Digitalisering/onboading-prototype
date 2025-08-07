@@ -53,6 +53,7 @@ class Opgave(Base):
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
     forløb = relationship('Forløb', back_populates='opgave')
     ressource = relationship('Ressource', back_populates='opgave')
+    note = Column(String, nullable=True)
 
 
 class Ressource(Base):
