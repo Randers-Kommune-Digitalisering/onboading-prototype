@@ -1,7 +1,6 @@
 import logging
 from flask import Blueprint, request
 from utils.db_connection import get_db_client
-from models import Base
 from controllers.opgave_controller import (
     create_opgave_with_opgaveskabelon,
     get_opgave_by_forloebsskabelon_id,
@@ -67,17 +66,7 @@ from controllers.opgaveskabelon_controller import (
 )
 
 logger = logging.getLogger(__name__)
-
 db_client = get_db_client()
-engine = db_client.engine
-
-
-try:
-    Base.metadata.create_all(engine)
-    db_client.ensure_all_columns_exist()
-except Exception as e:
-    print(f"Error creating tables or columns: {e}")
-
 
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 

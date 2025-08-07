@@ -8,6 +8,7 @@ from utils.logging import set_logging_configuration
 from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK
 from api_endpoints import api_endpoints
 from controllers.user_controller import azure_data_exists, get_and_save_azure_ad_data
+from utils.db_connection import create_db_client, add_missing_columns
 
 set_logging_configuration()
 
@@ -52,6 +53,10 @@ def create_app():
                 return user_info, 200
             else:
                 return redirect(url_for('login'))
+
+    # Create database client
+    create_db_client()
+    add_missing_columns()
 
     # Import Azure data
     if not azure_data_exists():
