@@ -3,7 +3,7 @@ import logging
 import urllib.parse
 from models import Base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, text, inspect
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -92,9 +92,8 @@ class DatabaseClient:
                             ddl += f' DEFAULT {col.default.arg}'
                         self.logger.info(f"Generated DDL for column {col.name}: {ddl}")
 
-                        with self.engine.connect() as conn:
-                            result = conn.execute(text(ddl))
-                            self.logger.info(f"Added column {col.name} to {table_name} with result: {result}")
+                        result = self.execute_sql(ddl)
+                        self.logger.info(f"Added column {col.name} to {table_name} with result: {result}")
                     except SQLAlchemyError as e:
                         self.logger.error(f"Error adding column {col.name} to {table_name}: {e}")
                     except Exception as e:

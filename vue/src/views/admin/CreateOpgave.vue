@@ -25,6 +25,7 @@
         title: "",
         ansvarlig: "",
         beskrivelse: "",
+        note: "",
         startdato: "",
         slutdato: "",
         relativ_startdag: 0,
@@ -91,13 +92,22 @@
 
     /* Textarea */
 
-    const textarea = ref(null)
+    const textareaDescription = ref(null)
+    const textareaNote = ref(null)
 
-    const resizeTextareToFitContent = () => {
-        // const lineHeight = parseFloat(getComputedStyle(textarea.value).lineHeight)
-        // const lines = textarea.value.value.split('\n').length
-        textarea.value.style.height = 'auto'
-        textarea.value.style.height = (textarea.value.scrollHeight) + 'px'
+    const resizeTextareasToFitContent = () => {
+        resizeTextareaDescriptionToFitContent()
+        resizeTextareaNoteToFitContent()
+    }
+
+    const resizeTextareaDescriptionToFitContent = () => {
+        textareaDescription.value.style.height = 'auto'
+        textareaDescription.value.style.height = (textareaDescription.value.scrollHeight) + 'px'
+    }
+
+    const resizeTextareaNoteToFitContent = () => {
+        textareaNote.value.style.height = 'auto'
+        textareaNote.value.style.height = (textareaNote.value.scrollHeight) + 'px'
     }
 
     /* Use template */
@@ -105,6 +115,7 @@
     const selectTemplate = (template) => {
         inputFields.value.title = template.title
         inputFields.value.beskrivelse = template.beskrivelse
+        inputFields.value.note = template.note
         inputFields.value.startdato = template.startdato
         inputFields.value.slutdato = template.slutdato
         inputFields.value.booking = template.booking
@@ -168,7 +179,7 @@
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
                 })
                 .then(() => getForloebValues())
-                .then(() => resizeTextareToFitContent())
+                .then(() => resizeTextareasToFitContent())
                 .catch(error => {
                     console.error('Error fetching opgave:', error)
                 })
@@ -188,7 +199,7 @@
                     isAssistantLocked.value = response.data.ansvarligEmail != ""
                 })
                 .then(() => getForloebValues())
-                .then(() => resizeTextareToFitContent())
+                .then(() => resizeTextareasToFitContent())
                 .catch(error => {
                     console.error('Error fetching opgave:', error)
                 })
@@ -323,8 +334,13 @@
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <textarea id="description" name="description" ref="textarea" @input="resizeTextareToFitContent()" placeholder=" " v-model="inputFields.beskrivelse" required></textarea>
+            <textarea id="description" name="description" ref="textareaDescription" @input="resizeTextareaDescriptionToFitContent()" placeholder=" " v-model="inputFields.beskrivelse" required></textarea>
             <label for="description" class="floating-label">Beskrivelse</label>
+        </div>
+
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
+            <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note" required></textarea>
+            <label for="note" class="floating-label">Note til ansvarlig</label>
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">

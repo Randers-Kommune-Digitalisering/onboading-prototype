@@ -30,6 +30,7 @@ class Opgaveskabelon(Base):
     OpgaveskabelonID = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
+    note = Column(String, nullable=True)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
     relativ_slutdag = Column(Integer, nullable=False)
 

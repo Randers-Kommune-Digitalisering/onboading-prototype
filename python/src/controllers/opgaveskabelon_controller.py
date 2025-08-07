@@ -17,6 +17,7 @@ def create_opgaveskabelon():
         new_opgaveskabelon = Opgaveskabelon(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
+            note=data['note'],
             relativ_slutdag=data['relativ_slutdag'],
         )
         session.add(new_opgaveskabelon)
@@ -39,6 +40,7 @@ def get_all_opgaveskabeloner():
                 'title': opgaveskabelon.title,
                 'beskrivelse': opgaveskabelon.beskrivelse,
                 'relativ_slutdag': opgaveskabelon.relativ_slutdag,
+                'note': opgaveskabelon.note if opgaveskabelon.note else "",
                 'resourcer': [
                     {
                         'RessourceID': ressource.RessourceID,
@@ -66,6 +68,7 @@ def get_opgaveskabelon(opgaveskabelon_id):
             'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
             'title': opgaveskabelon.title,
             'beskrivelse': opgaveskabelon.beskrivelse,
+            'note': opgaveskabelon.note if opgaveskabelon.note else "",
             'relativ_slutdag': opgaveskabelon.relativ_slutdag
         }
         return jsonify(opgaveskabelon_data), 200
@@ -90,6 +93,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
 
         opgaveskabelon.title = data['title']
         opgaveskabelon.beskrivelse = data['beskrivelse']
+        opgaveskabelon.note = data['note']
         opgaveskabelon.relativ_slutdag = data['relativ_slutdag']
 
         session.commit()

@@ -20,6 +20,7 @@ def create_opgave():
         new_opgave = Opgave(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
+            note=data['note'],
             ansvarlig=data['ansvarlig'],
             ansvarligEmail=data['ansvarligEmail'],
             startdato=datetime.fromisoformat(data['startdato']) if 'startdato' in data else None,
@@ -115,6 +116,7 @@ def create_opgave_with_opgaveskabelon():
         new_opgave = Opgave(
             title=data.get('title', opgaveskabelon.title),
             beskrivelse=data.get('beskrivelse', opgaveskabelon.beskrivelse),
+            note=data.get('note', opgaveskabelon.note),
             ansvarlig=data.get('ansvarlig', ""),
             ansvarligEmail=data.get('ansvarligEmail', ""),
             startdato=datetime.fromisoformat(data['startdato']) if 'startdato' in data else None,
@@ -258,6 +260,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
+                'note': opgave.note,
                 'resourcer': [
                     {
                         'RessourceID': ressource.RessourceID,
@@ -295,6 +298,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
+                'note': opgave.note,
                 'resourcer': [
                     {
                         'RessourceID': ressource.RessourceID,
@@ -344,6 +348,7 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                 'name': forloeb_name,
                 'title': opg.title,
                 'beskrivelse': opg.beskrivelse,
+                'note': opg.note,
                 'resourcer': [
                     {
                         'RessourceID': ressource.RessourceID,
@@ -425,6 +430,7 @@ def update_opgave(opgave_id):
         is_new_ansvarlig = opgave.ansvarlig != data.get('ansvarlig', opgave.ansvarlig)
         opgave.title = data.get('title', opgave.title)
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
+        opgave.note = data.get('note', opgave.note)
         if is_new_ansvarlig:
             opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
             opgave.ansvarligEmail = data.get('ansvarligEmail', opgave.ansvarligEmail)
