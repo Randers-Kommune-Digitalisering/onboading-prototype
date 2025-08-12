@@ -88,6 +88,10 @@
             type: String,
             default: ''
         },
+        note: {
+            type: String,
+            default: ''
+        },
         relativeStartdate: {
             type: Number
         },
@@ -306,11 +310,11 @@
                         <i class="fa-solid fa-pen-to-square"></i>
                         {{ ressource.name }}
                 </span>
-
             </div>
 
-            <div class="buttons">
+            <p class="notes" v-html="note.replace(/\n/g, '<br>')"></p>
 
+            <div class="buttons">
                 <div class="button"
                      v-if="isTemplate || userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail)"
                      @click="gotoRessource()">
@@ -321,7 +325,7 @@
                      v-if="isTemplate || userInfo?.isAdmin"
                      @click="gotoTask()">
                         Redigér
-            </div>
+                </div>
 
                 <div :class="['button', 'hollow', {'red': result}]"
                      v-if="!templateView && 
@@ -344,8 +348,8 @@
                              :to="`/forloeb-overview?id=${forloebId}`">
                                 Gå til forløb
                 </router-link>
-            
-            </div>
+            </div><!-- /buttons -->
+
         </div><!-- /card-content -->
     </div><!-- /card -->
 

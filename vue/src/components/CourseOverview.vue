@@ -4,7 +4,7 @@
     
     import { getForloebByEmail, getForloebById, completeForloeb, deleteForloeb } from '@/services/forløbService.js'
     import { getForloebsskabelonById, deleteForloebsskabelon } from '@/services/forløbsskabelonService.js'
-    import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService.js'
+    import { getOpgaverByForloebID, getOpgaverByForloebIDAdmin, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService.js'
     import TaskList from '@/components/TaskList.vue'
     import CourseItem from '@/components/CourseItem.vue'
     import Placeholder from '@/components/Placeholder.vue'
@@ -79,6 +79,7 @@
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
                                         // Otherwise fetch by forløb id and user email (for medarbejder users, admins and ansvarlig users)
+                                        : props.userInfo.isAdmin ? await getOpgaverByForloebIDAdmin(forloeb_id.value)
                                         : await getOpgaverByForloebID(forloeb_id.value)
 
                 if (opgaver_response?.data == null)

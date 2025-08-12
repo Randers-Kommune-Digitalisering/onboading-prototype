@@ -222,6 +222,7 @@ def get_opgave(opgave_id):
             'OpgaveID': opgave.OpgaveID,
             'title': opgave.title,
             'beskrivelse': opgave.beskrivelse,
+            'note': opgave.note,
             'resourcer': [
                 {
                     'RessourceID': ressource.RessourceID,

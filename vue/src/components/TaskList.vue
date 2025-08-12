@@ -70,6 +70,7 @@
             :title="task.title"
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"
+            :note="task.note"
             :relativeStartdate="task.relativ_startdag"
             :relativeEnddate="task.relativ_slutdag"
             :startdate="task.startdato ? new Date(new Date(task.startdato)) : null"
