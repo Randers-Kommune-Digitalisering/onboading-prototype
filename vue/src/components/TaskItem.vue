@@ -144,6 +144,12 @@
         }
     })
 
+    const renderNoteHTML = (note) => {
+        const header = "<div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>"
+                     + "<i class='fa-solid fa-note-sticky' style='padding-right: 0.5rem'></i>Note til ansvarlig:</div>"
+        return header + note.replace(/\n/g, '<br />')
+    }
+
     /* Task operations */
 
     const completeTask = (result = true) => {
@@ -312,7 +318,7 @@
                 </span>
             </div>
 
-            <p class="notes" v-html="note.replace(/\n/g, '<br>')"></p>
+            <p class="notes" v-html="renderNoteHTML(note)"></p>
 
             <div class="buttons">
                 <div class="button"
@@ -354,3 +360,13 @@
     </div><!-- /card -->
 
 </template>
+
+<style scoped>
+    .notes {
+        background-color: rgb(247, 248, 210);
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.4rem;
+        margin-top: 1rem;
+        transform: translateY(0.5rem);
+    }
+</style>
