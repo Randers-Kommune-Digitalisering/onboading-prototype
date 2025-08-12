@@ -339,7 +339,7 @@
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note" required></textarea>
+            <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note"></textarea>
             <label for="note" class="floating-label">Note til ansvarlig</label>
         </div>
 

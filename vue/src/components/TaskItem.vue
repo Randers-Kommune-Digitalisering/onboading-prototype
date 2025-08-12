@@ -318,7 +318,7 @@
                 </span>
             </div>
 
-            <p class="notes" v-html="renderNoteHTML(note)"></p>
+            <p v-if="note != null && note != ''" class="notes" v-html="renderNoteHTML(note)"></p>
 
             <div class="buttons">
                 <div class="button"
