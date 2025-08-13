@@ -32,6 +32,8 @@ class Opgaveskabelon(Base):
     beskrivelse = Column(String, nullable=False)
     note = Column(String, nullable=True)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
+    OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID'))
+    opgavegruppe = relationship('OpgaveGruppe', back_populates='opgaver')
     relativ_slutdag = Column(Integer, nullable=False)
 
 
@@ -54,6 +56,8 @@ class Opgave(Base):
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
     forløb = relationship('Forløb', back_populates='opgave')
     ressource = relationship('Ressource', back_populates='opgave')
+    OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID'))
+    opgavegruppe = relationship('OpgaveGruppe', back_populates='opgaver')
     note = Column(String, nullable=True)
 
 
@@ -66,3 +70,12 @@ class Ressource(Base):
     opgave = relationship('Opgave', back_populates='ressource')
     OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID'))
     opgaveskabelon = relationship('Opgaveskabelon', back_populates='ressource')
+
+
+class OpgaveGruppe(Base):
+    __tablename__ = 'OpgaveGruppe'
+    OpgaveGruppeID = Column(Integer, primary_key=True, autoincrement=True)
+    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
+    ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
+    name = Column(String, nullable=False)
+    letter = Column(String, nullable=False)
