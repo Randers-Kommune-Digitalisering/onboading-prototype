@@ -370,7 +370,7 @@
             <label for="note" class="floating-label">Note til ansvarlig</label>
         </div>
 
-        <div class="inputContainer" v-if="!isTemplate">
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
             <input v-if="isAddingNewGroup" type="text" id="gruppe" name="gruppe" placeholder="" v-model="inputFields.OpgaveGruppeNavn" required>
             <select v-else id="gruppe" name="gruppe" v-model="selectedGroup" @change="selectGroup(selectedGroup)" required>
                 <option value="" disabled selected hidden></option>

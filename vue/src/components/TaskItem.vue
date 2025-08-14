@@ -92,6 +92,9 @@
             type: String,
             default: ''
         },
+        group: {
+            type: Object
+        },
         relativeStartdate: {
             type: Number
         },
@@ -229,14 +232,15 @@
     <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" ref="cardRef">
         <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
-                <div :style="`background-color: #`+ color +`;`">
-                    <div>{{ title.slice(0,1).toLocaleLowerCase() }}</div>
+                <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
+                    <div >{{ group?.letter }}</div>
+                    <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
                 </div>
             </div>
 
             <div class="no-overflow">
                 <p class="card-title">
-                    {{ title }}
+                    {{ title }} {{ group }}
                 </p>
                 <p class="card-subtitle">
                     {{ header }}
@@ -368,5 +372,22 @@
         border-radius: 0.4rem;
         margin-top: 1rem;
         transform: translateY(0.5rem);
+    }
+
+    .tooltip-display {
+        display: none;
+        position: absolute;
+        background-color: var(--color-card-text);
+        color: #FFFFFF;
+        padding: 0.4rem 0.5rem;
+        border-radius: 0.2rem;
+        font-size: 0.8em;
+        z-index: 1;
+        transform: translate(35%, -100%);
+        opacity: 0.8;
+    }
+    .tooltip-hover:hover > .tooltip-display,
+    .tooltip-display:hover {
+        display: block;
     }
 </style>

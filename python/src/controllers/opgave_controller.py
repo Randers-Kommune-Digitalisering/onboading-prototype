@@ -171,6 +171,12 @@ def create_opgave_with_opgaveskabelon():
         else:
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
+        if 'OpgaveGruppeID' in data:
+            opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
+            if not opgavegruppe:
+                return jsonify({"error": "OpgaveGruppe not found"}), 404
+            new_opgave.opgavegruppe = opgavegruppe
+
         session.add(new_opgave)
         session.commit()
 
@@ -226,7 +232,8 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                 ],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
-                    'name': opgave.opgavegruppe.name
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
@@ -267,7 +274,8 @@ def get_opgave(opgave_id):
             ],
             'gruppe': {
                 'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
-                'name': opgave.opgavegruppe.name
+                'name': opgave.opgavegruppe.name,
+                'letter': opgave.opgavegruppe.letter
             } if opgave.opgavegruppe else None,
             'ansvarlig': opgave.ansvarlig,
             'ansvarligEmail': opgave.ansvarligEmail,
@@ -310,7 +318,8 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                 ],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
-                    'name': opgave.opgavegruppe.name
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
@@ -352,7 +361,8 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 ],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
-                    'name': opgave.opgavegruppe.name
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
@@ -406,7 +416,8 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                 ],
                 'gruppe': {
                     'OpgaveGruppeID': opg.opgavegruppe.OpgaveGruppeID,
-                    'name': opg.opgavegruppe.name
+                    'name': opg.opgavegruppe.name,
+                    'letter': opg.opgavegruppe.letter
                 } if opg.opgavegruppe else None,
                 'ansvarlig': opg.ansvarlig,
                 'ansvarligEmail': opg.ansvarligEmail,
@@ -454,7 +465,8 @@ def get_opgave_by_forloeb_id(forlob_id):
                 ],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
-                    'name': opgave.opgavegruppe.name
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
