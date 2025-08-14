@@ -50,7 +50,7 @@ def create_opgave():
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
         if 'OpgaveGruppeID' in data:
-            if data.get('OpgaveGruppeNavn') is None:
+            if data.get('OpgaveGruppeID') is None:
                 new_opgave.opgavegruppe = None
             else:
                 opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
@@ -483,12 +483,14 @@ def update_opgave(opgave_id):
         if not opgave:
             return jsonify({"error": "Opgave not found"}), 404
 
+        # previous_opgavegruppe = opgave.opgavegruppe
+
         is_new_ansvarlig = opgave.ansvarlig != data.get('ansvarlig', opgave.ansvarlig)
         opgave.title = data.get('title', opgave.title)
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
         opgave.note = data.get('note', opgave.note)
         if 'OpgaveGruppeID' in data:
-            if data.get('OpgaveGruppeNavn') is None:
+            if data.get('OpgaveGruppeID') is None:
                 opgave.opgavegruppe = None
             else:
                 opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
@@ -509,6 +511,13 @@ def update_opgave(opgave_id):
         opgave.timestamp = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00')) if 'timestamp' in data else opgave.timestamp
 
         session.commit()
+
+        # if previous_opgavegruppe and previous_opgavegruppe.OpgaveGruppeID != opgave.opgavegruppe.OpgaveGruppeID:
+        #     # Delete opgaveGruppe if no other tasks are part of it
+        #     if not session.query(Opgave).filter_by(OpgaveGruppeID=previous_opgavegruppe.OpgaveGruppeID).first():
+        #         if session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=previous_opgavegruppe.OpgaveGruppeID).first():
+        #             session.delete(previous_opgavegruppe)
+        #             session.commit()
 
         # Send mail notification to the responsible person
         if is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
