@@ -1,12 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
-:root {
+body.onboarding-theme-sand {
     --color-background: rgb(203, 194, 184);
     --color-text: rgb(65, 63, 62);
+    --color-text-faded: rgb(119, 115, 113);
     --color-logo: rgb(48, 46, 45);
     --color-logo-subtext: rgb(164, 158, 154);
     --color-logo-subtext-hover: rgb(130, 124, 120); /* Also used for disabled floating-button */
     --color-navbar: rgb(237, 229, 220);
+    --color-navbar-text: rgb(65, 63, 62);
     --color-navbar-item-selected: rgb(221, 213, 204);
     --color-navbar-item-hover: rgb(119, 115, 113);
     --color-card: rgb(237, 229, 220);
@@ -22,9 +24,55 @@
     --color-button-yellow: #bca002;
     --color-button-yellow-hover: #a58b02;
     --color-button-disabled: rgb(237, 229, 220, 0);
+    --color-floating-button: rgb(119, 115, 113);
+    --color-floating-button-hover: rgb(92, 89, 88);
+    --color-floating-button-disabled: rgb(130, 124, 120);
     --color-input-bg: rgb(241, 237, 232);
     --color-input-focus-bg: rgb(248, 246, 244);
     --color-input-disabled-bg: rgb(230, 224, 216);
+    --color-input-invalid-bg: rgb(255, 204, 204);
+    --color-progression-bar: rgb(180, 173, 165);
+    --color-progression: #4b8049;
+    --color-achievement-box: rgb(221, 213, 204);
+    --color-achievement-item: rgb(221, 213, 204);
+    --color-achievement-item-text: rgb(221, 213, 204);
+}
+
+body.onboarding-theme-randers {
+    --color-background: rgb(253, 248, 242);
+    --color-text: rgb(65, 63, 62);
+    --color-text-faded: rgb(119, 115, 113);
+    --color-logo: rgb(30, 35, 47);;
+    --color-logo-subtext: rgb(100, 104, 114);
+    --color-logo-subtext-hover: rgb(130, 124, 120); /* Also used for disabled floating-button */
+    --color-navbar: rgb(56, 65, 84);
+    --color-navbar-text: rgb(240, 240, 232);
+    --color-navbar-item-selected: rgb(74, 82, 100);
+    --color-navbar-item-hover: rgb(255, 255, 255);
+    /* --color-card: rgb(230, 230, 228); // BLUEISH TEST
+    --color-card-dark: rgb(240, 240, 236);
+    --color-card-faded: rgb(240, 240, 236);
+    --color-card-text: rgb(92, 89, 88); Also used for floating-button hover */
+    --color-card: rgb(230, 224, 218);
+    --color-card-dark: rgb(215, 207, 197);
+    --color-card-faded: rgb(241, 237, 232);
+    --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
+    --color-button-text: rgb(237, 229, 220);
+    --color-button-text: rgb(255, 255, 241);
+    --color-button: rgb(74, 82, 100);
+    --color-button-hover: rgb(56, 79, 84);
+    --color-button-hover-dark: rgb(30, 35, 47);
+    --color-button-red: #be3b3b;
+    --color-button-red-hover: #963333;
+    --color-button-yellow: #bca002;
+    --color-button-yellow-hover: #a58b02;
+    --color-button-disabled: rgb(237, 229, 220, 0);
+    --color-floating-button: rgb(144, 139, 137);
+    --color-floating-button-hover: rgb(124, 121, 120);
+    --color-floating-button-disabled: rgb(207, 200, 195);
+    --color-input-bg: rgb(237, 233, 229);
+    --color-input-focus-bg: rgb(241, 237, 232);
+    --color-input-disabled-bg: rgb(245, 241, 238);
     --color-input-invalid-bg: rgb(255, 204, 204);
     --color-progression-bar: rgb(180, 173, 165);
     --color-progression: #4b8049;
@@ -124,6 +172,9 @@ p {
 a, .link {
     text-decoration: none;
     color: var(--color-text);
+}
+.navbar a, .link {
+    color: var(--color-navbar-text);
 }
 
 a.disabled, .button.disabled, .link.disabled {
@@ -353,7 +404,7 @@ p > a:hover {
 }
 .card-subtitle {
     font-size:0.85em;
-    color: var(--color-navbar-item-hover);
+    color: var(--color-text-faded);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -661,11 +712,11 @@ button[type="submit"] {
 
 .input-button {
     color: var(--color-input-bg);
-    background-color: var(--color-navbar-item-hover);
-    border: 0.1rem solid var(--color-navbar-item-hover);
+    background-color: var(--color-floating-button);
+    border: 0.1rem solid var(--color-floating-button);
 }
 .input-button:hover {
-    border: 0.1rem solid var(--color-card-text);
+    border: 0.1rem solid var(--color-floating-button-hover);
 }
 
 .floating-button {
@@ -683,7 +734,7 @@ button[type="submit"] {
 
     transition: 0.1s ease all;
     color: var(--color-input-bg);
-    background-color: var(--color-navbar-item-hover);
+    background-color: var(--color-floating-button);
     font-size: 1em;
     display: flex;
     justify-content: center;
@@ -692,10 +743,10 @@ button[type="submit"] {
     z-index: 10;
 }
 .floating-button:hover, .input-button:hover {
-    background-color: var(--color-card-text);
+    background-color: var(--color-floating-button-hover);
 }
 .floating-button.disabled, .input-button.disabled {
-    background-color: var(--color-logo-subtext);
+    background-color: var(--color-floating-button-disabled);
     pointer-events: none;
 }
 
@@ -950,7 +1001,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     text-transform: uppercase;
 }
 .faded {
-    color: var(--color-navbar-item-hover);
+    color: var(--color-text-faded);
 }
 .center {
     text-align: center;

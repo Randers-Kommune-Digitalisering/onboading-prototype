@@ -361,10 +361,10 @@
         font-weight: bold;
     }
     .sort-container > .sort-selector {
-        padding: 0.2rem 0.4rem;
+        padding: 0.3rem 0.6rem;
         background-color: var(--color-card-faded);
         cursor: pointer;
         width: auto;
-        transform: translateY(0.2rem);
+        transform: translateY(0.3rem);
     }
 </style>
