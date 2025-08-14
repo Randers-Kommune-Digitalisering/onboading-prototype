@@ -1,7 +1,7 @@
 from flask import make_response, request, jsonify
 from fpdf import FPDF
 from datetime import datetime, timedelta
-from models import Forløb, Forløbsskabelon, Opgave, Ressource
+from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 import logging
 from controllers.opgave_controller import get_opgave_by_forloeb_id
@@ -75,6 +75,8 @@ def get_forloeb(forloeb_id):
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+
         result = {
             "ForløbID": forloeb.ForløbID,
             "name": forloeb.name,
@@ -82,7 +84,15 @@ def get_forloeb(forloeb_id):
             "enddate": forloeb.enddate.isoformat(),
             "admin": forloeb.admin,
             "usermail": forloeb.usermail,
-            "userdq": forloeb.userdq
+            "userdq": forloeb.userdq,
+            "opgave_grupper": [
+                {
+                    "OpgaveGruppeID": gruppe.OpgaveGruppeID,
+                    "name": gruppe.name,
+                    "letter": gruppe.letter,
+                }
+                for gruppe in opgave_grupper
+            ]
         }
         return jsonify(result), 200
     except Exception as e:
@@ -138,6 +148,8 @@ def get_forloeb_by_email(mail):
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+
         result = {
             "ForløbID": forloeb.ForløbID,
             "name": forloeb.name,
@@ -145,7 +157,15 @@ def get_forloeb_by_email(mail):
             "enddate": forloeb.enddate.isoformat(),
             "admin": forloeb.admin,
             "usermail": forloeb.usermail,
-            "userdq": forloeb.userdq
+            "userdq": forloeb.userdq,
+            "opgave_grupper": [
+                {
+                    "OpgaveGruppeID": gruppe.OpgaveGruppeID,
+                    "name": gruppe.name,
+                    "letter": gruppe.letter,
+                }
+                for gruppe in opgave_grupper
+            ]
         }
         return jsonify(result), 200
     except Exception as e:
@@ -158,18 +178,31 @@ def get_forloeb_by_admin(admin_name):
     session = db_client.get_session()
     try:
         forloeb_list = session.query(Forløb).filter_by(admin=admin_name).all()
-        result = [
-            {
-                "ForløbID": forloeb.ForløbID,
-                "name": forloeb.name,
-                "startdate": forloeb.startdate.isoformat(),
-                "enddate": forloeb.enddate.isoformat(),
-                "admin": forloeb.admin,
-                "usermail": forloeb.usermail,
-                "userdq": forloeb.userdq
-            }
-            for forloeb in forloeb_list
-        ]
+        if not forloeb_list:
+            return jsonify({"error": "No Forløb found for this admin"}), 404
+
+        result = []
+        for forloeb in forloeb_list:
+            opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+            result.append(
+                {
+                    "ForløbID": forloeb.ForløbID,
+                    "name": forloeb.name,
+                    "startdate": forloeb.startdate.isoformat(),
+                    "enddate": forloeb.enddate.isoformat(),
+                    "admin": forloeb.admin,
+                    "usermail": forloeb.usermail,
+                    "userdq": forloeb.userdq,
+                    "opgave_grupper": [
+                        {
+                            "OpgaveGruppeID": gruppe.OpgaveGruppeID,
+                            "name": gruppe.name,
+                            "letter": gruppe.letter,
+                        }
+                        for gruppe in opgave_grupper
+                    ]
+                }
+            )
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -287,6 +320,10 @@ def delete_forloeb(id):
         forloeb = session.query(Forløb).filter_by(ForløbID=id).first()
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
+
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+        for gruppe in opgave_grupper:
+            session.delete(gruppe)
 
         session.delete(forloeb)
         session.commit()

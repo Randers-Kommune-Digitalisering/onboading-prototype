@@ -108,7 +108,7 @@ def get_all_opgaver():
                     } for ressource in opgave.ressource
                 ],
                 'gruppe': {
-                    'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
@@ -222,7 +222,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'gruppe': {
-                    'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
@@ -263,7 +263,7 @@ def get_opgave(opgave_id):
                 } for ressource in opgave.ressource
             ],
             'gruppe': {
-                'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
+                'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                 'name': opgave.opgavegruppe.name
             } if opgave.opgavegruppe else None,
             'ansvarlig': opgave.ansvarlig,
@@ -306,7 +306,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                     } for ressource in opgave.ressource
                 ],
                 'gruppe': {
-                    'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
@@ -348,7 +348,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                     } for ressource in opgave.ressource
                 ],
                 'gruppe': {
-                    'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
@@ -402,7 +402,7 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                     } for ressource in opg.ressource
                 ],
                 'gruppe': {
-                    'OpgavegruppeID': opg.opgavegruppe.OpgavegruppeID,
+                    'OpgaveGruppeID': opg.opgavegruppe.OpgaveGruppeID,
                     'name': opg.opgavegruppe.name
                 } if opg.opgavegruppe else None,
                 'ansvarlig': opg.ansvarlig,
@@ -450,7 +450,7 @@ def get_opgave_by_forloeb_id(forlob_id):
                     } for ressource in opgave.ressource
                 ],
                 'gruppe': {
-                    'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,

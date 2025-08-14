@@ -19,7 +19,8 @@
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
     const templates = ref([])
-    const selectedTemplate = ref("") // Bind this to the select element
+    const selectedTemplate = ref("")
+    const selectedGroup = ref("")
 
     const inputFields = ref({
         title: "",
@@ -141,6 +142,11 @@
         }
     }
 
+    const selectGroup = (group) => {
+        console.log("Selected group: ", group)
+        inputFields.value.OpgaveGruppeID = group.OpgaveGruppeID
+    }
+
     /* Instantiate */
 
     onMounted(() => {
@@ -197,6 +203,7 @@
                     relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
                     isAssistantLocked.value = response.data.ansvarligEmail != ""
+                    selectedGroup.value = response.data.gruppe?.OpgaveGruppeID || ""
                 })
                 .then(() => getForloebValues())
                 .then(() => resizeTextareasToFitContent())
@@ -208,7 +215,6 @@
             getForloebValues()
 
         // Get forløb values
-        // In case we are adding an opgave to a forløbsskabelon
         function getForloebValues()
         {
             if(addToTemplate.value == true)
@@ -250,6 +256,9 @@
                 inputFields.value.ansvarligEmail = selectedAssistant.value?.email ?? ""
             if(selectedTemplate.value != null)
                 inputFields.value.OpgaveskabelonID = selectedTemplate.value.OpgaveskabelonID
+
+            if(selectedGroup.value != null)
+                inputFields.value.OpgaveGruppeID = selectedGroup.value
 
             const formData = { 
                 ...inputFields.value
@@ -341,6 +350,16 @@
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
             <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note"></textarea>
             <label for="note" class="floating-label">Note til ansvarlig</label>
+        </div>
+
+        <div class="inputContainer">
+            <select id="gruppe" name="gruppe" v-model="selectedGroup" @change="selectGroup(selectedGroup)" required>
+                <option value="" disabled selected hidden></option>
+                <option :value="null">Ingen gruppe</option>
+                <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
+            </select>
+            <label for="gruppe" class="floating-label">Gruppe {{ selectedGroup }}</label>
+            <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">

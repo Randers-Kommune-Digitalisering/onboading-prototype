@@ -55,7 +55,7 @@ class Opgave(Base):
     forløb = relationship('Forløb', back_populates='opgave')
     ressource = relationship('Ressource', back_populates='opgave')
     OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID'))
-    opgavegruppe = relationship('OpgaveGruppe', back_populates='opgaver')
+    opgavegruppe = relationship('OpgaveGruppe', back_populates='opgave')
     note = Column(String, nullable=True)
 
 
@@ -77,4 +77,4 @@ class OpgaveGruppe(Base):
     ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
     name = Column(String, nullable=False)
     letter = Column(String, nullable=False)
-    opgaver = relationship("Opgave", back_populates="opgavegruppe")
+    opgave = relationship("Opgave", back_populates="opgavegruppe")
