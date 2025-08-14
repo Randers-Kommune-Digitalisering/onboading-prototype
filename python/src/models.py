@@ -32,8 +32,6 @@ class Opgaveskabelon(Base):
     beskrivelse = Column(String, nullable=False)
     note = Column(String, nullable=True)
     ressource = relationship('Ressource', back_populates='opgaveskabelon')
-    OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID'))
-    opgavegruppe = relationship('OpgaveGruppe', back_populates='opgaver')
     relativ_slutdag = Column(Integer, nullable=False)
 
 
@@ -79,3 +77,4 @@ class OpgaveGruppe(Base):
     ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
     name = Column(String, nullable=False)
     letter = Column(String, nullable=False)
+    opgaver = relationship("Opgave", back_populates="opgavegruppe")

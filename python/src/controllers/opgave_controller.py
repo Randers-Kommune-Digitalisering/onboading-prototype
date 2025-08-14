@@ -110,7 +110,7 @@ def get_all_opgaver():
                 'gruppe': {
                     'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
                     'name': opgave.opgavegruppe.name
-                },
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -224,7 +224,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                 'gruppe': {
                     'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
                     'name': opgave.opgavegruppe.name
-                },
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -265,7 +265,7 @@ def get_opgave(opgave_id):
             'gruppe': {
                 'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
                 'name': opgave.opgavegruppe.name
-            },
+            } if opgave.opgavegruppe else None,
             'ansvarlig': opgave.ansvarlig,
             'ansvarligEmail': opgave.ansvarligEmail,
             'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -308,7 +308,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                 'gruppe': {
                     'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
                     'name': opgave.opgavegruppe.name
-                },
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -350,7 +350,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'gruppe': {
                     'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
                     'name': opgave.opgavegruppe.name
-                },
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat(),
@@ -404,7 +404,7 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                 'gruppe': {
                     'OpgavegruppeID': opg.opgavegruppe.OpgavegruppeID,
                     'name': opg.opgavegruppe.name
-                },
+                } if opg.opgavegruppe else None,
                 'ansvarlig': opg.ansvarlig,
                 'ansvarligEmail': opg.ansvarligEmail,
                 'startdato': opg.startdato.isoformat(),
@@ -452,7 +452,7 @@ def get_opgave_by_forloeb_id(forlob_id):
                 'gruppe': {
                     'OpgavegruppeID': opgave.opgavegruppe.OpgavegruppeID,
                     'name': opgave.opgavegruppe.name
-                },
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
