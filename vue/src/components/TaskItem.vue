@@ -240,7 +240,7 @@
 
             <div class="no-overflow">
                 <p class="card-title">
-                    {{ title }} {{ group }}
+                    {{ title }}
                 </p>
                 <p class="card-subtitle">
                     {{ header }}
@@ -372,22 +372,5 @@
         border-radius: 0.4rem;
         margin-top: 1rem;
         transform: translateY(0.5rem);
-    }
-
-    .tooltip-display {
-        display: none;
-        position: absolute;
-        background-color: var(--color-card-text);
-        color: #FFFFFF;
-        padding: 0.4rem 0.5rem;
-        border-radius: 0.2rem;
-        font-size: 0.8em;
-        z-index: 1;
-        transform: translate(35%, -100%);
-        opacity: 0.8;
-    }
-    .tooltip-hover:hover > .tooltip-display,
-    .tooltip-display:hover {
-        display: block;
     }
 </style>

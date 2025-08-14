@@ -1058,3 +1058,20 @@ textarea:not(:placeholder-shown) + .floating-label {
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
 }
+
+.tooltip-display {
+    display: none;
+    position: absolute;
+    background-color: var(--color-card-text);
+    color: #FFFFFF;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.2rem;
+    font-size: 0.8em;
+    z-index: 1;
+    transform: translate(calc(50% - 1rem), -2rem);
+    opacity: 0.8;
+}
+.tooltip-hover:hover > .tooltip-display,
+.tooltip-display:hover {
+    display: block;
+}
