@@ -51,6 +51,7 @@
     const opgaver_future = ref([])
     const opgaver_completed = ref([])
     const opgaver_template = ref([])
+    const sortBy = ref('deadline') // Default sort option
 
     const fetchOpgaver = async () => {
         try {
@@ -100,6 +101,7 @@
                     opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
 
                 opgaver_all.value = opgaver_response.data
+                opgaver_all.value.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
                 completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
 
                 if(props.isTemplate)
@@ -262,42 +264,107 @@
 
     </div>
 
-    <TaskList v-if="forloeb != null && isTemplate"
-              :tasks="opgaver_template"
-              :isFetchingTasks="!isOpgaverFetched"
-              :userInfo="userInfo"
-              title="Alle opgaver"
-              :expandFirstItem="false"
-              :expandItem="expandItem"
-              :templateView="true" />
+    <div v-if="forloeb != null" class="sort-container">
+        <div style="flex-grow:1">&nbsp;</div>
+        <div class="sort-title">Sortér efter:</div>
+        <select class="sort-selector" v-model="sortBy">
+            <option value="deadline">Deadline</option>
+            <option value="gruppe">Gruppe</option>
+        </select>
+    </div>
 
-    <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
-              :tasks="opgaver_ongoing"
-              :isFetchingTasks="!isOpgaverFetched"
-              :userInfo="userInfo"
-              :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
-              :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
-              :expandFirstItem="false"
-              :expandItem="expandItem" />
+    <div v-if="sortBy === 'deadline'">
+        <TaskList v-if="forloeb != null && isTemplate"
+                :tasks="opgaver_template"
+                :isFetchingTasks="!isOpgaverFetched"
+                :userInfo="userInfo"
+                title="Alle opgaver"
+                :largeHeaderAdjust="true"
+                :expandFirstItem="false"
+                :expandItem="expandItem"
+                :templateView="true" />
 
-    <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
-              :tasks="opgaver_future"
-              :isFetchingTasks="!isOpgaverFetched"
-              :userInfo="userInfo"
-              title="Kommende opgaver"
-              :largeHeaderAdjust="true"
-              :expandFirstItem="false"
-              :expandItem="expandItem"
-              itemColor="777371" />
+        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+                :tasks="opgaver_ongoing"
+                :isFetchingTasks="!isOpgaverFetched"
+                :userInfo="userInfo"
+                :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
+                :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
+                :expandFirstItem="false"
+                :expandItem="expandItem" />
 
-    <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
-              :tasks="opgaver_completed"
-              :isFetchingTasks="!isOpgaverFetched"
-              :userInfo="userInfo"
-              title="Afsluttede opgaver"
-              :largeHeaderAdjust="true"
-              :expandFirstItem="false"
-              :expandItem="expandItem"
-              :dark="true"
-              itemColor="617a5d" />
+        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+                :tasks="opgaver_future"
+                :isFetchingTasks="!isOpgaverFetched"
+                :userInfo="userInfo"
+                title="Kommende opgaver"
+                :largeHeaderAdjust="true"
+                :expandFirstItem="false"
+                :expandItem="expandItem"
+                itemColor="777371" />
+
+        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+                :tasks="opgaver_completed"
+                :isFetchingTasks="!isOpgaverFetched"
+                :userInfo="userInfo"
+                title="Afsluttede opgaver"
+                :largeHeaderAdjust="true"
+                :expandFirstItem="false"
+                :expandItem="expandItem"
+                :dark="true"
+                itemColor="617a5d" />
+    </div>
+    <div v-else>
+        <TaskList v-if="forloeb != null" v-for="group in forloeb.opgave_grupper" :key="group.id"
+                :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID === group.OpgaveGruppeID)"
+                :isFetchingTasks="!isOpgaverFetched"
+                :userInfo="userInfo"
+                :title="group.name"
+                :largeHeaderAdjust="true"
+                :expandFirstItem="false"
+                :expandItem="expandItem" />
+
+        
+        <TaskList v-if="forloeb != null"
+                :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null)"
+                :isFetchingTasks="!isOpgaverFetched"
+                :userInfo="userInfo"
+                title="Ingen gruppe"
+                :largeHeaderAdjust="true"
+                :expandFirstItem="false"
+                :expandItem="expandItem" />
+    </div>
+
 </template>
+
+<style scoped>
+    .sort-container {
+        width: 100%;
+
+        margin-right: 0.2rem;
+        transform: translateY(1.1rem);
+        float:left;
+
+        display: flex;
+        align-items: flex-end;
+        gap: 0.6rem;
+        font-size: 0.8em;
+        text-transform: uppercase;
+    }
+    @media only screen and (min-width: 768px) {
+        .sort-container {
+            max-width: 38rem;
+        transform: translateY(1.7rem);
+        }
+    }
+    .sort-container > .sort-title {
+        font-weight: bold;
+    }
+    .sort-container > .sort-selector {
+        padding: 0.2rem 0.4rem;
+        background-color: var(--color-card-faded);
+        cursor: pointer;
+        width: auto;
+        transform: translateY(0.2rem);
+    }
+</style>
