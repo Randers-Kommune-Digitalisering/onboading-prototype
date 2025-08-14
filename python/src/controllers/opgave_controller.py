@@ -50,10 +50,13 @@ def create_opgave():
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
         if 'OpgaveGruppeID' in data:
-            opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
-            if not opgavegruppe:
-                return jsonify({"error": "OpgaveGruppe not found"}), 404
-            new_opgave.opgavegruppe = opgavegruppe
+            if data.get('OpgaveGruppeNavn') is None:
+                new_opgave.opgavegruppe = None
+            else:
+                opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
+                if not opgavegruppe:
+                    return jsonify({"error": "OpgaveGruppe not found"}), 404
+                new_opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
             new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID)
 
@@ -485,10 +488,13 @@ def update_opgave(opgave_id):
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
         opgave.note = data.get('note', opgave.note)
         if 'OpgaveGruppeID' in data:
-            opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
-            if not opgavegruppe:
-                return jsonify({"error": "OpgaveGruppe not found"}), 404
-            opgave.opgavegruppe = opgavegruppe
+            if data.get('OpgaveGruppeNavn') is None:
+                opgave.opgavegruppe = None
+            else:
+                opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
+                if not opgavegruppe:
+                    return jsonify({"error": "OpgaveGruppe not found"}), 404
+                opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
             opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], opgave.ForløbID)
         if is_new_ansvarlig:

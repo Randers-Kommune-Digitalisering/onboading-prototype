@@ -144,7 +144,7 @@
     }
 
     const selectGroup = (group) => {
-        inputFields.value.OpgaveGruppeID = group.OpgaveGruppeID
+        inputFields.value.OpgaveGruppeID = group?.OpgaveGruppeID || null
     }
 
     const selectNoGroupIfNotSelected = () => {
@@ -220,7 +220,7 @@
                     relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
                     isAssistantLocked.value = response.data.ansvarligEmail != ""
-                    selectedGroup.value = response.data.gruppe?.OpgaveGruppeID || ""
+                    selectedGroup.value = response.data.gruppe?.OpgaveGruppeID || null
                 })
                 .then(() => getForloebValues())
                 .then(() => resizeTextareasToFitContent())
@@ -274,9 +274,8 @@
             if(selectedTemplate.value != null)
                 inputFields.value.OpgaveskabelonID = selectedTemplate.value.OpgaveskabelonID
 
-            if(selectedGroup.value != null)
-                inputFields.value.OpgaveGruppeID = selectedGroup.value
-            else if(inputFields.value.OpgaveGruppeNavn)
+            inputFields.value.OpgaveGruppeID = selectedGroup.value
+            if(inputFields.value.OpgaveGruppeNavn)
                 delete inputFields.value.OpgaveGruppeID
 
             const formData = { 
