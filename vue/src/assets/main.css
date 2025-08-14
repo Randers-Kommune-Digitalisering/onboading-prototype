@@ -650,6 +650,15 @@ button[type="submit"] {
     font-size: 0.8em;
 }
 
+.input-button {
+    color: var(--color-input-bg);
+    background-color: var(--color-navbar-item-hover);
+    border: 0.1rem solid var(--color-navbar-item-hover);
+}
+.input-button:hover {
+    border: 0.1rem solid var(--color-card-text);
+}
+
 .floating-button {
     position: absolute;
     right: 0rem;
@@ -673,10 +682,10 @@ button[type="submit"] {
     cursor: pointer;
     z-index: 10;
 }
-.floating-button:hover {
+.floating-button:hover, .input-button:hover {
     background-color: var(--color-card-text);
 }
-.floating-button.disabled {
+.floating-button.disabled, .input-button.disabled {
     background-color: var(--color-logo-subtext);
     pointer-events: none;
 }
