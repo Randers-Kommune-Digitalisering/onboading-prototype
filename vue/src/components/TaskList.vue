@@ -71,6 +71,7 @@
             :header="task.header ?? task.beskrivelse"
             :description="task.beskrivelse"
             :note="task.note"
+            :group="task.gruppe"
             :relativeStartdate="task.relativ_startdag"
             :relativeEnddate="task.relativ_slutdag"
             :startdate="task.startdato ? new Date(new Date(task.startdato)) : null"

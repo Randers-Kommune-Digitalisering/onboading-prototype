@@ -1,7 +1,7 @@
 from flask import make_response, request, jsonify
 from fpdf import FPDF
 from datetime import datetime, timedelta
-from models import Forløb, Forløbsskabelon, Opgave, Ressource
+from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 import logging
 from controllers.opgave_controller import get_opgave_by_forloeb_id
@@ -35,7 +35,21 @@ def create_forloeb():
             if not forløbsskabelon:
                 return jsonify({"error": "Forløbsskabelon not found"}), 404
 
+            skabelon_opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=forløbsskabelon.ForløbsskabelonID).all()
+            new_opgave_grupper = []
+            for opgave_gruppe in skabelon_opgave_grupper:
+                new_opgave_gruppe = OpgaveGruppe(
+                    name=opgave_gruppe.name,
+                    letter=opgave_gruppe.letter,
+                    ForløbID=forloeb.ForløbID
+                )
+                session.add(new_opgave_gruppe)
+                session.commit()  # Commit to get the new OpgaveGruppeID
+                new_opgave_grupper.append(new_opgave_gruppe)
+
             for opgave in forløbsskabelon.opgave:
+                # Find the matching OpgaveGruppe by name
+                matching_gruppe = next((g for g in new_opgave_grupper if g.name == opgave.opgavegruppe.name), None)
                 new_opgave = Opgave(
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
@@ -45,7 +59,8 @@ def create_forloeb():
                     slutdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag) + timedelta(days=opgave.relativ_slutdag),
                     result=opgave.result,
                     timestamp=opgave.timestamp,
-                    ForløbID=forloeb.ForløbID
+                    ForløbID=forloeb.ForløbID,
+                    OpgaveGruppeID=matching_gruppe.OpgaveGruppeID
                 )
                 session.add(new_opgave)
                 session.commit()  # Commit to get the new OpgaveID
@@ -75,6 +90,8 @@ def get_forloeb(forloeb_id):
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+
         result = {
             "ForløbID": forloeb.ForløbID,
             "name": forloeb.name,
@@ -82,7 +99,15 @@ def get_forloeb(forloeb_id):
             "enddate": forloeb.enddate.isoformat(),
             "admin": forloeb.admin,
             "usermail": forloeb.usermail,
-            "userdq": forloeb.userdq
+            "userdq": forloeb.userdq,
+            "opgave_grupper": [
+                {
+                    "OpgaveGruppeID": gruppe.OpgaveGruppeID,
+                    "name": gruppe.name,
+                    "letter": gruppe.letter,
+                }
+                for gruppe in opgave_grupper
+            ]
         }
         return jsonify(result), 200
     except Exception as e:
@@ -138,6 +163,8 @@ def get_forloeb_by_email(mail):
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+
         result = {
             "ForløbID": forloeb.ForløbID,
             "name": forloeb.name,
@@ -145,7 +172,15 @@ def get_forloeb_by_email(mail):
             "enddate": forloeb.enddate.isoformat(),
             "admin": forloeb.admin,
             "usermail": forloeb.usermail,
-            "userdq": forloeb.userdq
+            "userdq": forloeb.userdq,
+            "opgave_grupper": [
+                {
+                    "OpgaveGruppeID": gruppe.OpgaveGruppeID,
+                    "name": gruppe.name,
+                    "letter": gruppe.letter,
+                }
+                for gruppe in opgave_grupper
+            ]
         }
         return jsonify(result), 200
     except Exception as e:
@@ -158,18 +193,31 @@ def get_forloeb_by_admin(admin_name):
     session = db_client.get_session()
     try:
         forloeb_list = session.query(Forløb).filter_by(admin=admin_name).all()
-        result = [
-            {
-                "ForløbID": forloeb.ForløbID,
-                "name": forloeb.name,
-                "startdate": forloeb.startdate.isoformat(),
-                "enddate": forloeb.enddate.isoformat(),
-                "admin": forloeb.admin,
-                "usermail": forloeb.usermail,
-                "userdq": forloeb.userdq
-            }
-            for forloeb in forloeb_list
-        ]
+        if not forloeb_list:
+            return jsonify({"error": "No Forløb found for this admin"}), 404
+
+        result = []
+        for forloeb in forloeb_list:
+            opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+            result.append(
+                {
+                    "ForløbID": forloeb.ForløbID,
+                    "name": forloeb.name,
+                    "startdate": forloeb.startdate.isoformat(),
+                    "enddate": forloeb.enddate.isoformat(),
+                    "admin": forloeb.admin,
+                    "usermail": forloeb.usermail,
+                    "userdq": forloeb.userdq,
+                    "opgave_grupper": [
+                        {
+                            "OpgaveGruppeID": gruppe.OpgaveGruppeID,
+                            "name": gruppe.name,
+                            "letter": gruppe.letter,
+                        }
+                        for gruppe in opgave_grupper
+                    ]
+                }
+            )
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -287,6 +335,18 @@ def delete_forloeb(id):
         forloeb = session.query(Forløb).filter_by(ForløbID=id).first()
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
+
+        # Delete all related Opgave and Ressource records
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
+        for gruppe in opgave_grupper:
+            opgaver = session.query(Opgave).filter_by(OpgaveGruppeID=gruppe.OpgaveGruppeID).all()
+            for opgave in opgaver:
+                ressourcer = session.query(Ressource).filter_by(OpgaveID=opgave.OpgaveID).all()
+                for ressource in ressourcer:
+                    session.delete(ressource)
+                session.delete(opgave)
+            session.delete(gruppe)
+        session.commit()
 
         session.delete(forloeb)
         session.commit()

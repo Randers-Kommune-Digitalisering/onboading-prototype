@@ -101,7 +101,7 @@
 	background-color: var(--color-card-faded);
 }
 .navItems .navItem.selected {
-	background: linear-gradient(to bottom, rgb(199, 190, 179), var(--color-background));
+	background: linear-gradient(to bottom, var(--color-card-faded), var(--color-background));
 	background-color: var(--color-background);
 	pointer-events: none;
 	border-top: 0.25rem solid var(--color-card-dark);

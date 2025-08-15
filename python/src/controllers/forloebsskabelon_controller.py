@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from models import Forløbsskabelon, Opgave
+from models import Forløbsskabelon, Opgave, OpgaveGruppe
 from utils.db_connection import get_db_client
 
 db_client = get_db_client()
@@ -37,6 +37,15 @@ def get_all_forloebsskabeloner():
                 'varighed': forloebsskabelon.varighed
             } for forloebsskabelon in forloebsskabeloner
         ]
+        for skabelon in forloebsskabeloner_data:
+            opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=skabelon['ForløbsskabelonID']).all()
+            skabelon['opgave_grupper'] = [
+                {
+                    'OpgaveGruppeID': opgave_gruppe.OpgaveGruppeID,
+                    'name': opgave_gruppe.name,
+                    'letter': opgave_gruppe.letter
+                } for opgave_gruppe in opgave_grupper
+            ]
         return jsonify(forloebsskabeloner_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -51,10 +60,19 @@ def get_forloebsskabelon_by_id(forloebsskabelon_id):
         if not forloebsskabelon:
             return jsonify({"error": "Forløbsskabelon not found"}), 404
 
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=forloebsskabelon.ForløbsskabelonID).all()
+
         forloebsskabelon_data = {
             'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
             'name': forloebsskabelon.name,
-            'varighed': forloebsskabelon.varighed
+            'varighed': forloebsskabelon.varighed,
+            'opgave_grupper': [
+                {
+                    'OpgaveGruppeID': opgave_gruppe.OpgaveGruppeID,
+                    'name': opgave_gruppe.name,
+                    'letter': opgave_gruppe.letter
+                } for opgave_gruppe in opgave_grupper
+            ]
         }
         return jsonify(forloebsskabelon_data)
     except Exception as e:

@@ -19,7 +19,9 @@
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
     const templates = ref([])
-    const selectedTemplate = ref("") // Bind this to the select element
+    const selectedTemplate = ref("")
+    const selectedGroup = ref("")
+    const isAddingNewGroup = ref(false)
 
     const inputFields = ref({
         title: "",
@@ -141,6 +143,27 @@
         }
     }
 
+    const selectGroup = (group) => {
+        inputFields.value.OpgaveGruppeID = group?.OpgaveGruppeID || null
+    }
+
+    const selectNoGroupIfNotSelected = () => {
+        if(selectedGroup.value == "")
+            selectedGroup.value = null
+    }
+
+    const toggleAddNewGroup = () => {
+        isAddingNewGroup.value = !isAddingNewGroup.value
+
+        if(isAddingNewGroup.value) {
+            inputFields.value.OpgaveGruppeNavn = ""
+            selectedGroup.value = null
+        } else {
+            delete inputFields.value.OpgaveGruppeNavn
+            selectedGroup.value = inputFields.value.gruppe.OpgaveGruppeID || null
+        }
+    }
+
     /* Instantiate */
 
     onMounted(() => {
@@ -197,6 +220,7 @@
                     relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
                     isAssistantLocked.value = response.data.ansvarligEmail != ""
+                    selectedGroup.value = response.data.gruppe?.OpgaveGruppeID || null
                 })
                 .then(() => getForloebValues())
                 .then(() => resizeTextareasToFitContent())
@@ -208,7 +232,6 @@
             getForloebValues()
 
         // Get forløb values
-        // In case we are adding an opgave to a forløbsskabelon
         function getForloebValues()
         {
             if(addToTemplate.value == true)
@@ -250,6 +273,10 @@
                 inputFields.value.ansvarligEmail = selectedAssistant.value?.email ?? ""
             if(selectedTemplate.value != null)
                 inputFields.value.OpgaveskabelonID = selectedTemplate.value.OpgaveskabelonID
+
+            inputFields.value.OpgaveGruppeID = selectedGroup.value
+            if(inputFields.value.OpgaveGruppeNavn)
+                delete inputFields.value.OpgaveGruppeID
 
             const formData = { 
                 ...inputFields.value
@@ -309,7 +336,7 @@
         <div v-if="!isEditing && !isTemplate" class="inputContainer">
             <select id="template" name="template" v-model="selectedTemplate" @change="selectTemplate(selectedTemplate)" required>
                 <option value="" disabled selected hidden></option>
-                <option :value="null">Ingen skabelon</option>
+                <option :value="null" style="color:gray">Ingen skabelon</option>
                 <option v-for="template in templates" :value="template">{{template.title}}</option>
             </select>
             <label for="template" class="floating-label">Skabelon</label>
@@ -341,6 +368,21 @@
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
             <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note"></textarea>
             <label for="note" class="floating-label">Note til ansvarlig</label>
+        </div>
+
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
+            <input v-if="isAddingNewGroup" type="text" id="gruppe" name="gruppe" placeholder="" v-model="inputFields.OpgaveGruppeNavn" required>
+            <select v-else id="gruppe" name="gruppe" v-model="selectedGroup" @change="selectGroup(selectedGroup)" required>
+                <option value="" disabled selected hidden></option>
+                <option :value="null" style="color:gray">Ingen gruppe</option>
+                <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
+            </select>
+            <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
+            <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
+            <div class="button input-button" @click="toggleAddNewGroup()">
+                <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
+                <i v-else class="fa-solid fa-plus"></i>
+            </div>
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
@@ -396,7 +438,12 @@
         </div>
 
         <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]" type="submit" @click="clearAssistantIfNotSelected();selectNoTemplateIfNotSelected()" :disabled="isSubmitting">{{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]"
+                    type="submit"
+                    @click="clearAssistantIfNotSelected();selectNoTemplateIfNotSelected();selectNoGroupIfNotSelected()"
+                    :disabled="isSubmitting">
+                        {{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}
+            </button>
         </div>
 
     </div>
@@ -412,5 +459,11 @@
     }
     .padding-input {
         padding-left: calc(45% - 2.5rem);
+    }
+    .input-button {
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 </style>

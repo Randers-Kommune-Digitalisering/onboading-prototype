@@ -92,6 +92,9 @@
             type: String,
             default: ''
         },
+        group: {
+            type: Object
+        },
         relativeStartdate: {
             type: Number
         },
@@ -229,8 +232,9 @@
     <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" ref="cardRef">
         <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
-                <div :style="`background-color: #`+ color +`;`">
-                    <div>{{ title.slice(0,1).toLocaleLowerCase() }}</div>
+                <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
+                    <div >{{ group?.letter }}</div>
+                    <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
                 </div>
             </div>
 
@@ -306,15 +310,17 @@
                    v-for="ressource in ressources"
                    :href="ressource.url"
                    target="_blank"
-                   class="link">
+                   class="link tooltip-hover">
                         <i class="fa-solid fa-up-right-from-square"></i>
                         {{ ressource.name }}
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
                 </a>
                 <span v-else v-for="ressource in ressources"
-                      @click="gotoRessource(ressource.RessourceID)" 
-                      class="link">
+                      @click="gotoRessource(ressource.RessourceID)"
+                      class="link tooltip-hover">
                         <i class="fa-solid fa-pen-to-square"></i>
                         {{ ressource.name }}
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
                 </span>
             </div>
 

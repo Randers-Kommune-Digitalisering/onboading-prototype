@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from datetime import datetime
-from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource
+from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 from utils.mail_service import send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
 import logging
@@ -49,6 +49,17 @@ def create_opgave():
         else:
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
+        if 'OpgaveGruppeID' in data:
+            if data.get('OpgaveGruppeID') is None:
+                new_opgave.opgavegruppe = None
+            else:
+                opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
+                if not opgavegruppe:
+                    return jsonify({"error": "OpgaveGruppe not found"}), 404
+                new_opgave.opgavegruppe = opgavegruppe
+        elif 'OpgaveGruppeNavn' in data:
+            new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID or None, new_opgave.forløbsskabelon.ForløbsskabelonID or None)
+
         session.add(new_opgave)
         session.commit()
 
@@ -63,6 +74,22 @@ def create_opgave():
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def create_opgavegruppe(name, forløb_id=None, forloeb_skabelon_id=None):
+    if not forløb_id and not forloeb_skabelon_id:
+        raise ValueError("ForløbID or ForløbsskabelonID is required to create OpgaveGruppe")
+    session = db_client.get_session()
+    try:
+        new_opgavegruppe = OpgaveGruppe(name=name, letter=name[0].upper(), ForløbID=forløb_id, ForløbsskabelonID=forloeb_skabelon_id)
+        session.add(new_opgavegruppe)
+        session.commit()
+        return new_opgavegruppe
+    except Exception as e:
+        session.rollback()
+        raise e
     finally:
         session.close()
 
@@ -83,6 +110,11 @@ def get_all_opgaver():
                         'url': ressource.url
                     } for ressource in opgave.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'letter': opgave.opgavegruppe.letter,
+                    'name': opgave.opgavegruppe.name
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -140,6 +172,12 @@ def create_opgave_with_opgaveskabelon():
         else:
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
+        if 'OpgaveGruppeID' in data:
+            opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
+            if not opgavegruppe:
+                return jsonify({"error": "OpgaveGruppe not found"}), 404
+            new_opgave.opgavegruppe = opgavegruppe
+
         session.add(new_opgave)
         session.commit()
 
@@ -193,6 +231,11 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                         'url': ressource.url
                     } for ressource in opgave.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -230,6 +273,11 @@ def get_opgave(opgave_id):
                     'url': ressource.url
                 } for ressource in opgave.ressource
             ],
+            'gruppe': {
+                'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                'name': opgave.opgavegruppe.name,
+                'letter': opgave.opgavegruppe.letter
+            } if opgave.opgavegruppe else None,
             'ansvarlig': opgave.ansvarlig,
             'ansvarligEmail': opgave.ansvarligEmail,
             'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -269,6 +317,11 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                         'url': ressource.url
                     } for ressource in opgave.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -307,6 +360,11 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                         'url': ressource.url
                     } for ressource in opgave.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat(),
@@ -357,6 +415,11 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                         'url': ressource.url
                     } for ressource in opg.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opg.opgavegruppe.OpgaveGruppeID,
+                    'name': opg.opgavegruppe.name,
+                    'letter': opg.opgavegruppe.letter
+                } if opg.opgavegruppe else None,
                 'ansvarlig': opg.ansvarlig,
                 'ansvarligEmail': opg.ansvarligEmail,
                 'startdato': opg.startdato.isoformat(),
@@ -401,6 +464,11 @@ def get_opgave_by_forloeb_id(forlob_id):
                         'url': ressource.url
                     } for ressource in opgave.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
+                } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
                 'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
@@ -428,10 +496,22 @@ def update_opgave(opgave_id):
         if not opgave:
             return jsonify({"error": "Opgave not found"}), 404
 
+        previous_opgavegruppe = opgave.opgavegruppe
         is_new_ansvarlig = opgave.ansvarlig != data.get('ansvarlig', opgave.ansvarlig)
+
         opgave.title = data.get('title', opgave.title)
         opgave.beskrivelse = data.get('beskrivelse', opgave.beskrivelse)
         opgave.note = data.get('note', opgave.note)
+        if 'OpgaveGruppeID' in data:
+            if data.get('OpgaveGruppeID') is None:
+                opgave.opgavegruppe = None
+            else:
+                opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
+                if not opgavegruppe:
+                    return jsonify({"error": "OpgaveGruppe not found"}), 404
+                opgave.opgavegruppe = opgavegruppe
+        elif 'OpgaveGruppeNavn' in data:
+            opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], opgave.ForløbID or None, opgave.ForløbsskabelonID or None)
         if is_new_ansvarlig:
             opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
             opgave.ansvarligEmail = data.get('ansvarligEmail', opgave.ansvarligEmail)
@@ -444,6 +524,13 @@ def update_opgave(opgave_id):
         opgave.timestamp = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00')) if 'timestamp' in data else opgave.timestamp
 
         session.commit()
+
+        if previous_opgavegruppe and (opgave.opgavegruppe is None or previous_opgavegruppe.OpgaveGruppeID != opgave.opgavegruppe.OpgaveGruppeID):
+            # Delete opgaveGruppe if no other tasks are part of it
+            if not session.query(Opgave).filter_by(OpgaveGruppeID=previous_opgavegruppe.OpgaveGruppeID).first():
+                if session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=previous_opgavegruppe.OpgaveGruppeID).first():
+                    session.delete(previous_opgavegruppe)
+                    session.commit()
 
         # Send mail notification to the responsible person
         if is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
@@ -467,8 +554,15 @@ def delete_opgave(opgave_id):
         if not opgave:
             return jsonify({"error": "Opgave not found"}), 404
 
+        gruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=opgave.OpgaveGruppeID).first()
+
         session.delete(opgave)
         session.commit()
+
+        if gruppe and not session.query(Opgave).filter_by(OpgaveGruppeID=gruppe.OpgaveGruppeID).first():
+            session.delete(gruppe)
+            session.commit()
+
         return jsonify({"message": "Opgave deleted successfully"}), 200
     except Exception as e:
         session.rollback()
