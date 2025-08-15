@@ -47,8 +47,8 @@ body.onboarding-theme-randers {
     --color-logo-subtext-hover: rgb(130, 124, 120); /* Also used for disabled floating-button */
     --color-navbar: rgb(56, 65, 84);
     --color-navbar-text: rgb(240, 240, 232);
-    --color-navbar-item-selected: rgb(74, 82, 100);
-    --color-navbar-item-hover: rgb(255, 255, 255);
+    --color-navbar-item-selected: rgb(45, 52, 68);
+    --color-navbar-item-hover: rgb(74, 82, 100);
     /* --color-card: rgb(230, 230, 228); // BLUEISH TEST
     --color-card-dark: rgb(240, 240, 236);
     --color-card-faded: rgb(240, 240, 236);
@@ -59,16 +59,16 @@ body.onboarding-theme-randers {
     --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
     --color-button-text: rgb(237, 229, 220);
     --color-button-text: rgb(255, 255, 241);
-    --color-button: rgb(74, 82, 100);
-    --color-button-hover: rgb(56, 79, 84);
-    --color-button-hover-dark: rgb(30, 35, 47);
+    --color-button: rgb(56, 65, 84);
+    --color-button-hover: rgb(74, 82, 100);
+    --color-button-hover-dark: rgb(89, 99, 119);
     --color-button-red: #be3b3b;
-    --color-button-red-hover: #963333;
+    --color-button-red-hover: #d15858;
     --color-button-yellow: #bca002;
-    --color-button-yellow-hover: #a58b02;
+    --color-button-yellow-hover: #e7cc42;
     --color-button-disabled: rgb(237, 229, 220, 0);
-    --color-floating-button: rgb(144, 139, 137);
-    --color-floating-button-hover: rgb(124, 121, 120);
+    --color-floating-button: rgb(124, 121, 120);
+    --color-floating-button-hover: rgb(144, 139, 137);
     --color-floating-button-disabled: rgb(207, 200, 195);
     --color-input-bg: rgb(237, 233, 229);
     --color-input-focus-bg: rgb(241, 237, 232);
@@ -245,9 +245,8 @@ p > a:hover {
     }
 
     .navbar .item:hover:not(.selected), .navItem:hover:not(.selected) {
+        background-color: var(--color-navbar-item-hover);
         cursor: pointer;
-        /*background-color: rgb(221, 213, 204);*/
-        color: var(--color-navbar-item-hover);
     }
 
 
