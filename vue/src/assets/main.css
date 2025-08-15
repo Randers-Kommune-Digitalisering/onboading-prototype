@@ -10,7 +10,7 @@ body.onboarding-theme-sand {
     --color-navbar: rgb(237, 229, 220);
     --color-navbar-text: rgb(65, 63, 62);
     --color-navbar-item-selected: rgb(221, 213, 204);
-    --color-navbar-item-hover: rgb(119, 115, 113);
+    --color-navbar-item-hover: rgb(245, 238, 231);
     --color-card: rgb(237, 229, 220);
     --color-card-dark: rgb(215, 207, 197);
     --color-card-faded: rgb(221, 213, 204);
@@ -140,7 +140,7 @@ p {
     }
 }
 
-@media only screen and (max-width: 560px) {
+@media only screen and (max-width: 620px) {
     #logo, .logo-subtext {
         display: none;
     }
