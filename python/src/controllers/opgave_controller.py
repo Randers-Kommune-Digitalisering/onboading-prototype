@@ -554,8 +554,15 @@ def delete_opgave(opgave_id):
         if not opgave:
             return jsonify({"error": "Opgave not found"}), 404
 
+        gruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=opgave.OpgaveGruppeID).first()
+
         session.delete(opgave)
         session.commit()
+
+        if gruppe and not session.query(Opgave).filter_by(OpgaveGruppeID=gruppe.OpgaveGruppeID).first():
+            session.delete(gruppe)
+            session.commit()
+
         return jsonify({"message": "Opgave deleted successfully"}), 200
     except Exception as e:
         session.rollback()
