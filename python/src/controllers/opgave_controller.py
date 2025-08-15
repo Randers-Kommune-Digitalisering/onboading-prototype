@@ -58,7 +58,7 @@ def create_opgave():
                     return jsonify({"error": "OpgaveGruppe not found"}), 404
                 new_opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
-            new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID)
+            new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID or None, new_opgave.forløbsskabelon.ForløbsskabelonID or None)
 
         session.add(new_opgave)
         session.commit()
@@ -78,12 +78,12 @@ def create_opgave():
         session.close()
 
 
-def create_opgavegruppe(name, forløb_id):
-    if not forløb_id:
-        raise ValueError("ForløbID is required to create OpgaveGruppe")
+def create_opgavegruppe(name, forløb_id=None, forloeb_skabelon_id=None):
+    if not forløb_id and not forloeb_skabelon_id:
+        raise ValueError("ForløbID or ForløbsskabelonID is required to create OpgaveGruppe")
     session = db_client.get_session()
     try:
-        new_opgavegruppe = OpgaveGruppe(name=name, letter=name[0].upper(), ForløbID=forløb_id)
+        new_opgavegruppe = OpgaveGruppe(name=name, letter=name[0].upper(), ForløbID=forløb_id, ForløbsskabelonID=forloeb_skabelon_id)
         session.add(new_opgavegruppe)
         session.commit()
         return new_opgavegruppe
@@ -112,6 +112,7 @@ def get_all_opgaver():
                 ],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'letter': opgave.opgavegruppe.letter,
                     'name': opgave.opgavegruppe.name
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
@@ -510,7 +511,7 @@ def update_opgave(opgave_id):
                     return jsonify({"error": "OpgaveGruppe not found"}), 404
                 opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
-            opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], opgave.ForløbID)
+            opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], opgave.ForløbID or None, opgave.ForløbsskabelonID or None)
         if is_new_ansvarlig:
             opgave.ansvarlig = data.get('ansvarlig', opgave.ansvarlig)
             opgave.ansvarligEmail = data.get('ansvarligEmail', opgave.ansvarligEmail)

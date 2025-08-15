@@ -264,7 +264,7 @@
 
     </div>
 
-    <div v-if="forloeb != null" class="sort-container">
+    <div v-if="forloeb != null && forloeb?.opgave_grupper.length > 0" class="sort-container">
         <div style="flex-grow:1">&nbsp;</div>
         <div class="sort-title">Sortér efter:</div>
         <select class="sort-selector" v-model="sortBy">
@@ -348,7 +348,7 @@
         display: flex;
         align-items: flex-end;
         gap: 0.6rem;
-        font-size: 0.8em;
+        font-size: 0.75em;
         text-transform: uppercase;
     }
     @media only screen and (min-width: 768px) {
