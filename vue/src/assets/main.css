@@ -1130,7 +1130,9 @@ textarea:not(:placeholder-shown) + .floating-label {
     transform: translate(calc(50% - 1rem), -2rem);
     opacity: 0.8;
 }
-.tooltip-hover:hover > .tooltip-display,
-.tooltip-display:hover {
+.link .tooltip-display {
+    transform: translate(-1rem, -3rem);
+}
+.tooltip-hover:hover > .tooltip-display {
     display: block;
 }

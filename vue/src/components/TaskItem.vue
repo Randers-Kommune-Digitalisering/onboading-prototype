@@ -310,15 +310,17 @@
                    v-for="ressource in ressources"
                    :href="ressource.url"
                    target="_blank"
-                   class="link">
+                   class="link tooltip-hover">
                         <i class="fa-solid fa-up-right-from-square"></i>
                         {{ ressource.name }}
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
                 </a>
                 <span v-else v-for="ressource in ressources"
-                      @click="gotoRessource(ressource.RessourceID)" 
-                      class="link">
+                      @click="gotoRessource(ressource.RessourceID)"
+                      class="link tooltip-hover">
                         <i class="fa-solid fa-pen-to-square"></i>
                         {{ ressource.name }}
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
                 </span>
             </div>
 
