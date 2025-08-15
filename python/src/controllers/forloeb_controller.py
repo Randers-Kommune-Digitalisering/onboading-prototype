@@ -35,7 +35,21 @@ def create_forloeb():
             if not forløbsskabelon:
                 return jsonify({"error": "Forløbsskabelon not found"}), 404
 
+            skabelon_opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=forløbsskabelon.ForløbsskabelonID).all()
+            new_opgave_grupper = []
+            for opgave_gruppe in skabelon_opgave_grupper:
+                new_opgave_gruppe = OpgaveGruppe(
+                    name=opgave_gruppe.name,
+                    letter=opgave_gruppe.letter,
+                    ForløbID=forloeb.ForløbID
+                )
+                session.add(new_opgave_gruppe)
+                session.commit()  # Commit to get the new OpgaveGruppeID
+                new_opgave_grupper.append(new_opgave_gruppe)
+
             for opgave in forløbsskabelon.opgave:
+                # Find the matching OpgaveGruppe by name
+                matching_gruppe = next((g for g in new_opgave_grupper if g.name == opgave.opgavegruppe.name), None)
                 new_opgave = Opgave(
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
@@ -45,7 +59,8 @@ def create_forloeb():
                     slutdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag) + timedelta(days=opgave.relativ_slutdag),
                     result=opgave.result,
                     timestamp=opgave.timestamp,
-                    ForløbID=forloeb.ForløbID
+                    ForløbID=forloeb.ForløbID,
+                    OpgaveGruppeID=matching_gruppe.OpgaveGruppeID
                 )
                 session.add(new_opgave)
                 session.commit()  # Commit to get the new OpgaveID
