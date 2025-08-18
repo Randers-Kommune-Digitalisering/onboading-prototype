@@ -58,12 +58,10 @@ def create_opgave():
                     return jsonify({"error": "OpgaveGruppe not found"}), 404
                 new_opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
-            forloeb_id = new_opgave.forløb.ForløbID if getattr(new_opgave, 'forløb', None) is not None else None
-            forloeb_skabelon_id = new_opgave.forløbsskabelon.ForløbsskabelonID if getattr(new_opgave, 'forløbsskabelon', None) is not None else None
             new_opgave.opgavegruppe = create_opgavegruppe(
                 data['OpgaveGruppeNavn'],
-                forloeb_id,
-                forloeb_skabelon_id
+                new_opgave.forløb.ForløbID if new_opgave.forløb is not None else None,
+                new_opgave.forløbsskabelon.ForløbsskabelonID if new_opgave.forløbsskabelon is not None else None
             )
 
         session.add(new_opgave)
@@ -184,7 +182,11 @@ def create_opgave_with_opgaveskabelon():
                 return jsonify({"error": "OpgaveGruppe not found"}), 404
             new_opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
-            new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID or None, new_opgave.forløbsskabelon.ForløbsskabelonID or None)
+            new_opgave.opgavegruppe = create_opgavegruppe(
+                data['OpgaveGruppeNavn'],
+                new_opgave.forløb.ForløbID if new_opgave.forløb is not None else None,
+                new_opgave.forløbsskabelon.ForløbsskabelonID if new_opgave.forløbsskabelon is not None else None
+            )
 
         session.add(new_opgave)
         session.commit()

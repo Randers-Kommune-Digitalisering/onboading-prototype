@@ -115,6 +115,9 @@
     /* Use template */
 
     const selectTemplate = (template) => {
+        if(template == null)
+            return
+        
         inputFields.value.title = template.title
         inputFields.value.beskrivelse = template.beskrivelse
         inputFields.value.note = template.note
