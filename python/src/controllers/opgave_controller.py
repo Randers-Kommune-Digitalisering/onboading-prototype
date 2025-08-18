@@ -177,6 +177,8 @@ def create_opgave_with_opgaveskabelon():
             if not opgavegruppe:
                 return jsonify({"error": "OpgaveGruppe not found"}), 404
             new_opgave.opgavegruppe = opgavegruppe
+        elif 'OpgaveGruppeNavn' in data:
+            new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID or None, new_opgave.forløbsskabelon.ForløbsskabelonID or None)
 
         session.add(new_opgave)
         session.commit()
