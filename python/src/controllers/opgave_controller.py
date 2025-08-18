@@ -58,7 +58,11 @@ def create_opgave():
                     return jsonify({"error": "OpgaveGruppe not found"}), 404
                 new_opgave.opgavegruppe = opgavegruppe
         elif 'OpgaveGruppeNavn' in data:
-            new_opgave.opgavegruppe = create_opgavegruppe(data['OpgaveGruppeNavn'], new_opgave.forløb.ForløbID or None, new_opgave.forløbsskabelon.ForløbsskabelonID or None)
+            new_opgave.opgavegruppe = create_opgavegruppe(
+                data['OpgaveGruppeNavn'],
+                new_opgave.forløb.ForløbID if new_opgave.forløb is not None else None,
+                new_opgave.forløbsskabelon.ForløbsskabelonID if new_opgave.forløbsskabelon is not None else None
+            )
 
         session.add(new_opgave)
         session.commit()
