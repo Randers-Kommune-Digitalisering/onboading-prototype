@@ -1,5 +1,52 @@
 import requests
 from utils.config import MAIL_SERVICE_URL, MAIL_SERVICE_SENDER
+from models import Mail
+from utils.db_connection import get_db_client
+import datetime
+
+db_client = get_db_client()
+
+
+def plan_mail(recipient_email, subject, message):
+    """
+    Adds an email to DB to be sent at a later point.
+    Parameters:
+        recipient_email (str): The recipient's email address.
+        subject (str): The subject of the email.
+        message (str): The body of the email.
+    """
+    session = db_client.get_session()
+    try:
+        mail = Mail(
+            subject=subject,
+            body=message,
+            recipient=recipient_email,
+            created=datetime.now()
+        )
+        session.add(mail)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+    return True
+
+
+def send_all_mails():
+    session = db_client.get_session()
+    try:
+        mails = session.query(Mail).all()
+        for mail in mails:
+            status = send_mail(mail.recipient, mail.subject, mail.body)
+            mail.isSent = status in [True]
+            session.add(mail)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
 def send_mail(recipient_email, subject, message):

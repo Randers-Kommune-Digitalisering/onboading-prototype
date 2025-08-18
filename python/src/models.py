@@ -78,3 +78,14 @@ class OpgaveGruppe(Base):
     name = Column(String, nullable=False)
     letter = Column(String, nullable=False)
     opgave = relationship("Opgave", back_populates="opgavegruppe")
+
+
+class Mail(Base):
+    __tablename__ = 'Mail'
+    MailID = Column(Integer, primary_key=True, autoincrement=True)
+    created = Column(DateTime, nullable=False)
+    subject = Column(String, nullable=False)
+    body = Column(String, nullable=False)
+    recipient = Column(String, nullable=False)
+    isSent = Column(Boolean, default=False)
+    sent = Column(DateTime, nullable=True)
