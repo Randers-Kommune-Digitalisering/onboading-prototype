@@ -124,6 +124,10 @@
             type: String,
             default: '000'
         },
+        border: {
+            type: String,
+            default: null
+        },
         expandByDefault: {
             type: Boolean,
             default: false
@@ -229,7 +233,7 @@
 </script>
 
 <template>
-    <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" ref="cardRef">
+    <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
         <div class="card-header pointer no-select" @click="expandCard">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
@@ -240,7 +244,7 @@
 
             <div class="no-overflow">
                 <p class="card-title">
-                    {{ title }}
+                    {{ title }} (border: {{ border }})
                 </p>
                 <p class="card-subtitle">
                     {{ header }}
