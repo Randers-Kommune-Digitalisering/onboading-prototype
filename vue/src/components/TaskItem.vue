@@ -244,7 +244,7 @@
 
             <div class="no-overflow">
                 <p class="card-title">
-                    {{ title }} (border: {{ border }})
+                    {{ title }}
                 </p>
                 <p class="card-subtitle">
                     {{ header }}
