@@ -73,7 +73,9 @@
                 isForloebOngoing.value = forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
-
+                if (forloeb.value.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+                    forloeb.value.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
+                
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
                 const opgaver_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? await getOpgaverByAnsvarligEmail({ headers }) 
