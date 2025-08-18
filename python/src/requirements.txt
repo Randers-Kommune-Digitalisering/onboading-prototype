@@ -14,3 +14,4 @@ SQLAlchemy
 pandas
 flask-cors
 fpdf
+paramiko==3.4.0
