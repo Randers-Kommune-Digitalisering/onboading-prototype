@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
     
     import { getForloebByEmail, getForloebById, completeForloeb, deleteForloeb } from '@/services/forløbService.js'
@@ -51,7 +51,7 @@
     const opgaver_future = ref([])
     const opgaver_completed = ref([])
     const opgaver_template = ref([])
-    const sortBy = ref('deadline') // Default sort option
+    const sortBy = ref(router.currentRoute.value.query.sort || 'deadline')
 
     const fetchOpgaver = async () => {
         try {
@@ -195,6 +195,15 @@
             console.error('Error downloading file:', error)
         }
     }
+
+    watch(() => sortBy.value, (newSortingValue) => {
+        router.replace({
+            query: {
+                ...router.currentRoute.value.query,
+                sort: newSortingValue
+            }
+        })
+    })
 </script>
 <template>
     <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView" class="indent-tiny notification">
