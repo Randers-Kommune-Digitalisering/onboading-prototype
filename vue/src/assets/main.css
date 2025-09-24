@@ -507,7 +507,6 @@ p > a:hover {
     }
 
     .card-content > .ressources > .link {
-        border-radius: 0.2rem;
         color: var(--color-button);
         cursor: pointer;
     }

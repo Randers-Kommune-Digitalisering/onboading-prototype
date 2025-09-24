@@ -52,6 +52,7 @@
     const opgaver_completed = ref([])
     const opgaver_template = ref([])
     const sortBy = ref(router.currentRoute.value.query.sort || 'deadline')
+    const start_message_index = ref(-1)
 
     const fetchOpgaver = async () => {
         try {
@@ -119,6 +120,10 @@
                             opgaver_ongoing.value.push(item)
                     }
                 opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
+                start_message_index.value = opgaver_future.value
+                    .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
+                    .lastIndexOf(true)
+                console.log('Start message index:', start_message_index.value)
 
                 isOpgaverFetched.value = true
 
@@ -257,7 +262,7 @@
 
         <div @click="completeCourse()"
              class="button hollow red"
-             v-if="!isTemplate && !isForloebCompleted">
+             v-if="!isTemplate && isForloebOngoing && !isForloebCompleted">
                 Afslut forløb
         </div>
 
@@ -312,7 +317,9 @@
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
                 :expandItem="expandItem"
-                itemColor="777371" />
+                itemColor="777371"
+                :forloebStartDate="new Date(forloeb?.startdate)"
+                :startMessageIndex="start_message_index" />
 
         <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
                 :tasks="opgaver_completed"
