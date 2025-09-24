@@ -131,6 +131,7 @@ def create_mail_ansvarlig(new_opgave):
         f"{('Note til ansvarlig: ' + new_opgave.get('note') + '.\n') if new_opgave.get('note') else ''}" +
         f"Opgaven har deadline d. {new_opgave['slutdato'].strftime('%d/%m %H:%M')}.\n" +
         f"{('Der er registret en kalenderbooking d. ' + new_opgave['booking'].strftime('%d/%m %H:%M') + '.\n') if new_opgave['booking'] is not None else ''}" +
+        "Du kan se opgaven under 'Mine ansvar' i onboardingmodulet: http://onboarding.data.randers.dk/ansvarlig-overview.\n" +
         "\nVenlig hilsen,\nRanders Kommune"
     )
     return subject, message

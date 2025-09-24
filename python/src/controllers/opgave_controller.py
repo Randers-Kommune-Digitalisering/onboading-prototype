@@ -68,7 +68,7 @@ def create_opgave():
             subject, message = create_mail_ansvarlig(new_opgave)
             planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
             if not planned_mail:
-                logger.error(f"Failed to plan email")
+                logger.error("Failed to plan email")
 
         return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -195,7 +195,7 @@ def create_opgave_with_opgaveskabelon():
             subject, message = create_mail_ansvarlig(new_opgave)
             planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
             if not planned_mail:
-                logger.error(f"Failed to plan email")
+                logger.error("Failed to plan email")
 
         return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -537,7 +537,7 @@ def update_opgave(opgave_id):
             subject, message = create_mail_ansvarlig(opgave)
             planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave.OpgaveID, opgave.ForløbID)
             if not planned_mail:
-                logger.error(f"Failed to plan email")
+                logger.error("Failed to plan email")
 
         return jsonify({"message": "Opgave updated successfully"}), 200
     except Exception as e:
