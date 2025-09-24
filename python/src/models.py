@@ -23,6 +23,7 @@ class Forløb(Base):
     usermail = Column(String, nullable=False)
     userdq = Column(String, nullable=False)
     opgave = relationship('Opgave', back_populates='forløb')
+    mails = relationship('Mail', back_populates='forløb')
 
 
 class Opgaveskabelon(Base):
@@ -57,6 +58,7 @@ class Opgave(Base):
     OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID'))
     opgavegruppe = relationship('OpgaveGruppe', back_populates='opgave')
     note = Column(String, nullable=True)
+    mails = relationship('Mail', back_populates='opgave')
 
 
 class Ressource(Base):
@@ -90,4 +92,6 @@ class Mail(Base):
     isSent = Column(Boolean, default=False)
     sent = Column(DateTime, nullable=True)
     OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID'), nullable=True)
+    opgave = relationship('Opgave', back_populates='mails')
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'), nullable=True)
+    forløb = relationship('Forløb', back_populates='mails')

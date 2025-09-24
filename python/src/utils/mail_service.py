@@ -194,3 +194,19 @@ def create_mail_forloeb_start(forloeb):
         "\nVenlig hilsen,\nRanders Kommune"
     )
     return subject, message, attachments
+
+
+def delete_planned_mail(mail_id):
+    session = db_client.get_session()
+    try:
+        mail = session.query(Mail).filter_by(MailID=mail_id, isSent=False).first()
+        if mail is None:
+            return jsonify({"message": "No unsent email found with the provided ID"}), 404
+        session.delete(mail)
+        session.commit()
+        return jsonify({"message": "Planned email deleted successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"message": "Error deleting planned email", "error": str(e)}), 500
+    finally:
+        session.close()

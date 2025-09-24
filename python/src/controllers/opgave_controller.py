@@ -383,7 +383,14 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
-                'timestamp': opgave.timestamp.isoformat()
+                'timestamp': opgave.timestamp.isoformat(),
+                'pending_emails': [
+                    {
+                        'id': mail.MailID,
+                        'recipient': mail.recipient,
+                        'subject': mail.subject
+                    } for mail in opgave.mails if not mail.isSent
+                ]
             } for opgave in opgave
         ]
         return jsonify(opgave_data)

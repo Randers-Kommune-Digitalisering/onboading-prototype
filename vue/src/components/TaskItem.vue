@@ -4,6 +4,7 @@
 
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
+    import { deleteMail } from '@/services/mailService.js'
 
     const router = useRouter()
 
@@ -148,8 +149,14 @@
         {
             type: Array,
             default: []
+        },
+        mails: {
+            type: Array,
+            default: []
         }
     })
+
+    const dynamicMails = ref(props.mails)
 
     const renderNoteHTML = (note) => {
         const header = "<div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>"
@@ -222,6 +229,21 @@
         })
     }
 
+    const deletePendingEmail = (id) => {
+        if(!confirm('Er du sikker på, at du vil slette denne mail?'))
+            return
+
+        deleteMail({ id: id }).then(response => {
+            dynamicMails.value = dynamicMails.value.filter(mail => mail.id !== id)
+            // const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
+            // router.replace({ path: '/reload' }).then(() => {
+            //     router.replace(currentPath)
+            // })
+        }).catch(error => {
+            console.error('Error deleting mail:', error)
+        })
+    }
+
     /* Instantiate */
 
     onMounted(() => {
@@ -234,10 +256,10 @@
 
 <template>
     <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
-        <div class="card-header pointer no-select" @click="expandCard">
+        <div class="card-header pointer no-select" @click="e => { if (!e.target.closest('.tooltip')) expandCard() }">
             <div class="card-icon">
                 <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
-                    <div >{{ group?.letter }}</div>
+                    <div>{{ group?.letter }}</div>
                     <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
                 </div>
             </div>
@@ -252,6 +274,22 @@
             </div>
 
             <div class="card-separator"></div>
+
+            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
+                <div class="tooltipContainer">
+                    <div class="icon"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="text">
+                    <div class="small faded">Mails</div>
+                    <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' afventer') : 'Ingen mails' }}</div>
+                    </div>
+                    
+                    <div class="tooltip">
+                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id" @click="deletePendingEmail(mail.id)">
+                            {{ mail.subject }} ({{ mail.recipient }}) <i class="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- <div class="card-image" :style="`background-image: url('`+ image +`');`">
                 &nbsp;
@@ -378,5 +416,34 @@
         border-radius: 0.4rem;
         margin-top: 1rem;
         transform: translateY(0.5rem);
+    }
+    .tooltipContainer {
+        position: relative;
+    }
+    .tooltip {
+        background-color: var(--color-card-dark);
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.4rem;
+
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        right: -0.75rem;
+
+        font-size: 0.75rem;
+        white-space: nowrap;
+        cursor: default;
+        text-align: right;
+
+        max-height: 4rem;
+        overflow-y: auto;
+    }
+        .tooltip > .mail:has(i):hover {
+            color: var(--color-button-red);
+            cursor: pointer;
+        }
+    .tooltipContainer:hover > .tooltip {
+        visibility: visible;
+        opacity: 1;
     }
 </style>
