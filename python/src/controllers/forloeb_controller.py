@@ -58,7 +58,7 @@ def create_forloeb():
                     result=opgave.result,
                     timestamp=opgave.timestamp,
                     ForløbID=forloeb.ForløbID,
-                    OpgaveGruppeID=matching_gruppe.OpgaveGruppeID
+                    OpgaveGruppeID=matching_gruppe.get("OpgaveGruppeID") if matching_gruppe else None
                 )
                 session.add(new_opgave)
                 session.commit()  # Commit to get the new OpgaveID

@@ -47,7 +47,6 @@
 
     const relativStartday = ref(null)
     const relativEndday = ref(null)
-    const relativStartdayAtZero = ref(inputFields.value.relativ_startdag == 0)
     const relativEnddayAtOne = ref(inputFields.value.relativ_slutdag == 1)
 
     const searchAssistants = (searchString) => {
@@ -220,7 +219,6 @@
                         booking: response.data.booking ? response.data.booking.split('T').join(' ') : ''
                     }
                     Object.assign(inputFields.value, formattedData)
-                    relativStartdayAtZero.value = inputFields.value.relativ_startdag == 0
                     relativEnddayAtOne.value = inputFields.value.relativ_slutdag == 1
                     isAssistantLocked.value = response.data.ansvarligEmail != ""
                     selectedGroup.value = response.data.gruppe?.OpgaveGruppeID || null
@@ -410,16 +408,16 @@
             <div v-if="addToTemplate" class="flex-item">
                 <input type="text" id="startdate" class="padding-input" name="startdate"
                         v-model="inputFields.relativ_startdag" ref="relativStartday"
-                        @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3);relativStartdayAtZero = inputFields.relativ_startdag==0"
+                        @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3)"
                         required>
                 <label for="startdate" class="floating-label">Startes efter </label>
                 <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}</label>
-                <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativStartdayAtZero}]"
-                        @click="inputFields.relativ_startdag--;relativStartdayAtZero = inputFields.relativ_startdag==0">
+                <div :class="['floating-button', 'indent-floating-button']"
+                        @click="inputFields.relativ_startdag--">
                             <i class="fa fa-minus"></i>
                         </div>
                 <div class="floating-button" 
-                    @click="relativStartdayAtZero = false;inputFields.relativ_startdag++">
+                    @click="inputFields.relativ_startdag++">
                     <i class="fa fa-plus"></i>
                 </div>
             </div>

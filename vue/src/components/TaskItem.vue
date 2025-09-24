@@ -270,7 +270,7 @@
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
-                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : relativeStartdate + ' ' + returnDagOrDage(relativeStartdate) + ' efter opstart' }}</div>
+                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : Math.abs(relativeStartdate) + ' ' + returnDagOrDage(Math.abs(relativeStartdate)) + (relativeStartdate > 0 ? ' efter opstart' : ' før opstart') }}</div>
                     </div>
                 </div>
 
