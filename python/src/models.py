@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -89,3 +90,5 @@ class Mail(Base):
     recipient = Column(String, nullable=False)
     isSent = Column(Boolean, default=False)
     sent = Column(DateTime, nullable=True)
+    OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID'), nullable=True)
+    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'), nullable=True)

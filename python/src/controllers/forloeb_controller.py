@@ -1,10 +1,8 @@
 from flask import make_response, request, jsonify
-from fpdf import FPDF
 from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 import logging
-from controllers.opgave_controller import get_opgave_by_forloeb_id
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +81,7 @@ def create_forloeb():
         session.close()
 
 
-def get_forloeb(forloeb_id):
+def get_forloeb(forloeb_id: int):
     session = db_client.get_session()
     try:
         forloeb = session.query(Forløb).filter_by(ForløbID=forloeb_id).first()
@@ -225,61 +223,17 @@ def get_forloeb_by_admin(admin_name):
         session.close()
 
 
-def download_forloeb():
+def download_forloeb(forloeb_id=None):
     try:
+        from utils.pdf import create_pdf
+
         # Get the forløb ID from the query parameters
-        forloeb_id = int(request.args.get('id'))
-
-        # Fetch forløb and opgaver data
-        forloeb = get_forloeb(forloeb_id)[0].get_json()  # Extract JSON data from response
-        opgaver = get_opgave_by_forloeb_id(forloeb_id).get_json()
-
-        # Initialize FPDF
-        pdf = FPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
-        pdf.set_font("Arial", size=11)
-
-        # Add Forløb details
-        pdf.set_font("Arial", style="B", size=18)
-        pdf.cell(0, 10, forloeb['name'], ln=True)
-        pdf.set_font("Arial", size=11)
-        pdf.cell(0, 10, f"Onboardingforløb med start d. {datetime.strptime(forloeb['startdate'], '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')}", ln=True)
-        pdf.ln(5)
-
-        # Add a line separator
-        pdf.set_draw_color(0, 0, 0)
-        pdf.set_line_width(0.5)
-        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-        pdf.ln(10)
-
-        # Add Opgaver details
-        for opgave in opgaver:
-            pdf.set_text_color(0, 0, 0)
-            pdf.set_font("Arial", style="B", size=13)
-            pdf.cell(0, 10, opgave['title'], ln=True)
-
-            pdf.set_text_color(100, 100, 100)
-            pdf.set_font("Arial", size=11)
-            pdf.cell(0, 3, f"Startdato: {datetime.strptime(opgave['startdato'], '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')}", ln=True)
-
-            pdf.set_text_color(0, 0, 0)
-            pdf.multi_cell(0, 20, opgave['beskrivelse'])
-
-            if opgave.get('resourcer') and len(opgave['resourcer']) > 0:
-                pdf.set_text_color(100, 100, 100)
-                pdf.cell(0, 10, "Ressourcer: ", ln=True)
-                resources_text = ", ".join([f"{resource['name']} ({resource['url']})" for resource in opgave.get('resourcer', [])])
-                pdf.set_text_color(100, 100, 255)
-                pdf.multi_cell(0, 3, resources_text)
-
-            if opgave['ansvarlig']:
-                pdf.set_text_color(100, 100, 100)
-                pdf.cell(0, 10, f"Ansvarlig: {opgave['ansvarlig']} ({opgave.get('ansvarligEmail', '')})", ln=True)
-            pdf.ln(10)
+        forloeb_id = int(forloeb_id) if forloeb_id else int(request.args.get('id'))
+        forloeb = get_forloeb(forloeb_id)[0].get_json()
+        pdf = create_pdf(forloeb_id)
 
         # Generate PDF content
-        response = make_response(pdf.output(dest='S').encode('latin1'))
+        response = make_response(pdf)
         response.headers['Content-Type'] = 'application/pdf'
         response.headers['Content-Disposition'] = f'attachment; filename={forloeb["name"]}.pdf'
         return response

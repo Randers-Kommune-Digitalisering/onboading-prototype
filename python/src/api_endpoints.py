@@ -15,7 +15,6 @@ from controllers.opgave_controller import (
     get_opgave_by_admin,
     notify_expired_tasks
 )
-
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
     get_all_forloebsskabeloner,
@@ -24,7 +23,6 @@ from controllers.forloebsskabelon_controller import (
     get_forloebsskabeloner_with_opgaver,
     delete_forloebsskabelon
 )
-
 from controllers.forloeb_controller import (
     create_forloeb,
     get_forloeb,
@@ -37,7 +35,6 @@ from controllers.forloeb_controller import (
     delete_forloeb,
     download_forloeb
 )
-
 from controllers.user_controller import (
     get_admin_data,
     get_user_data,
@@ -46,7 +43,6 @@ from controllers.user_controller import (
     get_fullname,
     # get_and_save_azure_ad_data
 )
-
 from controllers.ressource_controller import (
     create_ressource,
     get_ressources_by_opgaveid,
@@ -56,7 +52,6 @@ from controllers.ressource_controller import (
     get_ressource
 
 )
-
 from controllers.opgaveskabelon_controller import (
     create_opgaveskabelon,
     get_all_opgaveskabeloner,
@@ -64,6 +59,7 @@ from controllers.opgaveskabelon_controller import (
     delete_opgaveskabelon,
     get_opgaveskabelon
 )
+from utils.mail_service import send_all_mails, get_all_mails
 
 logger = logging.getLogger(__name__)
 db_client = get_db_client()
@@ -294,6 +290,16 @@ def get_all_admin_data_endpoint():
 @api_endpoints.route('/cron/notify-expired-tasks', methods=['POST'])
 def notify_expired_tasks_endpoint():
     return notify_expired_tasks()
+
+
+@api_endpoints.route('/cron/send-planned-mails', methods=['POST'])
+def send_planned_mails_endpoint():
+    return send_all_mails()
+
+
+@api_endpoints.route('/cron/get-planned-mails', methods=['GET'])
+def get_planned_mails_endpoint():
+    return get_all_mails()
 
 
 @api_endpoints.route('/healthz', methods=['GET'])

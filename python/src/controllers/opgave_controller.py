@@ -2,7 +2,7 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
+from utils.mail_service import plan_mail, send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
 import logging
 
 db_client = get_db_client()
@@ -66,9 +66,9 @@ def create_opgave():
         # Send mail notification to the responsible person
         if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            mail = send_mail(new_opgave.ansvarligEmail, subject, message)
-            if 'error' in mail:
-                logger.error(f"Failed to send email: {mail['error']}")
+            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
+            if not planned_mail:
+                logger.error(f"Failed to plan email")
 
         return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -193,9 +193,9 @@ def create_opgave_with_opgaveskabelon():
         # Send mail notification to the responsible person
         if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            mail = send_mail(new_opgave.ansvarligEmail, subject, message)
-            if 'error' in mail:
-                logger.error(f"Failed to send email: {mail['error']}")
+            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
+            if not planned_mail:
+                logger.error(f"Failed to plan email")
 
         return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -535,9 +535,9 @@ def update_opgave(opgave_id):
         # Send mail notification to the responsible person
         if is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
-            mail = send_mail(opgave.ansvarligEmail, subject, message)
-            if 'error' in mail:
-                logger.error(f"Failed to send email: {mail['error']}")
+            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave.OpgaveID, opgave.ForløbID)
+            if not planned_mail:
+                logger.error(f"Failed to plan email")
 
         return jsonify({"message": "Opgave updated successfully"}), 200
     except Exception as e:
