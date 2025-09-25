@@ -6,6 +6,10 @@ export const createForloeb = (data) => {
   return axios.post(`${API_URL}/forloeb`, data);
 };
 
+export const createForloebPreparation = (data) => {
+  return axios.post(`${API_URL}/forloeb-preparation`, data);
+};
+
 export const getForloebByAdmin = (config) => {
   return axios.get(`${API_URL}/forloeb`, config);
 };

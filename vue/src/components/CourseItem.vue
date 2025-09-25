@@ -48,6 +48,10 @@
         },
         tasks: {
             type: Array
+        },
+        isPreparation: {
+            type: Boolean,
+            default: false
         }
     })
     const isTemplate = props.id == null
@@ -96,7 +100,7 @@
 
             <div class="card-titles">
                 <p class="card-title">
-                    {{ name != '' ? name :  'Forløb uden titel' }}
+                    {{ name != '' ? name :  'Forløb uden titel' }} {{ props.isPreparation ? '(Under forberedelse)' : '' }}
                 </p>
                 <p v-if="title" class="card-subtitle">
                     {{ title }}

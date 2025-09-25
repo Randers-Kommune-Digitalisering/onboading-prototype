@@ -25,6 +25,7 @@ from controllers.forloebsskabelon_controller import (
 )
 from controllers.forloeb_controller import (
     create_forloeb,
+    create_forloeb_preparation,
     get_forloeb,
     get_all_forloeb,
     get_forloeb_with_opgaver,
@@ -132,6 +133,11 @@ def get_all_opgaver_endpoint():
 @api_endpoints.route('/forloeb', methods=['POST'])
 def create_forloeb_endpoint():
     return create_forloeb()
+
+
+@api_endpoints.route('/forloeb-preparation', methods=['POST'])
+def create_forloeb_preparation_endpoint():
+    return create_forloeb_preparation()
 
 
 @api_endpoints.route('/forloeb', methods=['GET'])

@@ -15,6 +15,7 @@
     const forloeb_id = ref(parseInt(route.query.id ?? route.query.tid, 10))
     const isTemplate = route.query.template === 'true'  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
     const addToTemplate = ref(route.query.tid != null) // Whether we are adding an opgave to a forløbsskabelon
+    const isPreparation = ref(!isTemplate && route.query.prep === 'true') // Whether the forløb is under preparation (only relevant if not a template)
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
@@ -123,7 +124,7 @@
         inputFields.value.startdato = template.startdato
         inputFields.value.slutdato = template.slutdato
         inputFields.value.booking = template.booking
-        if(addToTemplate)
+        if(addToTemplate.value || isPreparation.value)
         {
             inputFields.value.relativ_slutdag = template.relativ_slutdag
             relativEndday.value = inputFields.value.relativ_slutdag
@@ -136,7 +137,7 @@
     }
 
     const setEndDateFromTemplate = () => {
-        if (selectedTemplate.value) {
+        if (selectedTemplate.value && !isPreparation.value) {
             const startDate = new Date(inputFields.value.startdato)
             const daysToAdd = selectedTemplate.value.relativ_slutdag
             var endDate = new Date(startDate)
@@ -283,7 +284,7 @@
                 ...inputFields.value
             }
 
-            if(isTemplate || addToTemplate.value)
+            if(isTemplate || addToTemplate.value || isPreparation.value)
                 delete formData.startdato, delete formData.slutdato, delete formData.booking
             else
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
@@ -329,7 +330,8 @@
 <template>
     <p class="indent-tiny bold uppercase p-header-adjust">
         {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave til' }}
-        {{ isTemplate ? '' : ' på ' + forloeb?.name?? 'forløbet' }}</p>
+        {{ isTemplate ? '' : ' på ' + forloeb?.name?? 'forløbet' }}
+    </p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -386,7 +388,7 @@
             </div>
         </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
             <div class="flex-item">
                 <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" @change="setEndDateFromTemplate()" required>
                 <label for="startdate" class="floating-label">Startdato</label>
@@ -398,14 +400,14 @@
         </div>
 
         
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
             <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking">
             <label for="booking" class="floating-label">Booking</label>
         </div>
 
         <!--  Relative start and end days -->
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate">
-            <div v-if="addToTemplate" class="flex-item">
+        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate || isPreparation">
+            <div v-if="addToTemplate || isPreparation" class="flex-item">
                 <input type="text" id="startdate" class="padding-input" name="startdate"
                         v-model="inputFields.relativ_startdag" ref="relativStartday"
                         @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3)"

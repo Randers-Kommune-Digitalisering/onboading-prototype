@@ -17,13 +17,15 @@ class Forløb(Base):
     __tablename__ = 'Forløb'
     ForløbID = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
-    startdate = Column(DateTime, nullable=False)
-    enddate = Column(DateTime, nullable=False)
+    startdate = Column(DateTime, nullable=True)
+    enddate = Column(DateTime, nullable=True)
+    varighed = Column(Integer, nullable=True)
     admin = Column(String, nullable=False)
     usermail = Column(String, nullable=False)
     userdq = Column(String, nullable=False)
     opgave = relationship('Opgave', back_populates='forløb')
     mails = relationship('Mail', back_populates='forløb')
+    isPreparation = Column(Boolean, default=True)
 
 
 class Opgaveskabelon(Base):
@@ -91,6 +93,7 @@ class Mail(Base):
     recipient = Column(String, nullable=False)
     isSent = Column(Boolean, default=False)
     sent = Column(DateTime, nullable=True)
+    description = Column(String, nullable=True)
     OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID'), nullable=True)
     opgave = relationship('Opgave', back_populates='mails')
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'), nullable=True)

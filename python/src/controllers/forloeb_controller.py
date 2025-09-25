@@ -23,7 +23,8 @@ def create_forloeb():
             enddate=datetime.fromisoformat(data['enddate']),
             admin=data['admin'],
             usermail=data['usermail'],
-            userdq=data['userdq']
+            userdq=data['userdq'],
+            isPreparation=False
         )
         session.add(forloeb)
         session.commit()
@@ -81,6 +82,80 @@ def create_forloeb():
         session.close()
 
 
+def create_forloeb_preparation():
+    session = db_client.get_session()
+    try:
+        data = request.json
+        logger.warning(f"Received data for forløb preparation: {data}")
+        required_fields = ['name', 'admin', 'usermail', 'userdq', 'ForløbsskabelonID']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": f"Missing required fields: {', '.join(required_fields)}"}), 400
+
+        forløbsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=data['ForløbsskabelonID']).first()
+        if not forløbsskabelon:
+            return jsonify({"error": "Forløbsskabelon not found"}), 404
+
+        forloeb = Forløb(
+            name=data['name'],
+            varighed=forløbsskabelon.varighed,
+            startdate=None,  # Set when started
+            enddate=None,    # Set when started
+            admin=data['admin'],
+            usermail=data['usermail'],
+            userdq=data['userdq'],
+            isPreparation=True
+        )
+        session.add(forloeb)
+        session.commit()
+
+        skabelon_opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=forløbsskabelon.ForløbsskabelonID).all()
+        new_opgave_grupper = []
+        for opgave_gruppe in skabelon_opgave_grupper:
+            new_opgave_gruppe = OpgaveGruppe(
+                name=opgave_gruppe.name,
+                letter=opgave_gruppe.letter,
+                ForløbID=forloeb.ForløbID
+            )
+            session.add(new_opgave_gruppe)
+            session.commit()  # Commit to get the new OpgaveGruppeID
+            new_opgave_grupper.append(new_opgave_gruppe)
+
+        for opgave in forløbsskabelon.opgave:
+            # Find the matching OpgaveGruppe by name
+            matching_gruppe = next((g for g in new_opgave_grupper if g.name == opgave.opgavegruppe.name), None)
+            new_opgave = Opgave(
+                title=opgave.title,
+                beskrivelse=opgave.beskrivelse,
+                ansvarlig=opgave.ansvarlig,
+                ansvarligEmail=opgave.ansvarligEmail,
+                relativ_startdag=opgave.relativ_startdag,
+                relativ_slutdag=opgave.relativ_slutdag,
+                result=opgave.result,
+                timestamp=opgave.timestamp,
+                ForløbID=forloeb.ForløbID,
+                OpgaveGruppeID=matching_gruppe.get("OpgaveGruppeID") if matching_gruppe else None
+            )
+            session.add(new_opgave)
+            session.commit()  # Commit to get the new OpgaveID
+
+            ressources = session.query(Ressource).filter_by(OpgaveID=opgave.OpgaveID).all()
+            for ressource in ressources:
+                new_ressource = Ressource(
+                    name=ressource.name,
+                    url=ressource.url,
+                    OpgaveID=new_opgave.OpgaveID  # Use the new OpgaveID
+                )
+                session.add(new_ressource)
+            session.commit()
+
+        return jsonify({"message": "Forløb preparation created successfully", "uid": forloeb.ForløbID}), 201
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def get_forloeb(forloeb_id: int):
     session = db_client.get_session()
     try:
@@ -93,8 +168,8 @@ def get_forloeb(forloeb_id: int):
         result = {
             "ForløbID": forloeb.ForløbID,
             "name": forloeb.name,
-            "startdate": forloeb.startdate.isoformat(),
-            "enddate": forloeb.enddate.isoformat(),
+            "startdate": forloeb.startdate.isoformat() if forloeb.startdate else None,
+            "enddate": forloeb.enddate.isoformat() if forloeb.enddate else None,
             "admin": forloeb.admin,
             "usermail": forloeb.usermail,
             "userdq": forloeb.userdq,
@@ -105,7 +180,9 @@ def get_forloeb(forloeb_id: int):
                     "letter": gruppe.letter,
                 }
                 for gruppe in opgave_grupper
-            ]
+            ],
+            "isPreparation": forloeb.isPreparation,
+            "varighed": forloeb.varighed
         }
         return jsonify(result), 200
     except Exception as e:
@@ -122,11 +199,13 @@ def get_all_forloeb():
             {
                 "ForløbID": forloeb.ForløbID,
                 "name": forloeb.name,
-                "startdate": forloeb.startdate.isoformat(),
-                "enddate": forloeb.enddate.isoformat(),
+                "startdate": forloeb.startdate.isoformat() if forloeb.startdate else None,
+                "enddate": forloeb.enddate.isoformat() if forloeb.enddate else None,
                 "admin": forloeb.admin,
                 "usermail": forloeb.usermail,
-                "userdq": forloeb.userdq
+                "userdq": forloeb.userdq,
+                "isPreparation": forloeb.isPreparation,
+                "varighed": forloeb.varighed
             }
             for forloeb in forloeb_list
         ]
@@ -144,7 +223,9 @@ def get_forloeb_with_opgaver():
         forloeb_data = [
             {
                 'ForløbID': forloeb.ForløbID,
-                'name': forloeb.name
+                'name': forloeb.name,
+                'isPreparation': forloeb.isPreparation,
+                'varighed': forloeb.varighed
             } for forloeb in forloeb_list
         ]
         return jsonify(forloeb_data), 200
@@ -166,8 +247,8 @@ def get_forloeb_by_email(mail):
         result = {
             "ForløbID": forloeb.ForløbID,
             "name": forloeb.name,
-            "startdate": forloeb.startdate.isoformat(),
-            "enddate": forloeb.enddate.isoformat(),
+            "startdate": forloeb.startdate.isoformat() if forloeb.startdate else None,
+            "enddate": forloeb.enddate.isoformat() if forloeb.enddate else None,
             "admin": forloeb.admin,
             "usermail": forloeb.usermail,
             "userdq": forloeb.userdq,
@@ -178,7 +259,9 @@ def get_forloeb_by_email(mail):
                     "letter": gruppe.letter,
                 }
                 for gruppe in opgave_grupper
-            ]
+            ],
+            "isPreparation": forloeb.isPreparation,
+            "varighed": forloeb.varighed
         }
         return jsonify(result), 200
     except Exception as e:
@@ -201,8 +284,8 @@ def get_forloeb_by_admin(admin_name):
                 {
                     "ForløbID": forloeb.ForløbID,
                     "name": forloeb.name,
-                    "startdate": forloeb.startdate.isoformat(),
-                    "enddate": forloeb.enddate.isoformat(),
+                    "startdate": forloeb.startdate.isoformat() if forloeb.startdate else None,
+                    "enddate": forloeb.enddate.isoformat() if forloeb.enddate else None,
                     "admin": forloeb.admin,
                     "usermail": forloeb.usermail,
                     "userdq": forloeb.userdq,
@@ -213,7 +296,9 @@ def get_forloeb_by_admin(admin_name):
                             "letter": gruppe.letter,
                         }
                         for gruppe in opgave_grupper
-                    ]
+                    ],
+                    "isPreparation": forloeb.isPreparation,
+                    "varighed": forloeb.varighed
                 }
             )
         return jsonify(result), 200
@@ -251,8 +336,10 @@ def update_forloeb(id):
             return jsonify({"error": "Forløb not found"}), 404
 
         forloeb.name = data.get('name', forloeb.name)
-        forloeb.startdate = data.get('startdate', forloeb.startdate)
-        forloeb.enddate = data.get('enddate', forloeb.enddate)
+        if data.get('startdate'):
+            forloeb.startdate = datetime.fromisoformat(data['startdate'])
+        if data.get('enddate'):
+            forloeb.enddate = datetime.fromisoformat(data['enddate'])
         forloeb.admin = data.get('admin', forloeb.admin)
         forloeb.usermail = data.get('usermail', forloeb.usermail)
         forloeb.userdq = data.get('userdq', forloeb.userdq)

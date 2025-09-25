@@ -4,7 +4,7 @@
 
     import { getUserInfo } from '@/services/keycloakService.js'
     import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
-    import { createForloeb, getForloebById, updateForloeb } from '@/services/forløbService.js'
+    import { createForloeb, createForloebPreparation, getForloebById, updateForloeb } from '@/services/forløbService.js'
     import { getAdminData, getUsers } from '@/services/userService.js'
 
     const route = useRoute()
@@ -13,6 +13,7 @@
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
     const forloeb_id = isEditing ? parseInt(route.query.id, 10) : null
+    const isPreparation = route.query.prep == 'true'
 
 	const template_id = parseInt(route.query.tid, 10)
     const templates = ref([])
@@ -142,7 +143,7 @@
     }
     
     const selectNoTemplateIfNotSelected = () => {
-        if(inputFields.value.ForløbsskabelonID == "")
+        if(inputFields.value.ForløbsskabelonID == "" && !isPreparation)
             inputFields.value.ForløbsskabelonID = null
     }
 
@@ -235,8 +236,12 @@
             // }
             // else 
             //     delete formData.privateEmail
-
-            const response = isEditing ? await updateForloeb(forloeb_id, formData) : await createForloeb(formData)
+            console.log(formData)
+            const response = isEditing ?
+                                await updateForloeb(forloeb_id, formData)
+                            : isPreparation ?
+                                await createForloebPreparation(formData)
+                            : await createForloeb(formData)
             if(response.data.uid)
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
             
@@ -251,7 +256,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløb' : 'Opret forløb' }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløb' : (isPreparation ? 'Opret forløbsforberedelse' : 'Opret forløb') }}</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -287,14 +292,14 @@
         <div v-if="!isEditing" :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
             <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
                 <option value="" disabled selected hidden></option>
-                <option :value="null">Ingen skabelon</option>
+                <option :value="null" v-if="!isPreparation">Ingen skabelon</option>
                 <option v-for="template in templates" :value="template.ForløbsskabelonID">{{template.name}}</option>
             </select>
             <label for="template" class="floating-label">Skabelon</label>
             <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
         </div>
         
-        <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
+        <div v-if="!isPreparation" :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]">
             <div class="flex-item">
                 <input type="date" id="startdate" name="startdate" v-model="inputFields.startdate" @input="setEndDateFromTemplate()" required>
                 <label for="startdate" class="floating-label">Startdato</label>
