@@ -68,7 +68,7 @@ def create_opgave():
         session.commit()
 
         # Send mail notification to the responsible person
-        if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
+        if 'startdato' in new_opgave and 'slutdato' in new_opgave and new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
             planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
             if not planned_mail:
