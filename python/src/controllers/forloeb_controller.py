@@ -187,7 +187,7 @@ def start_preparation_forloeb():
                 subject, message = create_mail_ansvarlig(opgave)
                 plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
 
-        return jsonify({"message": "Forløb started successfully", "startdate": forloeb.startdate.isoformat(), "enddate": forloeb.enddate.isoformat(), "uid": forloeb.ForløbID }), 200
+        return jsonify({"message": "Forløb started successfully", "startdate": forloeb.startdate.isoformat(), "enddate": forloeb.enddate.isoformat(), "uid": forloeb.ForløbID}), 200
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

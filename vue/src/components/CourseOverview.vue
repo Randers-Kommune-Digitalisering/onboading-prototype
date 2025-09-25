@@ -75,8 +75,8 @@
                 isForloebOngoing.value = !isUnderPreparation.value && forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
-                if (forloeb.value.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
-                    forloeb.value.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
+                if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+                    forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
                 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
@@ -128,9 +128,10 @@
                     }
                     // Get first index of future tasks that start after forløb start date
                     opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
-                    start_message_index.value = opgaver_future.value
-                        .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
-                        .findIndex(opgave => opgave)
+                    if (forloeb.value?.startdate)
+                        start_message_index.value = opgaver_future.value
+                            .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
+                            .findIndex(opgave => opgave)
                 }
 
                 isOpgaverFetched.value = true
@@ -301,7 +302,7 @@
 
     </div>
 
-    <div v-if="forloeb != null && forloeb?.opgave_grupper.length > 0" class="sort-container">
+    <div v-if="forloeb != null && forloeb?.opgave_grupper?.length > 0" class="sort-container">
         <div style="flex-grow:1">&nbsp;</div>
         <div class="sort-title">Sortér efter:</div>
         <select class="sort-selector" v-model="sortBy">
