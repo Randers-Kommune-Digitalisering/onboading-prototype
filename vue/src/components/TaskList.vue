@@ -83,7 +83,7 @@
                     <div class="line"></div>
                     <span class="text">Forløbet starter
                         {{
-                            isPreparation ? 'her' :
+                            isPreparation || templateView ? 'her' :
                             new Date(forloebStartDate).toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' })
                         }}
                     </span>

@@ -64,8 +64,8 @@ body.onboarding-theme-randers {
     --color-button-hover-dark: rgb(89, 99, 119);
     --color-button-red: #be3b3b;
     --color-button-red-hover: #d15858;
-    --color-button-yellow: #bca002;
-    --color-button-yellow-hover: #e7cc42;
+    --color-button-yellow: #a58b02;
+    --color-button-yellow-hover: #bca002;
     --color-button-disabled: rgb(237, 229, 220, 0);
     --color-floating-button: rgb(124, 121, 120);
     --color-floating-button-hover: rgb(144, 139, 137);
@@ -607,6 +607,8 @@ button[type="submit"] {
     }
     .button.hollow.red { border: 0.1rem solid var(--color-button-red); color: var(--color-button-red) }
     .button.hollow.red:hover { border: 0.1rem solid var(--color-button-red-hover); color: var(--color-button-red-hover) }
+    .button.hollow.yellow { border: 0.1rem solid var(--color-button-yellow); color: var(--color-button-yellow) }
+    .button.hollow.yellow:hover { border: 0.1rem solid var(--color-button-yellow-hover); color: var(--color-button-yellow-hover) }
     .button.dashed { border: 0.1rem dashed var(--color-button); color: var(--color-button) }
     .button.dashed:hover { border: 0.1rem dashed var(--color-button-hover); color: var(--color-button-hover) }
 

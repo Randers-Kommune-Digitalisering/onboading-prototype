@@ -70,7 +70,7 @@ def create_opgave():
         # Send mail notification to the responsible person
         if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
+            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -203,7 +203,7 @@ def create_opgave_with_opgaveskabelon():
         # Send mail notification to the responsible person
         if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
+            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -552,7 +552,7 @@ def update_opgave(opgave_id):
         # Send mail notification to the responsible person
         if opgave.startdato and opgave.slutdato and is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
-            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave.OpgaveID, opgave.ForløbID)
+            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
             if not planned_mail:
                 logger.error("Failed to plan email")
 

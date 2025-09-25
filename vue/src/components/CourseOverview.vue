@@ -265,7 +265,7 @@
 
         <div @click="downloadForloeb()"
              class="button hollow dashed"
-             v-if="!isTemplate">
+             v-if="!isTemplate && !isUnderPreparation">
                 Download PDF
         </div>
 
@@ -277,14 +277,26 @@
 
         <div @click="deleteCourse()"
              class="button red hollow"
-             v-if="isTemplate || isUnderPreparation || isForloebCompleted">
+             v-if="isTemplate || isForloebCompleted || (!isForloebCompleted && !isForloebOngoing)">
                 Slet {{ isTemplate ? 'skabelon' : 'forløb' }}
         </div>
+
+        <router-link :to="`/start-forloeb?id=${forloeb_id}`"
+                     class="button hollow yellow"
+                     v-if="!isTemplate && isUnderPreparation">
+                        Start forløb
+        </router-link>
 
         <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
                      class="button"
                      v-if="isTemplate">
                         + Opret forløb med skabelon
+        </router-link>
+
+        <router-link :to="`/create-forloeb?tid=${forloeb_id}&prep=true`"
+                     class="button yellow hollow"
+                     v-if="isTemplate">
+                        + Forbered forløb med skabelon
         </router-link>
 
     </div>

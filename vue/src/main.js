@@ -10,6 +10,7 @@ import { getUserInfo } from './services/keycloakService.js'
 // Import af views til routing
 import CreateOpgave from '@/views/admin/CreateOpgave.vue'
 import CreateForløb from '@/views/admin/CreateForløb.vue'
+import StartForløb from '@/views/admin/StartForløb.vue'
 import CreateRessource from '@/views/admin/CreateRessource.vue'
 import CreateForløbsskabelon from '@/views/admin/CreateForløbsskabelon.vue'
 import AdminOverview from '@/views/admin/AdminOverview.vue'
@@ -35,6 +36,12 @@ const routes = [
         path: '/create-forloeb',
         name: 'CreateForløb',
         component: CreateForløb,
+        meta: { roles: ['Admin'] }
+    },
+    {
+        path: '/start-forloeb',
+        name: 'StartForløb',
+        component: StartForløb,
         meta: { roles: ['Admin'] }
     },
     {
