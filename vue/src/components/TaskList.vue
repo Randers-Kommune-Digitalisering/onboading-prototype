@@ -81,7 +81,12 @@
             <template v-for="(task, index) in tasks">
                 <div class="start-spacer" v-if="forloebStartDate != null && index === startMessageIndex">
                     <div class="line"></div>
-                    <span class="text">Forløbet starter {{ new Date(forloebStartDate).toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' }) }}</span>
+                    <span class="text">Forløbet starter
+                        {{
+                            isPreparation ? 'her' :
+                            new Date(forloebStartDate).toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                        }}
+                    </span>
                 </div>
                 <Card
                     :userInfo="userInfo"
@@ -124,7 +129,6 @@
     font-size: 0.8em;
     text-transform: none;
     width: 100%;
-    max-width: 38rem;
     text-align: center;
     position: relative;
 }
@@ -134,8 +138,12 @@
         position: absolute;
         top: 50%;
         width: 100%;
-        max-width: 38rem;
         z-index: 1;
+    }
+    @media only screen and (min-width: 768px) {
+        .start-spacer, .start-spacer > .line {
+            max-width: 38rem;
+        }
     }
     .start-spacer > .text {
         background-color: var(--color-background);
