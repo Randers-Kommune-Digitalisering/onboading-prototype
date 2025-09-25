@@ -105,7 +105,6 @@
                     opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
 
                 opgaver_all.value = opgaver_response.data
-                opgaver_all.value.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
                 completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
 
                 if(props.isTemplate || isUnderPreparation.value)
@@ -113,10 +112,9 @@
                     opgaver_template.value = opgaver_response.data
                     // Get first index of all tasks that start after forløb start date
                     start_message_index.value = opgaver_template.value
-                        .map(opgave => opgave.relativ_startdag > 0)
+                        .map(opgave => opgave.relativ_startdag > -1)
                         .findIndex(opgave => opgave)
                 }
-                    
                 else
                 {
                     for (const item of opgaver_response.data) {
@@ -295,7 +293,7 @@
         <div style="flex-grow:1">&nbsp;</div>
         <div class="sort-title">Sortér efter:</div>
         <select class="sort-selector" v-model="sortBy">
-            <option value="deadline">Deadline</option>
+            <option value="deadline">{{ isUnderPreparation || isTemplate ? 'Startdag' : 'Deadline' }}</option>
             <option value="gruppe">Gruppe</option>
         </select>
     </div>

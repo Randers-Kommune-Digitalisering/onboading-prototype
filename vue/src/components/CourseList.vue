@@ -20,6 +20,11 @@
         {
             type: Boolean,
             default: false
+        },
+        color:
+        {
+            type: String,
+            default: null
         }
     })
 </script>
@@ -35,8 +40,7 @@
             :startDate="new Date(course.startdate)"
             :deadline="new Date(course.enddate)"
             :duration="course.varighed"
-            :dark="dark"
-            color="4c4980" />
+            :dark="dark" />
     </div>
     <div v-else>
         <p class="indent-tiny">Ingen forløb fundet.</p>

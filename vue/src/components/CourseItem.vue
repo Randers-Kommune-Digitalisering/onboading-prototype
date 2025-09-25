@@ -34,10 +34,6 @@
         deadline: {
             type: Date
         },
-        color: {
-            type: String,
-            default: '000'
-        },
         disableInteraction: {
             type: Boolean,
             default: false
