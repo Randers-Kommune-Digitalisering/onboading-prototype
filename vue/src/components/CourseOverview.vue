@@ -68,7 +68,6 @@
                                         : props.isTemplate ? await getForloebsskabelonById(props.id)
                                         // Otherwise fetch by id and user email (for admins and ansvarlig users)
                                         : await getForloebById(props.id, { headers })
-
                 isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
                 isUnderPreparation.value = forloeb.value?.isPreparation || false
@@ -110,7 +109,14 @@
                 completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
 
                 if(props.isTemplate || isUnderPreparation.value)
+                {
                     opgaver_template.value = opgaver_response.data
+                    // Get first index of all tasks that start after forløb start date
+                    start_message_index.value = opgaver_template.value
+                        .map(opgave => opgave.relativ_startdag > 0)
+                        .findIndex(opgave => opgave)
+                }
+                    
                 else
                 {
                     for (const item of opgaver_response.data) {
@@ -122,13 +128,11 @@
                         else 
                             opgaver_ongoing.value.push(item)
                     }
-
-                    // Get last index of future tasks that start after forløb start date
+                    // Get first index of future tasks that start after forløb start date
                     opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
                     start_message_index.value = opgaver_future.value
                         .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
-                        .lastIndexOf(true)
-                    console.log('Start message index:', start_message_index.value)
+                        .findIndex(opgave => opgave)
                 }
 
                 isOpgaverFetched.value = true
@@ -226,7 +230,6 @@
     <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt
     </p>
-    {{ forloeb }}
     <CourseItem v-if="forloeb != null && isOpgaverFetched && showDetails"
                 :disableInteraction="true" 
                 :dark="true" 
@@ -246,7 +249,7 @@
     <!-- Admin actions -->
     <div class="buttons" v-if="userInfo.isAdmin && !props.ansvarligView && forloeb != null && isOpgaverFetched">
 
-        <router-link :to="`/create-opgave?id=${forloeb_id}`"
+        <router-link :to="`/create-opgave?id=${forloeb_id}&prep=${isUnderPreparation}`"
                      class="button" v-if="!isTemplate && !isForloebCompleted">
                         + Tilføj opgave
         </router-link>
@@ -296,7 +299,6 @@
             <option value="gruppe">Gruppe</option>
         </select>
     </div>
-
     <div v-if="sortBy === 'deadline'">
         <TaskList v-if="forloeb != null && (isTemplate || isUnderPreparation)"
                 :tasks="opgaver_template"
@@ -306,7 +308,10 @@
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
                 :expandItem="expandItem"
-                :templateView="true" />
+                :templateView="isTemplate"
+                :isPreparation="isUnderPreparation"
+                :forloebStartDate="new Date(forloeb?.startdate)"
+                :startMessageIndex="start_message_index" />
 
         <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_ongoing"
@@ -348,7 +353,9 @@
                 :title="group.name"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-                :expandItem="expandItem" />
+                :expandItem="expandItem"
+                :templateView="isTemplate"
+                :isPreparation="isUnderPreparation" />
 
         
         <TaskList v-if="forloeb != null"
@@ -358,7 +365,9 @@
                 title="Ingen gruppe"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-                :expandItem="expandItem" />
+                :expandItem="expandItem"
+                :templateView="isTemplate"
+                :isPreparation="isUnderPreparation" />
     </div>
 
 </template>

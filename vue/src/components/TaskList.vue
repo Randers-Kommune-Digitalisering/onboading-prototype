@@ -63,6 +63,11 @@
         {
             type: Number,
             default: -1
+        },
+        isPreparation:
+        {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -95,15 +100,16 @@
                     :ansvarlig="task.ansvarlig"
                     :ansvarligEmail="task.ansvarligEmail"
                     :booking="task.booking ? new Date(new Date(task.booking)) : null"
-                    :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-                    :border="(!task.result && !templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
+                    :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
+                    :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
                     :expandByDefault="expandFirstItem && index == 0 || expandItem === task.OpgaveID || expandItem === task.OpgaveskabelonID"
                     :dark="dark || task.result"
                     :templateView="templateView"
                     :isTemplate="task.OpgaveskabelonID != null"
                     :result="task.result"
                     :ressources="task.resourcer"
-                    :mails="task.pending_emails" />
+                    :mails="task.pending_emails"
+                    :isPreparation="isPreparation" />
             </template>
         </div><!-- /card-list -->
         <div v-else>

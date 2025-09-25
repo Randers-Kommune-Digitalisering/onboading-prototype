@@ -153,6 +153,11 @@
         mails: {
             type: Array,
             default: []
+        },
+        isPreparation:
+        {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -221,11 +226,9 @@
     const gotoTask = () => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
-        // if (props.isTemplate) 
-        //     updateQuery.template = true
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate } })
+            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate, prep: props.isPreparation } })
         })
     }
 
@@ -304,7 +307,7 @@
 
         <div class="card-content">
             <div class="card-details">
-                <div v-if="templateView && !isTemplate">
+                <div v-if="(templateView && !isTemplate) || isPreparation">
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
@@ -315,8 +318,8 @@
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">{{ templateView ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
-                        <div>{{ templateView ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                        <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
+                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 
@@ -333,7 +336,7 @@
                     </div>
                 </div>
 
-                <div v-if="!templateView">
+                <div v-if="!templateView && !isPreparation">
                     <div class="icon"><i class="fa-solid fa-calendar"></i></div>
                     <div class="text">
                         <div class="small faded">Booking</div>
@@ -382,7 +385,7 @@
                 </div>
 
                 <div :class="['button', 'hollow', {'red': result}]"
-                     v-if="!templateView && 
+                     v-if="!templateView && !isPreparation && 
                             (userInfo?.isAdmin ||
                                 (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail) ||
                                 (userInfo?.isMedarbejder && ansvarligEmail == '')

@@ -176,7 +176,7 @@ def create_opgave_with_opgaveskabelon():
         else:
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
-        if 'OpgaveGruppeID' in data:
+        if 'OpgaveGruppeID' in data and data.get('OpgaveGruppeID') is not None:
             opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
             if not opgavegruppe:
                 return jsonify({"error": "OpgaveGruppe not found"}), 404
@@ -377,8 +377,8 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
@@ -439,8 +439,8 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                 } if opg.opgavegruppe else None,
                 'ansvarlig': opg.ansvarlig,
                 'ansvarligEmail': opg.ansvarligEmail,
-                'startdato': opg.startdato.isoformat(),
-                'slutdato': opg.slutdato.isoformat(),
+                'startdato': opg.startdato.isoformat() if opg.startdato else None,
+                'slutdato': opg.slutdato.isoformat() if opg.slutdato else None,
                 'relativ_startdag': opg.relativ_startdag,
                 'relativ_slutdag': opg.relativ_slutdag,
                 'result': opg.result,
