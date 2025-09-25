@@ -68,7 +68,7 @@ def create_opgave():
         session.commit()
 
         # Send mail notification to the responsible person
-        if 'startdato' in new_opgave and 'slutdato' in new_opgave and new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
+        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
             planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
             if not planned_mail:
@@ -201,7 +201,7 @@ def create_opgave_with_opgaveskabelon():
         session.commit()
 
         # Send mail notification to the responsible person
-        if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
+        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
             planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
             if not planned_mail:
@@ -550,7 +550,7 @@ def update_opgave(opgave_id):
                     session.commit()
 
         # Send mail notification to the responsible person
-        if is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
+        if opgave.startdato and opgave.slutdato and is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
             planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave.OpgaveID, opgave.ForløbID)
             if not planned_mail:
