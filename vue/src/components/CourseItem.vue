@@ -96,7 +96,7 @@
 
             <div class="card-titles">
                 <p class="card-title">
-                    {{ name != '' ? name :  'Forløb uden titel' }} {{ props.isPreparation ? '(Under forberedelse)' : '' }}
+                    <span>{{ name != '' ? name :  'Forløb uden titel' }}</span><span class="tag" v-if="props.isPreparation">Under forberedelse</span>
                 </p>
                 <p v-if="title" class="card-subtitle">
                     {{ title }}

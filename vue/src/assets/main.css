@@ -394,9 +394,11 @@ p > a:hover {
 
     margin-top:0;
     margin-bottom: 0;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    display: flex;
+    gap: 0.5rem;
 }
 .card-title ~ .card-subtitle {
     margin-top: 0.4rem;
@@ -566,6 +568,17 @@ p > a:hover {
 .card-content .buttons {
     justify-content: flex-end;
     margin-top: 2rem;
+}
+
+/* Tags */
+
+.tag {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--color-button-text);
+    background-color: var(--color-button-yellow);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.2rem;
 }
 
 

@@ -40,7 +40,8 @@
             :startDate="new Date(course.startdate)"
             :deadline="new Date(course.enddate)"
             :duration="course.varighed"
-            :dark="dark" />
+            :dark="dark"
+            :isPreparation="course.isPreparation" />
     </div>
     <div v-else>
         <p class="indent-tiny">Ingen forløb fundet.</p>
