@@ -90,17 +90,17 @@ def create_forloeb_preparation():
     try:
         data = request.json
         logger.warning(f"Received data for forløb preparation: {data}")
-        required_fields = ['name', 'admin', 'usermail', 'userdq', 'ForløbsskabelonID']
+        required_fields = ['name', 'admin', 'usermail', 'userdq']
         if not all(field in data for field in required_fields):
             return jsonify({"error": f"Missing required fields: {', '.join(required_fields)}"}), 400
 
-        forløbsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=data['ForløbsskabelonID']).first()
-        if not forløbsskabelon:
-            return jsonify({"error": "Forløbsskabelon not found"}), 404
+        forløbsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=data['ForløbsskabelonID']).first() if 'ForløbsskabelonID' in data else None
+        # if not forløbsskabelon:
+        #     return jsonify({"error": "Forløbsskabelon not found"}), 404
 
         forloeb = Forløb(
             name=data['name'],
-            varighed=forløbsskabelon.varighed,
+            varighed=forløbsskabelon.varighed if forløbsskabelon and forløbsskabelon.varighed else 30,
             startdate=None,  # Set when started
             enddate=None,    # Set when started
             admin=data['admin'],
@@ -110,6 +110,9 @@ def create_forloeb_preparation():
         )
         session.add(forloeb)
         session.commit()
+
+        if not forløbsskabelon:
+            return jsonify({"message": "Forløb preparation created successfully without template", "uid": forloeb.ForløbID}), 201
 
         skabelon_opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=forløbsskabelon.ForløbsskabelonID).all()
         new_opgave_grupper = []
@@ -151,7 +154,7 @@ def create_forloeb_preparation():
                 session.add(new_ressource)
             session.commit()
 
-        return jsonify({"message": "Forløb preparation created successfully", "uid": forloeb.ForløbID}), 201
+        return jsonify({"message": "Forløb preparation created successfully with template", "uid": forloeb.ForløbID}), 201
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

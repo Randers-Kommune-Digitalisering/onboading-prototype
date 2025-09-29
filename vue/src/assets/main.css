@@ -580,6 +580,13 @@ p > a:hover {
     padding: 0.2rem 0.5rem;
     border-radius: 0.2rem;
 }
+.tag.blue {
+    background-color: var(--color-button);
+}
+.tag.gray {
+    background-color: var(--color-card-dark);
+    color: var(--color-text-faded);
+}
 
 
 /* Buttons + Inputs */

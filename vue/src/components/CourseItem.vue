@@ -96,7 +96,9 @@
 
             <div class="card-titles">
                 <p class="card-title">
-                    <span>{{ name != '' ? name :  'Forløb uden titel' }}</span><span class="tag" v-if="props.isPreparation">Under forberedelse</span>
+                    <span>{{ name != '' ? name :  'Forløb uden titel' }}</span>
+                    <span class="tag" v-if="props.isPreparation">Under forberedelse</span>
+                    <span class="tag gray" v-if="isTemplate">Skabelon</span>
                 </p>
                 <p v-if="title" class="card-subtitle">
                     {{ title }}

@@ -128,7 +128,7 @@
                     }
                     // Get first index of future tasks that start after forløb start date
                     opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
-                    if (forloeb.value?.startdate)
+                    if (!isForloebOngoing.value && forloeb.value?.startdate)
                         start_message_index.value = opgaver_future.value
                             .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
                             .findIndex(opgave => opgave)
@@ -288,7 +288,7 @@
                         Start forløb
         </router-link>
 
-        <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
+        <!-- <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
                      class="button"
                      v-if="isTemplate">
                         + Opret forløb med skabelon
@@ -298,7 +298,7 @@
                      class="button yellow hollow"
                      v-if="isTemplate">
                         + Forbered forløb med skabelon
-        </router-link>
+        </router-link> -->
 
     </div>
 
