@@ -249,7 +249,7 @@
             </div>
         </div>
 
-        <div :class="['inputContainer checkbox', { 'hideOnMobile': isUserMailSearchOpen }]">
+        <div :class="['inputContainer checkbox', { 'hideOnMobile': isUserMailSearchOpen }]" v-if="!isPreparation">
             <input type="checkbox" id="planWelcome" name="planWelcome" v-model="inputFields.planWelcome" :disabled="!isRandersMail(inputFields.usermail) || isUserMailSearchOpen || welcomeMailPlanned">
             <label for="planWelcome" :class="['checkbox-label', { 'faded': !isRandersMail(inputFields.usermail) || isUserMailSearchOpen || welcomeMailPlanned }]">
                 Planlæg afsendelse velkomstmail til ny medarbejder<br />
