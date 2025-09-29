@@ -52,6 +52,7 @@
     })
     const isTemplate = props.id == null
     const opgaver = ref(props.tasks || null)
+    const hasForloebStarted = props.startDate && new Date(props.startDate) <= new Date()
 
     onMounted(async () => {
         try {
@@ -141,7 +142,9 @@
             
         </div>
 
-        <div class="card-content always-show" v-if="!duration"><ProgressBar :hideText="true" :percentage="completedPercentage" /></div>
+        <div class="card-content always-show" v-if="!isTemplate && !isPreparation && hasForloebStarted">
+            <ProgressBar :hideText="true" :percentage="completedPercentage" />
+        </div>
     </div>
 
     </router-link>

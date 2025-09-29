@@ -230,7 +230,7 @@ p > a:hover {
         }
     }
 
-    .navbar .item.selected, .navItem.selected {
+    .navbar .item.router-link-active, .navItem.router-link-active {
         background-color: var(--color-navbar-item-selected);
     }
 
@@ -244,7 +244,7 @@ p > a:hover {
         padding-top: 1.5rem;
     }
 
-    .navbar .item:hover:not(.selected), .navItem:hover:not(.selected) {
+    .navbar .item:hover:not(.router-link-active), .navItem:hover:not(.router-link-active) {
         background-color: var(--color-navbar-item-hover);
         cursor: pointer;
     }

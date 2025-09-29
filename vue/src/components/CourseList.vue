@@ -44,7 +44,7 @@
             :isPreparation="course.isPreparation" />
     </div>
     <div v-else>
-        <p class="indent-tiny">Ingen forløb fundet.</p>
+        <p class="indent-tiny faded">Ingen forløb fundet.</p>
     </div>
 
 </template>

@@ -119,7 +119,7 @@
         </div><!-- /card-list -->
         <div v-else>
             <p class="indent-tiny" v-if="isFetchingTasks">Indlæser ...</p>
-            <p class="indent-tiny" v-else>Ingen opgaver fundet.</p>
+            <p class="indent-tiny faded" v-else>Ingen opgaver fundet.</p>
         </div>
     </div>
 
