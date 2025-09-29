@@ -361,12 +361,14 @@ p > a:hover {
 .card-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     height: 4.5rem;
+    width: 100%;
+    position: relative;
+    padding: 0rem 1.2rem;
 }
 
 .card-header:first-child {
-    margin-left: 1.2rem;
+    flex-grow: 1;
 }
 
 .card-icon {
@@ -394,8 +396,6 @@ p > a:hover {
 
     margin-top:0;
     margin-bottom: 0;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 
     display: flex;
     gap: 0.5rem;
@@ -478,6 +478,7 @@ p > a:hover {
 .card-content, .card-details {
     max-height: calc(auto);
     color: var(--color-card-text);
+    white-space: nowrap;
 }
 
     .card:not(.expand-content) .card-content:not(.always-show) {
@@ -526,15 +527,20 @@ p > a:hover {
 
 .card-titles {
     flex-grow: 1;
-    max-width: calc(100% - 14rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.card-titles * {
+    white-space: wrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card-header .card-details {
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    margin: 1.5rem;
 }
 
 .card-content .card-details {
