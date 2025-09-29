@@ -328,6 +328,9 @@ p > a:hover {
     }
 
 @media only screen and (min-width: 768px) {
+    a:has(.card) {
+        max-width: 38rem;
+    }
     .card, .notification, .textbox {
         max-width: 38rem;
     }
@@ -478,7 +481,6 @@ p > a:hover {
 .card-content, .card-details {
     max-height: calc(auto);
     color: var(--color-card-text);
-    white-space: nowrap;
 }
 
     .card:not(.expand-content) .card-content:not(.always-show) {
@@ -585,9 +587,13 @@ p > a:hover {
     background-color: var(--color-button-yellow);
     padding: 0.2rem 0.5rem;
     border-radius: 0.2rem;
+    user-select: none;
 }
 .tag.blue {
     background-color: var(--color-button);
+}
+.tag.green {
+    background-color: var(--color-progression);
 }
 .tag.gray {
     background-color: var(--color-card-dark);
@@ -603,6 +609,7 @@ button[type="submit"] {
     font-size: 1em;
     font-weight: 500;
     border: 0.1rem solid var(--color-button);
+    user-select: none;
 }
 
 .button {
@@ -613,6 +620,7 @@ button[type="submit"] {
     color:var(--color-button-text);
     cursor: pointer;
     border: 0.1rem solid var(--color-button);
+    user-select: none;
 }
 
     .button:hover {
@@ -1031,6 +1039,10 @@ textarea:not(:placeholder-shown) + .floating-label {
 }
 .center {
     text-align: center;
+}
+
+.nowrap {
+    white-space: nowrap;
 }
 
 .thin {

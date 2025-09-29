@@ -98,3 +98,13 @@ class Mail(Base):
     opgave = relationship('Opgave', back_populates='mails')
     ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'), nullable=True)
     forløb = relationship('Forløb', back_populates='mails')
+    attachment = relationship('MailAttachment', uselist=False, back_populates='mail')
+
+
+class MailAttachment(Base):
+    __tablename__ = 'MailAttachment'
+    AttachmentID = Column(Integer, primary_key=True, autoincrement=True)
+    filename = Column(String, nullable=False)
+    file_data = Column(String, nullable=False)  # Store file data as base64 encoded string
+    MailID = Column(Integer, ForeignKey('Mail.MailID'))
+    mail = relationship('Mail', back_populates='attachment')

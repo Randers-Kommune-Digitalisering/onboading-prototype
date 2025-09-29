@@ -127,9 +127,10 @@
             inputFields.value.booking = ""
             if(addToTemplate.value || isPreparation.value)
             {
-                inputFields.value.relativ_slutdag = template.relativ_slutdag
+                inputFields.value.relativ_slutdag = 1
                 relativEndday.value = inputFields.value.relativ_slutdag
             }
+            return
         }
         
         inputFields.value.title = template.title
@@ -378,7 +379,7 @@
             <div class="inputContainer">
                 <input type="text" id="title" name="title" placeholder=" " v-model="inputFields.title" required>
                 <label for="title" class="floating-label">Opgavens navn</label>
-                <div class="button input-button tooltip-hover" @click="toggleSelectTemplate()">
+                <div class="button input-button tooltip-hover" @click="toggleSelectTemplate()" v-if="!isEditing && !isTemplate">
                     <i class="fa-solid fa-folder"></i>
                     <span class="tooltip-display nohover">Vælg skabelon</span>
                 </div>
@@ -418,7 +419,7 @@
                 <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
                     <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
                     <i v-else class="fa-solid fa-plus"></i>
-                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret skabelon' }}</span>
+                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
                 </div>
             </div>
 

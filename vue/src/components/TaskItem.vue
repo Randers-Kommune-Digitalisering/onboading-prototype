@@ -282,13 +282,17 @@
                 <div class="tooltipContainer">
                     <div class="icon"><i class="fa-solid fa-envelope"></i></div>
                     <div class="text">
-                    <div class="small faded">Mails</div>
-                    <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' afventer') : 'Ingen mails' }}</div>
+                        <div class="small faded">Mails</div>
+                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
                     </div>
                     
                     <div class="tooltip">
-                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id" @click="deletePendingEmail(mail.id)">
-                            {{ mail.subject }} ({{ mail.recipient }}) <i class="fa-solid fa-xmark"></i>
+                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
+                            <div>
+                                <div class="nowrap">Notifikation til ansvarlig</div>
+                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
+                            </div>
+                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
                         </div>
                     </div>
                 </div>
@@ -434,17 +438,38 @@
         right: -0.75rem;
 
         font-size: 0.75rem;
-        white-space: nowrap;
         cursor: default;
         text-align: right;
 
         max-height: 4rem;
         overflow-y: auto;
+        user-select: text;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.4rem;
     }
-        .tooltip > .mail:has(i):hover {
-            color: var(--color-button-red);
-            cursor: pointer;
-        }
+    .tooltip > .mail {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .mail-recipient {
+        max-width: 15rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9em;
+        font-weight: 400;
+    }
+    .tooltip i {
+        margin-left: 0.5rem;
+        font-size: 1rem;
+    }
+    .tooltip i:hover {
+        color: var(--color-button-red);
+        cursor: pointer;
+    }
     .tooltipContainer:hover > .tooltip {
         visibility: visible;
         opacity: 1;

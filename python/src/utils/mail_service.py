@@ -3,7 +3,7 @@ import logging
 import requests
 from datetime import datetime
 from utils.config import MAIL_SERVICE_URL, MAIL_SERVICE_SENDER
-from models import Mail
+from models import Mail, MailAttachment
 from utils.db_connection import get_db_client
 from utils.pdf import create_pdf
 
@@ -11,7 +11,7 @@ db_client = get_db_client()
 logger = logging.getLogger(__name__)
 
 
-def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None):
+def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None):
     """
     Adds an email to DB to be sent at a later point.
     Parameters:
@@ -21,6 +21,14 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
     """
     session = db_client.get_session()
     try:
+        if attachment is not None:
+            attachment = MailAttachment(
+                filename=attachment['filename'],
+                file_data=attachment['content']
+            )
+            session.add(attachment)
+            session.commit()
+
         mail = Mail(
             subject=subject,
             body=message,
@@ -35,7 +43,9 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
         session.rollback()
         raise e
     else:
+        print(" ")
         logger.info(f"New mail planned to {recipient_email} with subject: '{subject}'")
+        print(" ")
         return True
     finally:
         session.close()
@@ -180,12 +190,14 @@ def create_mail_expired(forloeb, opgave):
 
 def create_mail_forloeb_start(forloeb):
     forloeb = {
+        "id": forloeb.ForløbID,
+        "name": forloeb.name,
         "userdq": forloeb.userdq,
-        "startdato": forloeb.startdato
+        "startdate": forloeb.startdate
     }
     subject = "Dit onboardingforløb er startet"
     pdf = create_pdf(forloeb['id'])
-    attachments = {"filename": "onboarding_forloeb.pdf", "content": pdf}
+    attachment = {"filename": "onboarding_forloeb.pdf", "content": pdf}
     message = str(
         f"Hej {forloeb['name']}," + "\n\n" +
         "Velkommen til Randers Kommune! Dit onboardingforløb er nu startet." + "\n\n" +
@@ -193,7 +205,7 @@ def create_mail_forloeb_start(forloeb):
         "Du kan også tilgå dit forløbet her: http://onboarding.data.randers.dk/ - kræver login med din medarbejderkonto.\n" +
         "\nVenlig hilsen,\nRanders Kommune"
     )
-    return subject, message, attachments
+    return subject, message, attachment
 
 
 def delete_planned_mail(mail_id):

@@ -2,7 +2,7 @@ from flask import make_response, request, jsonify
 from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import plan_mail, create_mail_ansvarlig
+from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_forloeb_start
 import logging
 
 logger = logging.getLogger(__name__)
@@ -89,15 +89,11 @@ def create_forloeb_preparation():
     session = db_client.get_session()
     try:
         data = request.json
-        logger.warning(f"Received data for forløb preparation: {data}")
         required_fields = ['name', 'admin', 'usermail', 'userdq']
         if not all(field in data for field in required_fields):
             return jsonify({"error": f"Missing required fields: {', '.join(required_fields)}"}), 400
 
         forløbsskabelon = session.query(Forløbsskabelon).filter_by(ForløbsskabelonID=data['ForløbsskabelonID']).first() if 'ForløbsskabelonID' in data else None
-        # if not forløbsskabelon:
-        #     return jsonify({"error": "Forløbsskabelon not found"}), 404
-
         forloeb = Forløb(
             name=data['name'],
             varighed=forløbsskabelon.varighed if forløbsskabelon and forløbsskabelon.varighed else 30,
@@ -190,6 +186,10 @@ def start_preparation_forloeb():
                 subject, message = create_mail_ansvarlig(opgave)
                 plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
 
+        if data.get('planWelcome') is True:
+            subject, message, attachment = create_mail_forloeb_start(forloeb)
+            plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID, attachment=attachment)
+
         return jsonify({"message": "Forløb started successfully", "startdate": forloeb.startdate.isoformat(), "enddate": forloeb.enddate.isoformat(), "uid": forloeb.ForløbID}), 200
     except Exception as e:
         session.rollback()
@@ -224,7 +224,14 @@ def get_forloeb(forloeb_id: int):
                 for gruppe in opgave_grupper
             ],
             "isPreparation": forloeb.isPreparation,
-            "varighed": forloeb.varighed
+            "varighed": forloeb.varighed,
+            "pending_emails": [
+                {
+                    "id": mail.MailID,
+                    "recipient": mail.recipient,
+                    "subject": mail.subject
+                } for mail in forloeb.mails if not mail.isSent
+            ]
         }
         return jsonify(result), 200
     except Exception as e:
@@ -340,7 +347,14 @@ def get_forloeb_by_admin(admin_name):
                         for gruppe in opgave_grupper
                     ],
                     "isPreparation": forloeb.isPreparation,
-                    "varighed": forloeb.varighed
+                    "varighed": forloeb.varighed,
+                    "pending_emails": [
+                        {
+                            "id": mail.MailID,
+                            "recipient": mail.recipient,
+                            "subject": mail.subject
+                        } for mail in forloeb.mails if not mail.isSent
+                    ]
                 }
             )
         return jsonify(result), 200
@@ -385,6 +399,11 @@ def update_forloeb(id):
         forloeb.admin = data.get('admin', forloeb.admin)
         forloeb.usermail = data.get('usermail', forloeb.usermail)
         forloeb.userdq = data.get('userdq', forloeb.userdq)
+
+        if len(forloeb.mails) == 0 or all(mail.isSent for mail in forloeb.mails):
+            if data.get('planWelcome') is True:
+                subject, message, attachment = create_mail_forloeb_start(forloeb)
+                plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID, attachment=attachment)
 
         session.commit()
         return jsonify({"message": "Forløb updated successfully", "uid": forloeb.ForløbID}), 200

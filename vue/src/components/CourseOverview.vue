@@ -240,7 +240,8 @@
                 :startDate="new Date(forloeb.startdate)" 
                 :deadline="new Date(forloeb.enddate)"
                 :tasks="opgaver_all"
-                :isPreparation="isUnderPreparation" />
+                :isPreparation="isUnderPreparation"
+                :mails="forloeb.pending_emails" />
 
     <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate || isUnderPreparation ? 4.5 : 7.2" :dark="true" />
     <ProgressBar v-if="forloeb != null  && !showDetails && !isUnderPreparation" :percentage="completedPercentage"></ProgressBar>
