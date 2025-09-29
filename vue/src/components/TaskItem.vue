@@ -384,7 +384,7 @@
                         Redigér
                 </div>
 
-                <div :class="['button', 'hollow', {'red': result}]"
+                <div :class="['button', 'hollow', {'yellow': result}]"
                      v-if="!templateView && !isPreparation && 
                             (userInfo?.isAdmin ||
                                 (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail) ||

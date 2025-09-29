@@ -89,7 +89,7 @@
     }
 
     const returnDagOrDage = (days) => {
-        return days > 1 || days == 0 ? 'dage' : 'dag'
+        return days == 1 || days == -1 ? 'dag' : 'dage'
     }
 
     /* Textarea */
@@ -255,7 +255,8 @@
     /* Submit */
 
     const removeNonIntegers = (value) => {
-        return value.replace(/(?![0-9])./gmi,'')
+        // Allow a single minus at the start, then digits only
+        return value.replace(/(?!^-\d*)[^\d-]|(?!^)-/g, '').replace(/(?!^)-/g, '')
     }
 
     const sliceXChars = (value, x) => {
