@@ -180,7 +180,7 @@
             <input type="checkbox" id="planWelcome" name="planWelcome" v-model="inputFields.planWelcome" :disabled="!isRandersMail(inputFields.usermail) || isUserMailSearchOpen">
             <label for="planWelcome" :class="['checkbox-label', { 'faded': !isRandersMail(inputFields.usermail) || isUserMailSearchOpen }]">
                 Planlæg afsendelse velkomstmail til ny medarbejder<br />
-                <span class="tag" v-if="inputFields.usermail != '' && !isRandersMail(inputFields.usermail)">Kræver at at medarbejderen benytter en @randers.dk-mailadresse</span>
+                <div class="tag" v-if="inputFields.usermail != '' && !isRandersMail(inputFields.usermail)">Kræver at at medarbejderen benytter en @randers.dk-mailadresse</div>
             </label>
         </div>
 

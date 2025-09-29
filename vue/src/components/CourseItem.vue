@@ -123,9 +123,8 @@
             <div class="card-titles">
                 <p class="card-title">
                     <span>{{ name != '' ? name :  'Forløb uden titel' }}</span>
-                    <span class="tag" v-if="props.isPreparation">Under forberedelse</span>
-                    <span class="tag gray" v-if="isTemplate">Skabelon</span>
-                    <!-- <span class="tag green">Velkomstmail planlagt</span> -->
+                    <div class="tag" v-if="props.isPreparation">Under forberedelse</div>
+                    <div class="tag gray" v-if="isTemplate">Skabelon</div>
                 </p>
                 <p v-if="title" class="card-subtitle">
                     {{ title }}
