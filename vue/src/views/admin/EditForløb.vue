@@ -3,18 +3,16 @@
     import { useRouter, useRoute } from 'vue-router'
 
     import { getUserInfo } from '@/services/keycloakService.js'
-    import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
-    import { createForloeb, createForloebPreparation } from '@/services/forløbService.js'
+    import { getForloebById, updateForloeb } from '@/services/forløbService.js'
     import { getAdminData, getUsers } from '@/services/userService.js'
 
     const route = useRoute()
     const router = useRouter()
 
     const isSubmitting = ref(false)
-    const isPreparation = route.query.prep !== 'false'
+    const isPreparation = ref(true)
+    const forloeb_id = parseInt(route.query.id, 10)
 
-	const template_id = parseInt(route.query.tid, 10)
-    const templates = ref([])
     const inputFields = ref({
         usermail: "",
         admin: "",
@@ -67,13 +65,6 @@
         isUserMailSearchOpen.value = false
         evaluateEmail()
     }
-
-    // const getEmailType = () => {
-    //     if (inputFields.value.usermail.includes('@randers.dk')) {
-    //         return 'randersmail'
-    //     }
-    //     return 'private'
-    // }
 
     const evaluateEmail = () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -136,38 +127,9 @@
             isAdminSearchOpen.value = false
         }
     }
-    
-    const selectNoTemplateIfNotSelected = () => {
-        if(inputFields.value.ForløbsskabelonID == "")
-            inputFields.value.ForløbsskabelonID = null
-    }
-
-    const setEndDateFromTemplate = () => {
-        const template = templates.value.find(template => template.ForløbsskabelonID === inputFields.value.ForløbsskabelonID)
-        if (template) {
-            const startDate = new Date(inputFields.value.startdate)
-            const daysToAdd = template.varighed
-            var endDate = new Date(startDate)
-            endDate.setDate(endDate.getDate() + daysToAdd)
-            inputFields.value.enddate = endDate.toISOString().split('T')[0]
-        }
-    }
 
     /* Instantiate */
     onMounted(async () => {
-        // Get templates
-        try {
-            const forloebsskabelonerResponse = await getForloebsskabeloner()
-            templates.value = forloebsskabelonerResponse.data
-            if (template_id) {
-                const selectedTemplate = templates.value.find(template => template.ForløbsskabelonID === template_id)
-                if (selectedTemplate)
-                    inputFields.value.ForløbsskabelonID = selectedTemplate.ForløbsskabelonID
-            }
-        } catch (error) {
-            console.error('Error fetching forloebsskabeloner:', error)
-        }
-
         // Get admin list
         try {
             const adminDataResponse = await getAdminData()
@@ -189,6 +151,22 @@
         } catch (error) {
             console.error('Error fetching emails:', error)
         }
+
+        // Get item to edit
+        try {
+            const forloebResponse = await getForloebById(forloeb_id)
+            selectedAdmin.value = adminList.value.find(admin => admin.mail === forloebResponse.data.admin)
+            const formattedData = {
+                ...forloebResponse.data,
+                startdate: forloebResponse.data.startdate ? forloebResponse.data.startdate.split('T')[0] : '',
+                enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : ''
+            }
+            formattedData.admin = selectedAdmin.value.name
+            isPreparation.value = forloebResponse.data.isPreparation
+            Object.assign(inputFields.value, formattedData)
+        } catch (error) {
+            console.error('Error fetching forløb:', error)
+        }
     })
 
     /* Submit */
@@ -204,9 +182,7 @@
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
             console.log(formData)
-            const response = isPreparation ?
-                await createForloebPreparation(formData)
-                : await createForloeb(formData)
+            const response = await updateForloeb(forloeb_id, formData)
             if (response.data.uid)
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
         } catch (error) {
@@ -220,7 +196,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ isPreparation ? 'Opret forløbsforberedelse' : 'Opret forløb' }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">Rediger forløb</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -252,19 +228,19 @@
                 <div v-if="adminSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>
-
-        <div class="inputContainer" :class="{ 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }">
-            <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
-                <option value="" disabled selected hidden></option>
-                <option :value="null" style="color:gray">Ingen skabelon</option>
-                <option v-for="template in templates" :value="template.ForløbsskabelonID">{{template.name}}</option>
-            </select>
-            <label for="template" class="floating-label">Skabelon</label>
-            <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
+        <div v-if="!isPreparation" class="inputContainer" :class="{ 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }">
+            <div class="flex-item">
+                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdate" required>
+                <label for="startdate" class="floating-label">Startdato</label>
+            </div>
+            <div class="flex-item">
+                <input type="date" id="enddate" name="enddate" v-model="inputFields.enddate" required>
+                <label for="enddate" class="floating-label">Slutdato</label>
+            </div>
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">+ Opret forløb</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opdater forløb</button>
         </div>
 
     </div>

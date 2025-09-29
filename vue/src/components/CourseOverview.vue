@@ -259,9 +259,14 @@
                         + Tilføj opgave
         </router-link>
 
-        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}&prep=${isUnderPreparation}`"
+        <router-link :to="`/edit-forloeb?id=${forloeb_id}`" v-if="!isTemplate"
                      class="button hollow">
-                        Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}
+                        Redigér{{isForloebCompleted ? ' / genoptag' : '' }} forløb
+        </router-link>
+
+        <router-link :to="`/create-forloebsskabelon?id=${forloeb_id}&edit=true`" v-else
+                     class="button hollow">
+                        Redigér skabelon
         </router-link>
 
         <div @click="downloadForloeb()"
