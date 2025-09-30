@@ -46,12 +46,10 @@ def create_forloeb():
                 session.add(new_opgave_gruppe)
                 session.commit()  # Commit to get the new OpgaveGruppeID
                 new_opgave_grupper.append(new_opgave_gruppe)
-                logger.warning(f"Created OpgaveGruppe: {new_opgave_gruppe.name} with ID {new_opgave_gruppe.OpgaveGruppeID}")
 
             for opgave in forløbsskabelon.opgave:
                 # Find the matching OpgaveGruppe by name
                 matching_gruppe = next((g for g in new_opgave_grupper if g.name == opgave.opgavegruppe.name), None)
-                logger.warning(f"Matching gruppe for opgave '{opgave.title}': {matching_gruppe.name if matching_gruppe else 'None'}")
                 new_opgave = Opgave(
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
