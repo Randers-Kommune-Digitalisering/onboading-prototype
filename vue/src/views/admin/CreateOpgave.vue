@@ -277,7 +277,7 @@
 
     const removeNonIntegers = (value) => {
         // Allow a single minus at the start, then digits only
-        return value.replace(/(?!^-\d*)[^\d-]|(?!^)-/g, '').replace(/(?!^)-/g, '')
+        return value.replace(/[^-\d]/g, '').replace(/(?!^)-/g, '')
     }
 
     const sliceXChars = (value, x) => {
