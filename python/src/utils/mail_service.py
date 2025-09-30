@@ -43,9 +43,6 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
         session.rollback()
         raise e
     else:
-        print(" ")
-        logger.info(f"New mail planned to {recipient_email} with subject: '{subject}'")
-        print(" ")
         return True
     finally:
         session.close()
