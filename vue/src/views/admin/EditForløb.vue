@@ -191,7 +191,6 @@
             formData.admin = selectedAdmin.value.mail
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
-            console.log(formData)
             const response = await updateForloeb(forloeb_id, formData)
             if (response.data.uid)
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })

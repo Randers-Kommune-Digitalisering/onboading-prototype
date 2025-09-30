@@ -203,7 +203,6 @@
             formData.admin = selectedAdmin.value.mail
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
-            console.log(formData)
             const response = isPreparation ?
                 await createForloebPreparation(formData)
                 : await createForloeb(formData)
