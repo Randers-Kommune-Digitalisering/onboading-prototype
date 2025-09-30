@@ -49,7 +49,7 @@
                 }
             }
         }
-        if (isAdminSearchOpen) {
+        if (isAdminSearchOpen.value) {
             isAdminSearchOpen.value = false
         }
         if (searchString.length < 3) {
@@ -97,7 +97,7 @@
     })
 
     const searchAdmins = (searchString) => {
-        if (isUserMailSearchOpen) {
+        if (isUserMailSearchOpen.value) {
             isUserMailSearchOpen.value = false
         }
         if (searchString.length < 3) {
