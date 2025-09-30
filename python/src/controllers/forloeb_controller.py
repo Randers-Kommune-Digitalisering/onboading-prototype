@@ -171,7 +171,6 @@ def start_preparation_forloeb():
         forloeb.startdate = datetime.fromisoformat(data['startdate'])
         forloeb.enddate = datetime.fromisoformat(data['enddate']) if 'enddate' in data else forloeb.startdate + timedelta(days=forloeb.varighed)
         forloeb.isPreparation = False
-        forloeb.varighed = None  # Clear duration as it's no longer in preparation
         session.commit()
 
         for opgave in forloeb.opgave:

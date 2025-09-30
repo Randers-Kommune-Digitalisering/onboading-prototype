@@ -131,7 +131,7 @@
                 </p>
             </div>
 
-            <div class="card-details" v-if="props.duration == null">
+            <div class="card-details" v-if="!isTemplate && !isPreparation">
 
                 <div class="tooltipContainer" v-if="dynamicMails.length > 0">
                     <div class="icon"><i class="fa-solid fa-envelope"></i></div>
