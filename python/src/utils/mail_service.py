@@ -21,14 +21,6 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
     """
     session = db_client.get_session()
     try:
-        if attachment is not None:
-            attachment = MailAttachment(
-                filename=attachment['filename'],
-                file_data=attachment['content']
-            )
-            session.add(attachment)
-            session.commit()
-
         mail = Mail(
             subject=subject,
             body=message,
@@ -38,9 +30,20 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
             ForløbID=forloeb_id
         )
         session.add(mail)
-        session.commit()
+        session.commit()  # Commit to get MailID
+
+        if attachment is not None:
+            mail_attachment = MailAttachment(
+                filename=attachment['filename'],
+                file_data=attachment['content'],
+                MailID=mail.MailID  # Link attachment to mail
+            )
+            session.add(mail_attachment)
+            session.commit()
+
     except Exception as e:
         session.rollback()
+        logger.error(f"Error planning email to {recipient_email}: {e}")
         raise e
     else:
         return True
@@ -48,51 +51,64 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
         session.close()
 
 
-def get_all_mails():
+def get_planned_mails():
     session = db_client.get_session()
     try:
         mails = session.query(Mail).filter_by(isSent=False).all()
         session.commit()
-        # Convert Mail objects to dicts
-        mails_data = [
-            {
+        mails_data = []
+        for mail in mails:
+            # Get attachments for this mail
+            attachments = session.query(MailAttachment).filter_by(MailID=mail.MailID).all()
+            attachments_data = [
+                {
+                    "filename": attachment.filename,
+                    "file_data": attachment.file_data
+                }
+                for attachment in attachments
+            ]
+            mails_data.append({
                 "id": mail.MailID,
                 "subject": mail.subject,
                 "body": mail.body,
                 "recipient": mail.recipient,
-                "created": mail.created.isoformat() if mail.created else None,
                 "isSent": mail.isSent,
-                "sent": mail.sent.isoformat() if mail.sent else None,
-                "OpgaveID": mail.OpgaveID,
-                "ForløbID": mail.ForløbID
-            }
-            for mail in mails
-        ]
-        return jsonify({"message": "Planned emails retrieved successfully", "count": len(mails_data), "data": mails_data}), 200
+                "attachments": attachments_data
+            })
+        return mails_data
     except Exception as e:
+        logger.error(f"Error fetching planned emails: {e}")
         session.rollback()
-        return jsonify({"message": "Error retrieving planned emails", "error": str(e)}), 500
+        return None
     finally:
         session.close()
 
 
 def send_all_mails():
+    mails = get_planned_mails()
+    if mails is None or len(mails) == 0:
+        return jsonify({"message": "No planned emails to send"}), 200
+
     session = db_client.get_session()
+    sent_count = 0
+    total_count = len(mails) if mails else 0
     try:
-        mails = session.query(Mail).filter_by(isSent=False).all()
-        for mail in mails:
-            status = send_mail(mail.recipient, mail.subject, mail.body, attachments=None)
-            mail.isSent = status in [True]
-            session.add(mail)
+        for mail_dict in mails:
+            status = send_mail(mail_dict.get('recipient'), mail_dict.get('subject'), mail_dict.get('body'), attachments=None)
+            # Fetch the actual Mail ORM object
+            mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
+            if mail_obj:
+                mail_obj.isSent = status
+                if status:
+                    sent_count += 1
         session.commit()
     except Exception as e:
         session.rollback()
-        return jsonify({"message": "Error sending planned emails", "error": e}), 500
+        return jsonify({"message": "Error sending planned emails", "error": str(e)}), 500
     finally:
-        sent_count = len([mail for mail in mails if mail.isSent]) if 'mails' in locals() else 0
-        total_count = len(mails) if 'mails' in locals() else 0
         session.close()
-        return jsonify({"message": "Planned emails sent successfully", "count": total_count, "sent": sent_count}), 200
+
+    return jsonify({"message": "Planned emails sent successfully", "count": total_count, "sent": sent_count}), 200
 
 
 def send_mail(recipient_email, subject, message, attachments=None):
@@ -110,7 +126,8 @@ def send_mail(recipient_email, subject, message, attachments=None):
         "from": MAIL_SERVICE_SENDER,
         "to": recipient_email,
         "title": subject,
-        "body": message
+        "body": message,
+        "attachments": attachments
     }
     if attachments is not None:
         payload["attachments"] = attachments
@@ -118,9 +135,10 @@ def send_mail(recipient_email, subject, message, attachments=None):
     try:
         response = requests.post(MAIL_SERVICE_URL, headers=headers, json=payload)
         response.raise_for_status()
-        return response.json()
+        return True
     except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
+        logger.error(f"Error sending email to {recipient_email}: {e}")
+        return False
 
 
 def create_mail_ansvarlig(new_opgave):
