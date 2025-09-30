@@ -49,7 +49,7 @@ def create_forloeb():
 
             for opgave in forløbsskabelon.opgave:
                 # Find the matching OpgaveGruppe by name
-                matching_gruppe = next((g for g in new_opgave_grupper if g.name == opgave.opgavegruppe.name), None)
+                matching_gruppe = next((g for g in new_opgave_grupper if opgave.opgavegruppe and g.name == opgave.opgavegruppe.name), None)
                 new_opgave = Opgave(
                     title=opgave.title,
                     beskrivelse=opgave.beskrivelse,
@@ -122,7 +122,7 @@ def create_forloeb_preparation():
 
         for opgave in forløbsskabelon.opgave:
             # Find the matching OpgaveGruppe by name
-            matching_gruppe = next((g for g in new_opgave_grupper if g.name == opgave.opgavegruppe.name), None)
+            matching_gruppe = next((g for g in new_opgave_grupper if opgave.opgavegruppe and g.name == opgave.opgavegruppe.name), None)
             new_opgave = Opgave(
                 title=opgave.title,
                 beskrivelse=opgave.beskrivelse,
