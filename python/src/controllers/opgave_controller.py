@@ -600,14 +600,14 @@ def notify_expired_tasks():
                 return jsonify({"error": "Forløb not found"}), 404
 
             subject, message = create_mail_expired(forloeb, opgave)
-            mail = send_mail(forloeb.usermail, subject, message)
-            if 'error' in mail:
+            status = send_mail(forloeb.usermail, subject, message)
+            if not status:
                 return jsonify({"error": "Failed to send email"}), 500
 
             if opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
                 subject, message = create_mail_expired_ansvarlig(opgave)
-                mail = send_mail(opgave.ansvarligEmail, subject, message)
-                if 'error' in mail:
+                status = send_mail(opgave.ansvarligEmail, subject, message)
+                if not status:
                     return jsonify({"error": "Failed to send email"}), 500
 
         return jsonify({"message": "Expired tasks notifications sent successfully"}), 200
