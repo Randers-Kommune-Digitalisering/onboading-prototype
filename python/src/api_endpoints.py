@@ -61,7 +61,7 @@ from controllers.opgaveskabelon_controller import (
     delete_opgaveskabelon,
     get_opgaveskabelon
 )
-from utils.mail_service import send_all_mails, get_planned_mails, delete_planned_mail
+from utils.mail_service import purge_mails, send_all_mails, get_planned_mails, delete_planned_mail
 
 logger = logging.getLogger(__name__)
 db_client = get_db_client()
@@ -312,6 +312,12 @@ def send_planned_mails_endpoint():
 @api_endpoints.route('/cron/get-planned-mails', methods=['GET'])
 def get_planned_mails_endpoint():
     return get_planned_mails()
+
+
+@api_endpoints.route('/cron/purge-mails', methods=['POST'])
+def purge_mails_endpoint():
+    days = request.args.get('days', default=30, type=int)
+    return purge_mails(days)
 
 
 @api_endpoints.route('/mail/delete/<int:mail_id>', methods=['DELETE'])

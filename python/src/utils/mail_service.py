@@ -1,7 +1,7 @@
 from flask import jsonify
 import logging
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.config import MAIL_SERVICE_URL, MAIL_SERVICE_SENDER
 from models import Mail, MailAttachment
 from utils.db_connection import get_db_client
@@ -235,5 +235,27 @@ def delete_planned_mail(mail_id):
     except Exception as e:
         session.rollback()
         return jsonify({"message": "Error deleting planned email", "error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def purge_mails(days=30):
+    """
+    Deletes emails older than the specified number of days.
+    Parameters:
+        days (int): The age in days beyond which emails should be deleted.
+    """
+    session = db_client.get_session()
+    try:
+        threshold_date = datetime.now() - timedelta(days=days)
+        old_mails = session.query(Mail).filter(Mail.created < threshold_date).all()
+        for mail in old_mails:
+            session.delete(mail)
+        session.commit()
+        return jsonify({"message": f"Deleted mails older than {days} days", "deleted_count": len(old_mails)}), 200
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error purging old emails: {e}")
+        return jsonify({"message": "Error purging old emails", "error": str(e)}), 500
     finally:
         session.close()
