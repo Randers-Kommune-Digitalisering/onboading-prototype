@@ -594,26 +594,6 @@ def notify_expired_tasks():
         now = datetime.now()
         opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result == False, Opgave.ForløbID != None).all()
         logger.info(f"Found {len(opgaver)} expired tasks to notify.")
-        opgave_list = [
-            {
-                'OpgaveID': opg.OpgaveID,
-                'title': opg.title,
-                'beskrivelse': opg.beskrivelse,
-                'note': opg.note,
-                'ansvarlig': opg.ansvarlig,
-                'ansvarligEmail': opg.ansvarligEmail,
-                'startdato': opg.startdato.isoformat() if opg.startdato else None,
-                'slutdato': opg.slutdato.isoformat() if opg.slutdato else None,
-                'relativ_startdag': opg.relativ_startdag,
-                'relativ_slutdag': opg.relativ_slutdag,
-                'result': opg.result,
-                'booking': opg.booking.isoformat() if opg.booking else None,
-                'timestamp': opg.timestamp.isoformat() if opg.timestamp else None,
-                'ForløbID': opg.ForløbID,
-                'ForløbsskabelonID': opg.ForløbsskabelonID
-            } for opg in opgaver
-        ]
-        return jsonify({"message": "Test executed", "expired_tasks_count": len(opgaver), "tasks": opgave_list}), 200
 
         for opgave in opgaver:
             forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
