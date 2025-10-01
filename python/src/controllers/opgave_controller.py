@@ -2,7 +2,7 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import plan_mail, send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
+from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
 import logging
 
 db_client = get_db_client()
@@ -592,7 +592,28 @@ def notify_expired_tasks():
     session = db_client.get_session()
     try:
         now = datetime.now()
-        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result is False).all()
+        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result == False, Opgave.ForløbID != None).all()
+        logger.info(f"Found {len(opgaver)} expired tasks to notify.")
+        opgave_list = [
+            {
+                'OpgaveID': opg.OpgaveID,
+                'title': opg.title,
+                'beskrivelse': opg.beskrivelse,
+                'note': opg.note,
+                'ansvarlig': opg.ansvarlig,
+                'ansvarligEmail': opg.ansvarligEmail,
+                'startdato': opg.startdato.isoformat() if opg.startdato else None,
+                'slutdato': opg.slutdato.isoformat() if opg.slutdato else None,
+                'relativ_startdag': opg.relativ_startdag,
+                'relativ_slutdag': opg.relativ_slutdag,
+                'result': opg.result,
+                'booking': opg.booking.isoformat() if opg.booking else None,
+                'timestamp': opg.timestamp.isoformat() if opg.timestamp else None,
+                'ForløbID': opg.ForløbID,
+                'ForløbsskabelonID': opg.ForløbsskabelonID
+            } for opg in opgaver
+        ]
+        return jsonify({"message": "Test executed", "expired_tasks_count": len(opgaver), "tasks": opgave_list}), 200
 
         for opgave in opgaver:
             forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
@@ -600,17 +621,17 @@ def notify_expired_tasks():
                 return jsonify({"error": "Forløb not found"}), 404
 
             subject, message = create_mail_expired(forloeb, opgave)
-            status = send_mail(forloeb.usermail, subject, message)
+            status = plan_mail(forloeb.usermail, subject, message, opgave_id=opgave.OpgaveID)
             if not status:
-                return jsonify({"error": "Failed to send email"}), 500
+                return jsonify({"error": "Failed to plan email"}), 500
 
             if opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
                 subject, message = create_mail_expired_ansvarlig(opgave)
-                status = send_mail(opgave.ansvarligEmail, subject, message)
+                status = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
                 if not status:
-                    return jsonify({"error": "Failed to send email"}), 500
+                    return jsonify({"error": "Failed to plan email"}), 500
 
-        return jsonify({"message": "Expired tasks notifications sent successfully"}), 200
+        return jsonify({"message": "Expired tasks notifications planned successfully", "planned_count": len(opgaver)}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

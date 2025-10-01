@@ -289,7 +289,7 @@
                     <div class="tooltip">
                         <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
                             <div>
-                                <div class="nowrap">Notifikation til ansvarlig</div>
+                                <div class="nowrap">Notifikation</div>
                                 <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
                             </div>
                             <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>

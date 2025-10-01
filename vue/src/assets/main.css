@@ -543,6 +543,7 @@ p > a:hover {
     display: flex;
     flex-direction: row;
     gap: 1rem;
+    white-space: nowrap;
 }
 
 .card-content .card-details {
