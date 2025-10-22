@@ -94,7 +94,12 @@ def send_all_mails():
     total_count = len(mails) if mails else 0
     try:
         for mail_dict in mails:
-            status = send_mail(mail_dict.get('recipient'), mail_dict.get('subject'), mail_dict.get('body'), attachments=None)
+            status = send_mail(
+                mail_dict.get('recipient'),
+                mail_dict.get('subject'),
+                mail_dict.get('body'),
+                attachments=mail_dict.get('attachments', None)
+            )
             # Fetch the actual Mail ORM object
             mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
             if mail_obj:
@@ -134,10 +139,15 @@ def send_mail(recipient_email, subject, message, attachments=None):
 
     try:
         response = requests.post(MAIL_SERVICE_URL, headers=headers, json=payload)
+        # Print response content regardless of status code
+        if response.status_code != 200:
+            logger.error(f"Mail service response ({response.status_code}): {response.text}")
         response.raise_for_status()
         return True
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending email to {recipient_email}: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            logger.error(f"Mail service error response ({e.response.status_code}): {e.response.text}")
         return False
 
 
