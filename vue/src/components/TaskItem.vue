@@ -17,18 +17,16 @@
 
     const returnDaysFromNow = (date) => {
         const target = new Date(date)
+        if (target.toString() === 'Invalid Date') return null
+
         const now = new Date()
         const toUtcMidnightMs = (d) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
         return Math.round((toUtcMidnightMs(target) - toUtcMidnightMs(now)) / (1000 * 60 * 60 * 24))
     }
 
-    const returnTimeLeft = (deadline) => {
-        const target = new Date(deadline)
-        if (target.toString() === 'Invalid Date') return ''
-
-        const now = new Date()
-        const toUtcMidnightMs = (d) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
-        const diffDays = Math.round((toUtcMidnightMs(target) - toUtcMidnightMs(now)) / (1000 * 60 * 60 * 24))
+    const returnTimeLeftString = (deadline) => {
+        const diffDays = returnDaysFromNow(deadline)
+        if (diffDays == null) return ''
 
         if (diffDays === 0) return 'I dag'
         if (diffDays === 1) return 'I morgen'
@@ -333,7 +331,7 @@
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? ('Starter' + (returnDaysFromNow(startdate) > 1 ? ' om ' : '')) : 'Deadline' }}</div>
-                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeftString(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 
