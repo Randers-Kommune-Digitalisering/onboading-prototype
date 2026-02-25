@@ -1,4 +1,5 @@
 from flask import jsonify
+import base64
 import logging
 import requests
 from datetime import datetime, timedelta
@@ -9,6 +10,48 @@ from utils.pdf import create_pdf
 
 db_client = get_db_client()
 logger = logging.getLogger(__name__)
+
+
+def _to_base64_str(data):
+    if data is None:
+        return None
+    if isinstance(data, str):
+        return data
+    if isinstance(data, (bytes, bytearray, memoryview)):
+        return base64.b64encode(bytes(data)).decode("ascii")
+    raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
+
+
+def _to_bytes(data):
+    if data is None:
+        return None
+    if isinstance(data, (bytes, bytearray, memoryview)):
+        return bytes(data)
+    if isinstance(data, str):
+        # Stored as base64 text in DB
+        return base64.b64decode(data)
+    raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
+
+
+def _attachments_for_transport(attachments):
+    if attachments is None:
+        return None
+    transformed = []
+    for attachment in attachments:
+        if attachment is None:
+            continue
+        filename = attachment.get("filename")
+        content = attachment.get("file_data", attachment.get("content"))
+        content_bytes = _to_bytes(content)
+        if content_bytes is None:
+            raise ValueError("Attachment content is missing")
+
+        # Mail service expects a JSON byte array
+        transformed.append({
+            "filename": filename,
+            "content": {"data": list(content_bytes)},
+        })
+    return transformed
 
 
 def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None):
@@ -33,9 +76,15 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
         session.commit()  # Commit to get MailID
 
         if attachment is not None:
+            # `file_data` is stored and transmitted as base64 text.
+            # Sources (e.g. PDF generation) may provide raw bytes.
+            attachment_content = attachment.get('content', attachment.get('file_data'))
+            file_data_b64 = _to_base64_str(attachment_content)
+            if not file_data_b64:
+                raise ValueError("Attachment content is missing or empty")
             mail_attachment = MailAttachment(
                 filename=attachment['filename'],
-                file_data=attachment['content'],
+                file_data=file_data_b64,
                 MailID=mail.MailID  # Link attachment to mail
             )
             session.add(mail_attachment)
@@ -63,7 +112,7 @@ def get_planned_mails():
             attachments_data = [
                 {
                     "filename": attachment.filename,
-                    "file_data": attachment.file_data
+                    "file_data": _to_base64_str(attachment.file_data)
                 }
                 for attachment in attachments
             ]
@@ -132,10 +181,8 @@ def send_mail(recipient_email, subject, message, attachments=None):
         "to": recipient_email,
         "title": subject,
         "body": message,
-        "attachments": attachments
+        "attachments": _attachments_for_transport(attachments)
     }
-    if attachments is not None:
-        payload["attachments"] = attachments
 
     try:
         response = requests.post(MAIL_SERVICE_URL, headers=headers, json=payload)
