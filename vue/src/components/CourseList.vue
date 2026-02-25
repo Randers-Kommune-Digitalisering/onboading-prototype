@@ -21,11 +21,11 @@
             type: Boolean,
             default: false
         },
-        color:
-        {
-            type: String,
-            default: null
-        }
+        // color:
+        // {
+        //     type: String,
+        //     default: null
+        // }
     })
 </script>
 

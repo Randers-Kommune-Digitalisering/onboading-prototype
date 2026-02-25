@@ -352,7 +352,7 @@
 <template>
     <p class="indent-tiny bold uppercase p-header-adjust">
         {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave' }}
-        {{ isTemplate ? '' : ' til ' + forloeb?.name?? 'forløbet' }}
+        {{ isTemplate ? '' : ' til ' + (forloeb?.name ?? 'forløbet') }}
     </p>
 
     <form @submit.prevent="submitForm">
@@ -384,7 +384,7 @@
                     <span class="tooltip-display nohover">Vælg skabelon</span>
                 </div>
             </div>
-            
+
             <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
                 <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" :disabled="isAssistantLocked">
                 <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
@@ -434,7 +434,7 @@
                 </div>
             </div>
 
-            
+
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
                 <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking">
                 <label for="booking" class="floating-label">Booking</label>

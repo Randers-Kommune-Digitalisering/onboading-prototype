@@ -534,7 +534,7 @@ p > a:hover {
     justify-content: center;
 }
 .card-titles * {
-    white-space: wrap;
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
 }

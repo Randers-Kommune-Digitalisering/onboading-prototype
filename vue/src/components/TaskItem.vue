@@ -148,11 +148,11 @@
         ressources:
         {
             type: Array,
-            default: []
+            default: () => []
         },
         mails: {
             type: Array,
-            default: []
+            default: () => []
         },
         isPreparation:
         {

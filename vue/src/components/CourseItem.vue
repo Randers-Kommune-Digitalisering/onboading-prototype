@@ -52,7 +52,7 @@
         },
         mails: {
             type: Array,
-            default: []
+            default: () => []
         }
     })
 
