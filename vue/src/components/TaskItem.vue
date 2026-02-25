@@ -24,7 +24,7 @@
         return Math.round((toUtcMidnightMs(target) - toUtcMidnightMs(now)) / (1000 * 60 * 60 * 24))
     }
 
-    const returnTimeLeftString = (deadline) => {
+    const returnDaysFromNowString = (deadline) => {
         const diffDays = returnDaysFromNow(deadline)
         if (diffDays == null) return ''
 
@@ -331,7 +331,7 @@
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? ('Starter' + (returnDaysFromNow(startdate) > 1 ? ' om ' : '')) : 'Deadline' }}</div>
-                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeftString(isFutureTask ? startdate : deadline) }}</div>
+                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnDaysFromNowString(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 
