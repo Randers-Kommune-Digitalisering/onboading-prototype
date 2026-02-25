@@ -45,6 +45,7 @@
     const isForloebOngoing = ref(false)
     const isForloebFetched = ref(false)
     const isOpgaverFetched = ref(false)
+    const isUnderPreparation = ref(false)
     const opgaver_all = ref([])
     const completedPercentage = ref(0)
     const opgaver_ongoing = ref([])
@@ -67,15 +68,15 @@
                                         : props.isTemplate ? await getForloebsskabelonById(props.id)
                                         // Otherwise fetch by id and user email (for admins and ansvarlig users)
                                         : await getForloebById(props.id, { headers })
-
                 isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
-                isForloebCompleted.value = forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
-                isForloebOngoing.value = forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
+                isUnderPreparation.value = forloeb.value?.isPreparation || false
+                isForloebCompleted.value = !isUnderPreparation.value && forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
+                isForloebOngoing.value = !isUnderPreparation.value && forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
-                if (forloeb.value.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
-                    forloeb.value.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
+                if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+                    forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
                 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
@@ -98,18 +99,24 @@
 
                 // Sort and 
                 // Store opgaver in different arrays based on their status
-                if(props.isTemplate)
+                if(props.isTemplate || isUnderPreparation.value)
                     opgaver_response.data.sort((a, b) => a.relativ_startdag - b.relativ_startdag)
                 else
                     opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
 
                 opgaver_all.value = opgaver_response.data
-                opgaver_all.value.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
                 completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
 
-                if(props.isTemplate)
+                if(props.isTemplate || isUnderPreparation.value)
+                {
                     opgaver_template.value = opgaver_response.data
+                    // Get first index of all tasks that start after forløb start date
+                    start_message_index.value = opgaver_template.value
+                        .map(opgave => opgave.relativ_startdag > -1)
+                        .findIndex(opgave => opgave)
+                }
                 else
+                {
                     for (const item of opgaver_response.data) {
                         if (item.result)
                             opgaver_completed.value.push(item)
@@ -119,11 +126,13 @@
                         else 
                             opgaver_ongoing.value.push(item)
                     }
-                opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
-                start_message_index.value = opgaver_future.value
-                    .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
-                    .lastIndexOf(true)
-                console.log('Start message index:', start_message_index.value)
+                    // Get first index of future tasks that start after forløb start date
+                    opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
+                    if (!isForloebOngoing.value && forloeb.value?.startdate)
+                        start_message_index.value = opgaver_future.value
+                            .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
+                            .findIndex(opgave => opgave)
+                }
 
                 isOpgaverFetched.value = true
 
@@ -230,15 +239,17 @@
                 :duration="forloeb.varighed" 
                 :startDate="new Date(forloeb.startdate)" 
                 :deadline="new Date(forloeb.enddate)"
-                :tasks="opgaver_all" />
+                :tasks="opgaver_all"
+                :isPreparation="isUnderPreparation"
+                :mails="forloeb.pending_emails" />
 
-    <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate ? 4.5 : 7.2" :dark="true" />
-    <ProgressBar v-if="forloeb != null  && !showDetails" :percentage="completedPercentage"></ProgressBar>
+    <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate || isUnderPreparation ? 4.5 : 7.2" :dark="true" />
+    <ProgressBar v-if="forloeb != null  && !showDetails && !isUnderPreparation" :percentage="completedPercentage"></ProgressBar>
     
     <!-- Admin actions -->
     <div class="buttons" v-if="userInfo.isAdmin && !props.ansvarligView && forloeb != null && isOpgaverFetched">
 
-        <router-link :to="`/create-opgave?id=${forloeb_id}`"
+        <router-link :to="`/create-opgave?id=${forloeb_id}&prep=${isUnderPreparation}`"
                      class="button" v-if="!isTemplate && !isForloebCompleted">
                         + Tilføj opgave
         </router-link>
@@ -249,14 +260,19 @@
                         + Tilføj opgave
         </router-link>
 
-        <router-link :to="`/create-forloeb${isTemplate ? 'sskabelon':''}?edit=true&id=${forloeb_id}`"
+        <router-link :to="`/edit-forloeb?id=${forloeb_id}`" v-if="!isTemplate"
                      class="button hollow">
-                        Redigér {{isForloebCompleted ? ' / genoptag ' : '' }}{{ isTemplate ? 'skabelon' : 'forløb' }}
+                        Redigér{{isForloebCompleted ? ' / genoptag' : '' }} forløb
+        </router-link>
+
+        <router-link :to="`/create-forloebsskabelon?id=${forloeb_id}&edit=true`" v-else
+                     class="button hollow">
+                        Redigér skabelon
         </router-link>
 
         <div @click="downloadForloeb()"
              class="button hollow dashed"
-             v-if="!isTemplate">
+             v-if="!isTemplate && !isUnderPreparation">
                 Download PDF
         </div>
 
@@ -266,31 +282,36 @@
                 Afslut forløb
         </div>
 
+        <router-link :to="`/start-forloeb?id=${forloeb_id}`"
+                     class="button hollow yellow"
+                     v-if="!isTemplate && isUnderPreparation">
+                        Start forløb
+        </router-link>
+
         <div @click="deleteCourse()"
              class="button red hollow"
-             v-if="isTemplate || isForloebCompleted">
+             v-if="isTemplate || isForloebCompleted || (!isForloebCompleted && !isForloebOngoing)">
                 Slet {{ isTemplate ? 'skabelon' : 'forløb' }}
         </div>
 
-        <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
+        <!-- <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
                      class="button"
                      v-if="isTemplate">
                         + Opret forløb med skabelon
-        </router-link>
+        </router-link> -->
 
     </div>
 
-    <div v-if="forloeb != null && forloeb?.opgave_grupper.length > 0" class="sort-container">
+    <div v-if="forloeb != null && forloeb?.opgave_grupper?.length > 0" class="sort-container">
         <div style="flex-grow:1">&nbsp;</div>
         <div class="sort-title">Sortér efter:</div>
         <select class="sort-selector" v-model="sortBy">
-            <option value="deadline">Deadline</option>
+            <option value="deadline">{{ isUnderPreparation || isTemplate ? 'Startdag' : 'Deadline' }}</option>
             <option value="gruppe">Gruppe</option>
         </select>
     </div>
-
     <div v-if="sortBy === 'deadline'">
-        <TaskList v-if="forloeb != null && isTemplate"
+        <TaskList v-if="forloeb != null && (isTemplate || isUnderPreparation)"
                 :tasks="opgaver_template"
                 :isFetchingTasks="!isOpgaverFetched"
                 :userInfo="userInfo"
@@ -298,9 +319,12 @@
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
                 :expandItem="expandItem"
-                :templateView="true" />
+                :templateView="isTemplate"
+                :isPreparation="isUnderPreparation"
+                :forloebStartDate="new Date(forloeb?.startdate)"
+                :startMessageIndex="start_message_index" />
 
-        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_ongoing"
                 :isFetchingTasks="!isOpgaverFetched"
                 :userInfo="userInfo"
@@ -309,7 +333,7 @@
                 :expandFirstItem="false"
                 :expandItem="expandItem" />
 
-        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_future"
                 :isFetchingTasks="!isOpgaverFetched"
                 :userInfo="userInfo"
@@ -321,7 +345,7 @@
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index" />
 
-        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && !isTemplate"
+        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_completed"
                 :isFetchingTasks="!isOpgaverFetched"
                 :userInfo="userInfo"
@@ -340,7 +364,9 @@
                 :title="group.name"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-                :expandItem="expandItem" />
+                :expandItem="expandItem"
+                :templateView="isTemplate"
+                :isPreparation="isUnderPreparation" />
 
         
         <TaskList v-if="forloeb != null"
@@ -350,7 +376,9 @@
                 title="Ingen gruppe"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-                :expandItem="expandItem" />
+                :expandItem="expandItem"
+                :templateView="isTemplate"
+                :isPreparation="isUnderPreparation" />
     </div>
 
 </template>

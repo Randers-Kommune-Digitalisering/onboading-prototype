@@ -3,18 +3,16 @@
     import { useRouter, useRoute } from 'vue-router'
 
     import { getUserInfo } from '@/services/keycloakService.js'
-    import { getForloebsskabeloner } from '@/services/forløbsskabelonService.js'
-    import { createForloeb, createForloebPreparation } from '@/services/forløbService.js'
+    import { getForloebById, updateForloeb } from '@/services/forløbService.js'
     import { getAdminData, getUsers } from '@/services/userService.js'
 
     const route = useRoute()
     const router = useRouter()
 
     const isSubmitting = ref(false)
-    const isPreparation = route.query.prep !== 'false'
+    const isPreparation = ref(true)
+    const forloeb_id = parseInt(route.query.id, 10)
 
-	const template_id = parseInt(route.query.tid, 10)
-    const templates = ref([])
     const inputFields = ref({
         usermail: "",
         admin: "",
@@ -22,11 +20,19 @@
         startdate: "",
         enddate: "",
         name: "",
-        userdq: ""
+        userdq: "",
+        planWelcome: false
     })
 
     /* User mail search */
     const isUserMailValid = ref(true)
+    const isRandersMail = (email) => {
+        let result = email.toLowerCase().endsWith('@randers.dk')
+        if (!result)
+            inputFields.value.planWelcome = false
+        return result
+    }
+    const welcomeMailPlanned = ref(false)
     const userList = ref([])
     const userMailSearchResults = ref([])
     const isUserMailSearchOpen = ref(false)
@@ -43,7 +49,7 @@
                 }
             }
         }
-        if (isAdminSearchOpen) {
+        if (isAdminSearchOpen.value) {
             isAdminSearchOpen.value = false
         }
         if (searchString.length < 3) {
@@ -68,13 +74,6 @@
         evaluateEmail()
     }
 
-    // const getEmailType = () => {
-    //     if (inputFields.value.usermail.includes('@randers.dk')) {
-    //         return 'randersmail'
-    //     }
-    //     return 'private'
-    // }
-
     const evaluateEmail = () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailPattern.test(inputFields.value.usermail))
@@ -98,7 +97,7 @@
     })
 
     const searchAdmins = (searchString) => {
-        if (isUserMailSearchOpen) {
+        if (isUserMailSearchOpen.value) {
             isUserMailSearchOpen.value = false
         }
         if (searchString.length < 3) {
@@ -136,38 +135,9 @@
             isAdminSearchOpen.value = false
         }
     }
-    
-    const selectNoTemplateIfNotSelected = () => {
-        if(inputFields.value.ForløbsskabelonID == "")
-            inputFields.value.ForløbsskabelonID = null
-    }
-
-    const setEndDateFromTemplate = () => {
-        const template = templates.value.find(template => template.ForløbsskabelonID === inputFields.value.ForløbsskabelonID)
-        if (template) {
-            const startDate = new Date(inputFields.value.startdate)
-            const daysToAdd = template.varighed
-            var endDate = new Date(startDate)
-            endDate.setDate(endDate.getDate() + daysToAdd)
-            inputFields.value.enddate = endDate.toISOString().split('T')[0]
-        }
-    }
 
     /* Instantiate */
     onMounted(async () => {
-        // Get templates
-        try {
-            const forloebsskabelonerResponse = await getForloebsskabeloner()
-            templates.value = forloebsskabelonerResponse.data
-            if (template_id) {
-                const selectedTemplate = templates.value.find(template => template.ForløbsskabelonID === template_id)
-                if (selectedTemplate)
-                    inputFields.value.ForløbsskabelonID = selectedTemplate.ForløbsskabelonID
-            }
-        } catch (error) {
-            console.error('Error fetching forloebsskabeloner:', error)
-        }
-
         // Get admin list
         try {
             const adminDataResponse = await getAdminData()
@@ -189,6 +159,24 @@
         } catch (error) {
             console.error('Error fetching emails:', error)
         }
+
+        // Get item to edit
+        try {
+            const forloebResponse = await getForloebById(forloeb_id)
+            selectedAdmin.value = adminList.value.find(admin => admin.mail === forloebResponse.data.admin)
+            const formattedData = {
+                ...forloebResponse.data,
+                startdate: forloebResponse.data.startdate ? forloebResponse.data.startdate.split('T')[0] : '',
+                enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : '',
+                planWelcome: forloebResponse.data.pending_emails?.filter(mail => !mail.isSent).length > 0
+            }
+            formattedData.admin = selectedAdmin.value.name
+            isPreparation.value = forloebResponse.data.isPreparation
+            welcomeMailPlanned.value = formattedData.planWelcome
+            Object.assign(inputFields.value, formattedData)
+        } catch (error) {
+            console.error('Error fetching forløb:', error)
+        }
     })
 
     /* Submit */
@@ -203,9 +191,7 @@
             formData.admin = selectedAdmin.value.mail
             if (!formData.ForløbsskabelonID)
                 delete formData.ForløbsskabelonID
-            const response = isPreparation ?
-                await createForloebPreparation(formData)
-                : await createForloeb(formData)
+            const response = await updateForloeb(forloeb_id, formData)
             if (response.data.uid)
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
         } catch (error) {
@@ -219,7 +205,7 @@
 </script>
 
 <template>
-    <p class="indent-tiny bold uppercase p-header-adjust">{{ isPreparation ? 'Opret forløbsforberedelse' : 'Opret forløb' }}</p>
+    <p class="indent-tiny bold uppercase p-header-adjust">Rediger forløb</p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
@@ -251,19 +237,28 @@
                 <div v-if="adminSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
             </div>
         </div>
+        <div v-if="!isPreparation" class="inputContainer" :class="{ 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }">
+            <div class="flex-item">
+                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdate" required>
+                <label for="startdate" class="floating-label">Startdato</label>
+            </div>
+            <div class="flex-item">
+                <input type="date" id="enddate" name="enddate" v-model="inputFields.enddate" required>
+                <label for="enddate" class="floating-label">Slutdato</label>
+            </div>
+        </div>
 
-        <div class="inputContainer" :class="{ 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }">
-            <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
-                <option value="" disabled selected hidden></option>
-                <option :value="null" style="color:gray">Ingen skabelon</option>
-                <option v-for="template in templates" :value="template.ForløbsskabelonID">{{template.name}}</option>
-            </select>
-            <label for="template" class="floating-label">Skabelon</label>
-            <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
+        <div :class="['inputContainer checkbox', { 'hideOnMobile': isUserMailSearchOpen }]" v-if="!isPreparation">
+            <input type="checkbox" id="planWelcome" name="planWelcome" v-model="inputFields.planWelcome" :disabled="!isRandersMail(inputFields.usermail) || isUserMailSearchOpen || welcomeMailPlanned">
+            <label for="planWelcome" :class="['checkbox-label', { 'faded': !isRandersMail(inputFields.usermail) || isUserMailSearchOpen || welcomeMailPlanned }]">
+                Planlæg afsendelse velkomstmail til ny medarbejder<br />
+                <div class="tag" v-if="inputFields.usermail != '' && !isRandersMail(inputFields.usermail)">Kræver at at medarbejderen benytter en @randers.dk-mailadresse</div>
+                <div class="tag green" v-if="welcomeMailPlanned">Velkomstmail allerede planlagt. Slet denne, hvis du ønsker at planlægge en ny.</div>
+            </label>
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">+ Opret forløb</button>
+            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opdater forløb</button>
         </div>
 
     </div>

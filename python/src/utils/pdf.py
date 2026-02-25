@@ -11,6 +11,8 @@ def create_pdf(forloeb_id):
     forloeb = forloeb_response[0].get_json() if isinstance(forloeb_response, tuple) else forloeb_response.get_json()
     opgaver_response = get_opgave_by_forloeb_id(forloeb_id)
     opgaver = opgaver_response[0].get_json() if isinstance(opgaver_response, tuple) else opgaver_response.get_json()
+    if "error" not in opgaver:
+        opgaver = sorted(opgaver, key=lambda x: x["startdato"])
 
     # Initialize FPDF
     pdf = FPDF()

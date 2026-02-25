@@ -15,6 +15,7 @@
     const forloeb_id = ref(parseInt(route.query.id ?? route.query.tid, 10))
     const isTemplate = route.query.template === 'true'  // Whether we are adding an opgave to a forløb/forløbsskablon or creating a template
     const addToTemplate = ref(route.query.tid != null) // Whether we are adding an opgave to a forløbsskabelon
+    const isPreparation = ref(!isTemplate && route.query.prep === 'true') // Whether the forløb is under preparation (only relevant if not a template)
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
     const opgaveId = isEditing ? parseInt(route.query.id, 10) : null
@@ -22,6 +23,7 @@
     const selectedTemplate = ref("")
     const selectedGroup = ref("")
     const isAddingNewGroup = ref(false)
+    const isSelectingTemplate = ref(false)
 
     const inputFields = ref({
         title: "",
@@ -88,7 +90,7 @@
     }
 
     const returnDagOrDage = (days) => {
-        return days > 1 || days == 0 ? 'dage' : 'dag'
+        return days == 1 || days == -1 ? 'dag' : 'dage'
     }
 
     /* Textarea */
@@ -114,8 +116,22 @@
     /* Use template */
 
     const selectTemplate = (template) => {
+        isSelectingTemplate.value = false
         if(template == null)
+        {
+            inputFields.value.title = ""
+            inputFields.value.beskrivelse = ""
+            inputFields.value.note = ""
+            inputFields.value.startdato = ""
+            inputFields.value.slutdato = ""
+            inputFields.value.booking = ""
+            if(addToTemplate.value || isPreparation.value)
+            {
+                inputFields.value.relativ_slutdag = 1
+                relativEndday.value = inputFields.value.relativ_slutdag
+            }
             return
+        }
         
         inputFields.value.title = template.title
         inputFields.value.beskrivelse = template.beskrivelse
@@ -123,7 +139,7 @@
         inputFields.value.startdato = template.startdato
         inputFields.value.slutdato = template.slutdato
         inputFields.value.booking = template.booking
-        if(addToTemplate)
+        if(addToTemplate.value || isPreparation.value)
         {
             inputFields.value.relativ_slutdag = template.relativ_slutdag
             relativEndday.value = inputFields.value.relativ_slutdag
@@ -136,13 +152,19 @@
     }
 
     const setEndDateFromTemplate = () => {
-        if (selectedTemplate.value) {
+        if (selectedTemplate.value && !isPreparation.value) {
             const startDate = new Date(inputFields.value.startdato)
             const daysToAdd = selectedTemplate.value.relativ_slutdag
             var endDate = new Date(startDate)
             endDate.setDate(endDate.getDate() + daysToAdd)
             inputFields.value.slutdato = endDate.toISOString().split('T')[0]
         }
+    }
+
+    const toggleSelectTemplate = () => {
+        if(!isSelectingTemplate.value && selectedTemplate.value == null)
+            selectedTemplate.value = ""
+        isSelectingTemplate.value = !isSelectingTemplate.value
     }
 
     const selectGroup = (group) => {
@@ -254,7 +276,8 @@
     /* Submit */
 
     const removeNonIntegers = (value) => {
-        return value.replace(/(?![0-9])./gmi,'')
+        // Allow a single minus at the start, then digits only
+        return value.replace(/[^-\d]/g, '').replace(/(?!^)-/g, '')
     }
 
     const sliceXChars = (value, x) => {
@@ -283,7 +306,7 @@
                 ...inputFields.value
             }
 
-            if(isTemplate || addToTemplate.value)
+            if(isTemplate || addToTemplate.value || isPreparation.value)
                 delete formData.startdato, delete formData.slutdato, delete formData.booking
             else
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
@@ -328,124 +351,139 @@
 
 <template>
     <p class="indent-tiny bold uppercase p-header-adjust">
-        {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave til' }}
-        {{ isTemplate ? '' : ' på ' + forloeb?.name?? 'forløbet' }}</p>
+        {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave' }}
+        {{ isTemplate ? '' : ' til ' + (forloeb?.name ?? 'forløbet') }}
+    </p>
 
     <form @submit.prevent="submitForm">
     <div class="formContainer">
 
-        <div v-if="!isEditing && !isTemplate" class="inputContainer">
-            <select id="template" name="template" v-model="selectedTemplate" @change="selectTemplate(selectedTemplate)" required>
-                <option value="" disabled selected hidden></option>
-                <option :value="null" style="color:gray">Ingen skabelon</option>
-                <option v-for="template in templates" :value="template">{{template.title}}</option>
-            </select>
-            <label for="template" class="floating-label">Skabelon</label>
-            <div class="icon nohover"><i class="fa-solid fa-caret-down"></i></div>
-        </div>
-
-        <div class="inputContainer">
-            <input type="text" id="title" name="title" placeholder=" " v-model="inputFields.title" required>
-            <label for="title" class="floating-label">Opgavens navn</label>
-        </div>
-        
-        <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
-            <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" :disabled="isAssistantLocked">
-            <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
-            <div class="icon" @click="toggleassistantSearch()"><i :class="'fa-solid fa-lock' + (isAssistantLocked ? '' : '-open')"></i></div>
-            
-            <div class="itemSelector float-right" v-if="isAssistantSearchOpen">
-                <span class="float-header small uppercase">Vælg en ansvarlig medarbejder ...</span>
-                <div v-for="result in assistantSearchResults" @click="selectAssistant(result)">{{result.name}}</div>
-                <div v-if="assistantSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
+        <template v-if="!isEditing && !isTemplate && isSelectingTemplate">
+            <div class="inputContainer">
+                <select id="template" name="template" v-model="selectedTemplate" @change="selectTemplate(selectedTemplate)" required>
+                    <option value="" disabled selected hidden></option>
+                    <option :value="null" style="color:gray">Ingen skabelon</option>
+                    <option v-for="template in templates" :value="template">{{template.title}}</option>
+                </select>
+                <label for="template" class="floating-label">Skabelon</label>
+                <div class="icon nohover adjust-for-button"><i class="fa-solid fa-caret-down"></i></div>
+                <div class="button input-button tooltip-hover" @click="toggleSelectTemplate()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span class="tooltip-display nohover">Fortryd</span>
+                </div>
             </div>
-        </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <textarea id="description" name="description" ref="textareaDescription" @input="resizeTextareaDescriptionToFitContent()" placeholder=" " v-model="inputFields.beskrivelse" required></textarea>
-            <label for="description" class="floating-label">Beskrivelse</label>
-        </div>
+        </template>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note"></textarea>
-            <label for="note" class="floating-label">Note til ansvarlig</label>
-        </div>
-
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
-            <input v-if="isAddingNewGroup" type="text" id="gruppe" name="gruppe" placeholder="" v-model="inputFields.OpgaveGruppeNavn" required>
-            <select v-else id="gruppe" name="gruppe" v-model="selectedGroup" @change="selectGroup(selectedGroup)" required>
-                <option value="" disabled selected hidden></option>
-                <option :value="null" style="color:gray">Ingen gruppe</option>
-                <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
-            </select>
-            <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
-            <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
-            <div class="button input-button" @click="toggleAddNewGroup()">
-                <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
-                <i v-else class="fa-solid fa-plus"></i>
+        <template v-else>
+            <div class="inputContainer">
+                <input type="text" id="title" name="title" placeholder=" " v-model="inputFields.title" required>
+                <label for="title" class="floating-label">Opgavens navn</label>
+                <div class="button input-button tooltip-hover" @click="toggleSelectTemplate()" v-if="!isEditing && !isTemplate">
+                    <i class="fa-solid fa-folder"></i>
+                    <span class="tooltip-display nohover">Vælg skabelon</span>
+                </div>
             </div>
-        </div>
 
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
-            <div class="flex-item">
-                <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" @change="setEndDateFromTemplate()" required>
-                <label for="startdate" class="floating-label">Startdato</label>
+            <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
+                <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" :disabled="isAssistantLocked">
+                <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
+                <div class="icon" @click="toggleassistantSearch()"><i :class="'fa-solid fa-lock' + (isAssistantLocked ? '' : '-open')"></i></div>
+                
+                <div class="itemSelector float-right" v-if="isAssistantSearchOpen">
+                    <span class="float-header small uppercase">Vælg en ansvarlig medarbejder ...</span>
+                    <div v-for="result in assistantSearchResults" @click="selectAssistant(result)">{{result.name}}</div>
+                    <div v-if="assistantSearchResults.length == 0" class="nohover small">Der blev ikke fundet nogle resultater.</div>
+                </div>
             </div>
-            <div class="flex-item">
-                <input type="date" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
-                <label for="enddate" class="floating-label">Slutdato</label>
+
+            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
+                <textarea id="description" name="description" ref="textareaDescription" @input="resizeTextareaDescriptionToFitContent()" placeholder=" " v-model="inputFields.beskrivelse" required></textarea>
+                <label for="description" class="floating-label">Beskrivelse</label>
             </div>
-        </div>
 
-        
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate">
-            <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking">
-            <label for="booking" class="floating-label">Booking</label>
-        </div>
+            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
+                <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note"></textarea>
+                <label for="note" class="floating-label">Note til ansvarlig</label>
+            </div>
 
-        <!--  Relative start and end days -->
-        <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate">
-            <div v-if="addToTemplate" class="flex-item">
-                <input type="text" id="startdate" class="padding-input" name="startdate"
-                        v-model="inputFields.relativ_startdag" ref="relativStartday"
-                        @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3)"
-                        required>
-                <label for="startdate" class="floating-label">Startes efter </label>
-                <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}</label>
-                <div :class="['floating-button', 'indent-floating-button']"
-                        @click="inputFields.relativ_startdag--">
+            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
+                <input v-if="isAddingNewGroup" type="text" id="gruppe" name="gruppe" placeholder="" v-model="inputFields.OpgaveGruppeNavn" required>
+                <select v-else id="gruppe" name="gruppe" v-model="selectedGroup" @change="selectGroup(selectedGroup)" required>
+                    <option value="" disabled selected hidden></option>
+                    <option :value="null" style="color:gray">Ingen gruppe</option>
+                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
+                </select>
+                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
+                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
+                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
+                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
+                    <i v-else class="fa-solid fa-plus"></i>
+                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
+                </div>
+            </div>
+
+            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
+                <div class="flex-item">
+                    <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" @change="setEndDateFromTemplate()" required>
+                    <label for="startdate" class="floating-label">Startdato</label>
+                </div>
+                <div class="flex-item">
+                    <input type="date" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
+                    <label for="enddate" class="floating-label">Slutdato</label>
+                </div>
+            </div>
+
+
+            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
+                <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking">
+                <label for="booking" class="floating-label">Booking</label>
+            </div>
+
+            <!--  Relative start and end days -->
+            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="isTemplate || addToTemplate || isPreparation">
+                <div v-if="addToTemplate || isPreparation" class="flex-item">
+                    <input type="text" id="startdate" class="padding-input" name="startdate"
+                            v-model="inputFields.relativ_startdag" ref="relativStartday"
+                            @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3)"
+                            required>
+                    <label for="startdate" class="floating-label">Startes efter </label>
+                    <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}</label>
+                    <div :class="['floating-button', 'indent-floating-button']"
+                            @click="inputFields.relativ_startdag--">
+                                <i class="fa fa-minus"></i>
+                            </div>
+                    <div class="floating-button" 
+                        @click="inputFields.relativ_startdag++">
+                        <i class="fa fa-plus"></i>
+                    </div>
+                </div>
+                <div class="flex-item">
+                    <input type="text" id="enddate" class="padding-input" name="enddate"
+                            v-model="inputFields.relativ_slutdag" ref="relativEndday"
+                            @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 3));relativEnddayAtOne = inputFields.relativ_slutdag==1"
+                            required>
+                    <label for="enddate" class="floating-label">Varighed</label>
+                    <label for="enddate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_slutdag) }}</label>
+                    <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativEnddayAtOne}]"
+                            @click="inputFields.relativ_slutdag--;relativEnddayAtOne = inputFields.relativ_slutdag==1">
                             <i class="fa fa-minus"></i>
                         </div>
-                <div class="floating-button" 
-                    @click="inputFields.relativ_startdag++">
-                    <i class="fa fa-plus"></i>
-                </div>
-            </div>
-            <div class="flex-item">
-                <input type="text" id="enddate" class="padding-input" name="enddate"
-                        v-model="inputFields.relativ_slutdag" ref="relativEndday"
-                        @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 3));relativEnddayAtOne = inputFields.relativ_slutdag==1"
-                        required>
-                <label for="enddate" class="floating-label">Varighed</label>
-                <label for="enddate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_slutdag) }}</label>
-                <div :class="['floating-button', 'indent-floating-button', { 'disabled': relativEnddayAtOne}]"
-                        @click="inputFields.relativ_slutdag--;relativEnddayAtOne = inputFields.relativ_slutdag==1">
-                        <i class="fa fa-minus"></i>
+                    <div class="floating-button" @click="relativEnddayAtOne = false;inputFields.relativ_slutdag++">
+                        <i class="fa fa-plus"></i>
                     </div>
-                <div class="floating-button" @click="relativEnddayAtOne = false;inputFields.relativ_slutdag++">
-                    <i class="fa fa-plus"></i>
                 </div>
             </div>
-        </div>
 
-        <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]"
-                    type="submit"
-                    @click="clearAssistantIfNotSelected();selectNoTemplateIfNotSelected();selectNoGroupIfNotSelected()"
-                    :disabled="isSubmitting">
-                        {{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}
-            </button>
-        </div>
+            <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
+                <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]"
+                        type="submit"
+                        @click="clearAssistantIfNotSelected();selectNoTemplateIfNotSelected();selectNoGroupIfNotSelected()"
+                        :disabled="isSubmitting">
+                            {{ isEditing ? 'Opdater opgave' : isTemplate ? '+ Opret opgaveskabelon' : '+ Tilføj opgave' }}
+                </button>
+            </div>
+        </template>
 
     </div>
     </form>
@@ -466,5 +504,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    .tooltip-display
+    {
+        transform: translate(0, -2.6rem);
+        width: auto;
+        white-space: nowrap;
+    }
+    .icon.adjust-for-button {
+        transform: translateX(-4rem);
     }
 </style>

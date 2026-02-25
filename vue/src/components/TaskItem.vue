@@ -148,11 +148,16 @@
         ressources:
         {
             type: Array,
-            default: []
+            default: () => []
         },
         mails: {
             type: Array,
-            default: []
+            default: () => []
+        },
+        isPreparation:
+        {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -221,11 +226,9 @@
     const gotoTask = () => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
-        // if (props.isTemplate) 
-        //     updateQuery.template = true
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate } })
+            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate, prep: props.isPreparation } })
         })
     }
 
@@ -279,13 +282,17 @@
                 <div class="tooltipContainer">
                     <div class="icon"><i class="fa-solid fa-envelope"></i></div>
                     <div class="text">
-                    <div class="small faded">Mails</div>
-                    <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' afventer') : 'Ingen mails' }}</div>
+                        <div class="small faded">Mails</div>
+                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
                     </div>
                     
                     <div class="tooltip">
-                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id" @click="deletePendingEmail(mail.id)">
-                            {{ mail.subject }} ({{ mail.recipient }}) <i class="fa-solid fa-xmark"></i>
+                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
+                            <div>
+                                <div class="nowrap">Notifikation</div>
+                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
+                            </div>
+                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
                         </div>
                     </div>
                 </div>
@@ -304,7 +311,7 @@
 
         <div class="card-content">
             <div class="card-details">
-                <div v-if="templateView && !isTemplate">
+                <div v-if="(templateView && !isTemplate) || isPreparation">
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
@@ -315,8 +322,8 @@
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">{{ templateView ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
-                        <div>{{ templateView ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                        <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
+                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 
@@ -333,7 +340,7 @@
                     </div>
                 </div>
 
-                <div v-if="!templateView">
+                <div v-if="!templateView && !isPreparation">
                     <div class="icon"><i class="fa-solid fa-calendar"></i></div>
                     <div class="text">
                         <div class="small faded">Booking</div>
@@ -381,8 +388,8 @@
                         Redigér
                 </div>
 
-                <div :class="['button', 'hollow', {'red': result}]"
-                     v-if="!templateView && 
+                <div :class="['button', 'hollow', {'yellow': result}]"
+                     v-if="!templateView && !isPreparation && 
                             (userInfo?.isAdmin ||
                                 (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail) ||
                                 (userInfo?.isMedarbejder && ansvarligEmail == '')
@@ -431,17 +438,38 @@
         right: -0.75rem;
 
         font-size: 0.75rem;
-        white-space: nowrap;
         cursor: default;
         text-align: right;
 
         max-height: 4rem;
         overflow-y: auto;
+        user-select: text;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.4rem;
     }
-        .tooltip > .mail:has(i):hover {
-            color: var(--color-button-red);
-            cursor: pointer;
-        }
+    .tooltip > .mail {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .mail-recipient {
+        max-width: 15rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9em;
+        font-weight: 400;
+    }
+    .tooltip i {
+        margin-left: 0.5rem;
+        font-size: 1rem;
+    }
+    .tooltip i:hover {
+        color: var(--color-button-red);
+        cursor: pointer;
+    }
     .tooltipContainer:hover > .tooltip {
         visibility: visible;
         opacity: 1;

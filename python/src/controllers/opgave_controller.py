@@ -2,7 +2,7 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import plan_mail, send_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
+from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
 import logging
 
 db_client = get_db_client()
@@ -68,9 +68,9 @@ def create_opgave():
         session.commit()
 
         # Send mail notification to the responsible person
-        if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
+        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
+            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -176,7 +176,7 @@ def create_opgave_with_opgaveskabelon():
         else:
             return jsonify({"error": "Either ForløbID or ForløbsskabelonID is required"}), 400
 
-        if 'OpgaveGruppeID' in data:
+        if 'OpgaveGruppeID' in data and data.get('OpgaveGruppeID') is not None:
             opgavegruppe = session.query(OpgaveGruppe).filter_by(OpgaveGruppeID=data['OpgaveGruppeID']).first()
             if not opgavegruppe:
                 return jsonify({"error": "OpgaveGruppe not found"}), 404
@@ -201,9 +201,9 @@ def create_opgave_with_opgaveskabelon():
         session.commit()
 
         # Send mail notification to the responsible person
-        if new_opgave.ansvarligEmail is not None and new_opgave.ansvarligEmail != "":
+        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, new_opgave.OpgaveID, new_opgave.ForløbID)
+            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -377,8 +377,8 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 } if opgave.opgavegruppe else None,
                 'ansvarlig': opgave.ansvarlig,
                 'ansvarligEmail': opgave.ansvarligEmail,
-                'startdato': opgave.startdato.isoformat(),
-                'slutdato': opgave.slutdato.isoformat(),
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
@@ -439,8 +439,8 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                 } if opg.opgavegruppe else None,
                 'ansvarlig': opg.ansvarlig,
                 'ansvarligEmail': opg.ansvarligEmail,
-                'startdato': opg.startdato.isoformat(),
-                'slutdato': opg.slutdato.isoformat(),
+                'startdato': opg.startdato.isoformat() if opg.startdato else None,
+                'slutdato': opg.slutdato.isoformat() if opg.slutdato else None,
                 'relativ_startdag': opg.relativ_startdag,
                 'relativ_slutdag': opg.relativ_slutdag,
                 'result': opg.result,
@@ -550,9 +550,9 @@ def update_opgave(opgave_id):
                     session.commit()
 
         # Send mail notification to the responsible person
-        if is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
+        if opgave.startdato and opgave.slutdato and is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
-            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave.OpgaveID, opgave.ForløbID)
+            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -592,7 +592,8 @@ def notify_expired_tasks():
     session = db_client.get_session()
     try:
         now = datetime.now()
-        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result is False).all()
+        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result == False, Opgave.ForløbID != None).all()
+        logger.info(f"Found {len(opgaver)} expired tasks to notify.")
 
         for opgave in opgaver:
             forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
@@ -600,17 +601,17 @@ def notify_expired_tasks():
                 return jsonify({"error": "Forløb not found"}), 404
 
             subject, message = create_mail_expired(forloeb, opgave)
-            mail = send_mail(forloeb.usermail, subject, message)
-            if 'error' in mail:
-                return jsonify({"error": "Failed to send email"}), 500
+            status = plan_mail(forloeb.usermail, subject, message, opgave_id=opgave.OpgaveID)
+            if not status:
+                return jsonify({"error": "Failed to plan email"}), 500
 
             if opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
                 subject, message = create_mail_expired_ansvarlig(opgave)
-                mail = send_mail(opgave.ansvarligEmail, subject, message)
-                if 'error' in mail:
-                    return jsonify({"error": "Failed to send email"}), 500
+                status = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
+                if not status:
+                    return jsonify({"error": "Failed to plan email"}), 500
 
-        return jsonify({"message": "Expired tasks notifications sent successfully"}), 200
+        return jsonify({"message": "Expired tasks notifications planned successfully", "planned_count": len(opgaver)}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

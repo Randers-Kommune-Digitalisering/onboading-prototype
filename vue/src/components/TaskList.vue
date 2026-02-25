@@ -63,6 +63,11 @@
         {
             type: Number,
             default: -1
+        },
+        isPreparation:
+        {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -76,7 +81,12 @@
             <template v-for="(task, index) in tasks">
                 <div class="start-spacer" v-if="forloebStartDate != null && index === startMessageIndex">
                     <div class="line"></div>
-                    <span class="text">Forløbet starter {{ new Date(forloebStartDate).toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' }) }}</span>
+                    <span class="text">Forløbet starter
+                        {{
+                            isPreparation || templateView ? 'her' :
+                            new Date(forloebStartDate).toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                        }}
+                    </span>
                 </div>
                 <Card
                     :userInfo="userInfo"
@@ -95,20 +105,21 @@
                     :ansvarlig="task.ansvarlig"
                     :ansvarligEmail="task.ansvarligEmail"
                     :booking="task.booking ? new Date(new Date(task.booking)) : null"
-                    :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-                    :border="(!task.result && !templateView && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
+                    :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
+                    :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
                     :expandByDefault="expandFirstItem && index == 0 || expandItem === task.OpgaveID || expandItem === task.OpgaveskabelonID"
                     :dark="dark || task.result"
                     :templateView="templateView"
                     :isTemplate="task.OpgaveskabelonID != null"
                     :result="task.result"
                     :ressources="task.resourcer"
-                    :mails="task.pending_emails" />
+                    :mails="task.pending_emails"
+                    :isPreparation="isPreparation" />
             </template>
         </div><!-- /card-list -->
         <div v-else>
             <p class="indent-tiny" v-if="isFetchingTasks">Indlæser ...</p>
-            <p class="indent-tiny" v-else>Ingen opgaver fundet.</p>
+            <p class="indent-tiny faded" v-else>Ingen opgaver fundet.</p>
         </div>
     </div>
 
@@ -118,7 +129,6 @@
     font-size: 0.8em;
     text-transform: none;
     width: 100%;
-    max-width: 38rem;
     text-align: center;
     position: relative;
 }
@@ -128,8 +138,12 @@
         position: absolute;
         top: 50%;
         width: 100%;
-        max-width: 38rem;
         z-index: 1;
+    }
+    @media only screen and (min-width: 768px) {
+        .start-spacer, .start-spacer > .line {
+            max-width: 38rem;
+        }
     }
     .start-spacer > .text {
         background-color: var(--color-background);

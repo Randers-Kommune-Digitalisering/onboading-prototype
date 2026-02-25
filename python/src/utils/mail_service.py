@@ -1,9 +1,10 @@
 from flask import jsonify
+import base64
 import logging
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.config import MAIL_SERVICE_URL, MAIL_SERVICE_SENDER
-from models import Mail
+from models import Mail, MailAttachment
 from utils.db_connection import get_db_client
 from utils.pdf import create_pdf
 
@@ -11,7 +12,49 @@ db_client = get_db_client()
 logger = logging.getLogger(__name__)
 
 
-def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None):
+def _to_base64_str(data):
+    if data is None:
+        return None
+    if isinstance(data, str):
+        return data
+    if isinstance(data, (bytes, bytearray, memoryview)):
+        return base64.b64encode(bytes(data)).decode("ascii")
+    raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
+
+
+def _to_bytes(data):
+    if data is None:
+        return None
+    if isinstance(data, (bytes, bytearray, memoryview)):
+        return bytes(data)
+    if isinstance(data, str):
+        # Stored as base64 text in DB
+        return base64.b64decode(data)
+    raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
+
+
+def _attachments_for_transport(attachments):
+    if attachments is None:
+        return None
+    transformed = []
+    for attachment in attachments:
+        if attachment is None:
+            continue
+        filename = attachment.get("filename")
+        content = attachment.get("file_data", attachment.get("content"))
+        content_bytes = _to_bytes(content)
+        if content_bytes is None:
+            raise ValueError("Attachment content is missing")
+
+        # Mail service expects a JSON byte array
+        transformed.append({
+            "filename": filename,
+            "content": {"data": list(content_bytes)},
+        })
+    return transformed
+
+
+def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None):
     """
     Adds an email to DB to be sent at a later point.
     Parameters:
@@ -30,62 +73,96 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
             ForløbID=forloeb_id
         )
         session.add(mail)
-        session.commit()
+        session.commit()  # Commit to get MailID
+
+        if attachment is not None:
+            # `file_data` is stored and transmitted as base64 text.
+            # Sources (e.g. PDF generation) may provide raw bytes.
+            attachment_content = attachment.get('content', attachment.get('file_data'))
+            file_data_b64 = _to_base64_str(attachment_content)
+            if not file_data_b64:
+                raise ValueError("Attachment content is missing or empty")
+            mail_attachment = MailAttachment(
+                filename=attachment['filename'],
+                file_data=file_data_b64,
+                MailID=mail.MailID  # Link attachment to mail
+            )
+            session.add(mail_attachment)
+            session.commit()
+
     except Exception as e:
         session.rollback()
+        logger.error(f"Error planning email to {recipient_email}: {e}")
         raise e
     else:
-        logger.info(f"New mail planned to {recipient_email} with subject: '{subject}'")
         return True
     finally:
         session.close()
 
 
-def get_all_mails():
+def get_planned_mails():
     session = db_client.get_session()
     try:
         mails = session.query(Mail).filter_by(isSent=False).all()
         session.commit()
-        # Convert Mail objects to dicts
-        mails_data = [
-            {
+        mails_data = []
+        for mail in mails:
+            # Get attachments for this mail
+            attachments = session.query(MailAttachment).filter_by(MailID=mail.MailID).all()
+            attachments_data = [
+                {
+                    "filename": attachment.filename,
+                    "file_data": _to_base64_str(attachment.file_data)
+                }
+                for attachment in attachments
+            ]
+            mails_data.append({
                 "id": mail.MailID,
                 "subject": mail.subject,
                 "body": mail.body,
                 "recipient": mail.recipient,
-                "created": mail.created.isoformat() if mail.created else None,
                 "isSent": mail.isSent,
-                "sent": mail.sent.isoformat() if mail.sent else None,
-                "OpgaveID": mail.OpgaveID,
-                "ForløbID": mail.ForløbID
-            }
-            for mail in mails
-        ]
-        return jsonify({"message": "Planned emails retrieved successfully", "count": len(mails_data), "data": mails_data}), 200
+                "attachments": attachments_data
+            })
+        return mails_data
     except Exception as e:
+        logger.error(f"Error fetching planned emails: {e}")
         session.rollback()
-        return jsonify({"message": "Error retrieving planned emails", "error": str(e)}), 500
+        return None
     finally:
         session.close()
 
 
 def send_all_mails():
+    mails = get_planned_mails()
+    if mails is None or len(mails) == 0:
+        return jsonify({"message": "No planned emails to send"}), 200
+
     session = db_client.get_session()
+    sent_count = 0
+    total_count = len(mails) if mails else 0
     try:
-        mails = session.query(Mail).filter_by(isSent=False).all()
-        for mail in mails:
-            status = send_mail(mail.recipient, mail.subject, mail.body, attachments=None)
-            mail.isSent = status in [True]
-            session.add(mail)
+        for mail_dict in mails:
+            status = send_mail(
+                mail_dict.get('recipient'),
+                mail_dict.get('subject'),
+                mail_dict.get('body'),
+                attachments=mail_dict.get('attachments', None)
+            )
+            # Fetch the actual Mail ORM object
+            mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
+            if mail_obj:
+                mail_obj.isSent = status
+                if status:
+                    sent_count += 1
         session.commit()
     except Exception as e:
         session.rollback()
-        return jsonify({"message": "Error sending planned emails", "error": e}), 500
+        return jsonify({"message": "Error sending planned emails", "error": str(e)}), 500
     finally:
-        sent_count = len([mail for mail in mails if mail.isSent]) if 'mails' in locals() else 0
-        total_count = len(mails) if 'mails' in locals() else 0
         session.close()
-        return jsonify({"message": "Planned emails sent successfully", "count": total_count, "sent": sent_count}), 200
+
+    return jsonify({"message": "Planned emails sent successfully", "count": total_count, "sent": sent_count}), 200
 
 
 def send_mail(recipient_email, subject, message, attachments=None):
@@ -103,17 +180,22 @@ def send_mail(recipient_email, subject, message, attachments=None):
         "from": MAIL_SERVICE_SENDER,
         "to": recipient_email,
         "title": subject,
-        "body": message
+        "body": message,
+        "attachments": _attachments_for_transport(attachments)
     }
-    if attachments is not None:
-        payload["attachments"] = attachments
 
     try:
         response = requests.post(MAIL_SERVICE_URL, headers=headers, json=payload)
+        # Print response content regardless of status code
+        if response.status_code != 200:
+            logger.error(f"Mail service response ({response.status_code}): {response.text}")
         response.raise_for_status()
-        return response.json()
+        return True
     except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
+        logger.error(f"Error sending email to {recipient_email}: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            logger.error(f"Mail service error response ({e.response.status_code}): {e.response.text}")
+        return False
 
 
 def create_mail_ansvarlig(new_opgave):
@@ -180,12 +262,14 @@ def create_mail_expired(forloeb, opgave):
 
 def create_mail_forloeb_start(forloeb):
     forloeb = {
+        "id": forloeb.ForløbID,
+        "name": forloeb.name,
         "userdq": forloeb.userdq,
-        "startdato": forloeb.startdato
+        "startdate": forloeb.startdate
     }
     subject = "Dit onboardingforløb er startet"
     pdf = create_pdf(forloeb['id'])
-    attachments = {"filename": "onboarding_forloeb.pdf", "content": pdf}
+    attachment = {"filename": "onboarding_forloeb.pdf", "content": pdf}
     message = str(
         f"Hej {forloeb['name']}," + "\n\n" +
         "Velkommen til Randers Kommune! Dit onboardingforløb er nu startet." + "\n\n" +
@@ -193,7 +277,7 @@ def create_mail_forloeb_start(forloeb):
         "Du kan også tilgå dit forløbet her: http://onboarding.data.randers.dk/ - kræver login med din medarbejderkonto.\n" +
         "\nVenlig hilsen,\nRanders Kommune"
     )
-    return subject, message, attachments
+    return subject, message, attachment
 
 
 def delete_planned_mail(mail_id):
@@ -208,5 +292,27 @@ def delete_planned_mail(mail_id):
     except Exception as e:
         session.rollback()
         return jsonify({"message": "Error deleting planned email", "error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def purge_mails(days=30):
+    """
+    Deletes emails older than the specified number of days.
+    Parameters:
+        days (int): The age in days beyond which emails should be deleted.
+    """
+    session = db_client.get_session()
+    try:
+        threshold_date = datetime.now() - timedelta(days=days)
+        old_mails = session.query(Mail).filter(Mail.created < threshold_date).all()
+        for mail in old_mails:
+            session.delete(mail)
+        session.commit()
+        return jsonify({"message": f"Deleted mails older than {days} days", "deleted_count": len(old_mails)}), 200
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error purging old emails: {e}")
+        return jsonify({"message": "Error purging old emails", "error": str(e)}), 500
     finally:
         session.close()

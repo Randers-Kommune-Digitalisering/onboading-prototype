@@ -64,8 +64,8 @@ body.onboarding-theme-randers {
     --color-button-hover-dark: rgb(89, 99, 119);
     --color-button-red: #be3b3b;
     --color-button-red-hover: #d15858;
-    --color-button-yellow: #bca002;
-    --color-button-yellow-hover: #e7cc42;
+    --color-button-yellow: #a58b02;
+    --color-button-yellow-hover: #bca002;
     --color-button-disabled: rgb(237, 229, 220, 0);
     --color-floating-button: rgb(124, 121, 120);
     --color-floating-button-hover: rgb(144, 139, 137);
@@ -230,7 +230,7 @@ p > a:hover {
         }
     }
 
-    .navbar .item.selected, .navItem.selected {
+    .navbar .item.router-link-active, .navItem.router-link-active {
         background-color: var(--color-navbar-item-selected);
     }
 
@@ -244,7 +244,7 @@ p > a:hover {
         padding-top: 1.5rem;
     }
 
-    .navbar .item:hover:not(.selected), .navItem:hover:not(.selected) {
+    .navbar .item:hover:not(.router-link-active), .navItem:hover:not(.router-link-active) {
         background-color: var(--color-navbar-item-hover);
         cursor: pointer;
     }
@@ -328,6 +328,9 @@ p > a:hover {
     }
 
 @media only screen and (min-width: 768px) {
+    a:has(.card) {
+        max-width: 38rem;
+    }
     .card, .notification, .textbox {
         max-width: 38rem;
     }
@@ -361,12 +364,14 @@ p > a:hover {
 .card-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     height: 4.5rem;
+    width: 100%;
+    position: relative;
+    padding: 0rem 1.2rem;
 }
 
 .card-header:first-child {
-    margin-left: 1.2rem;
+    flex-grow: 1;
 }
 
 .card-icon {
@@ -394,9 +399,9 @@ p > a:hover {
 
     margin-top:0;
     margin-bottom: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+
+    display: flex;
+    gap: 0.5rem;
 }
 .card-title ~ .card-subtitle {
     margin-top: 0.4rem;
@@ -524,15 +529,21 @@ p > a:hover {
 
 .card-titles {
     flex-grow: 1;
-    max-width: calc(100% - 14rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.card-titles * {
+    white-space: normal;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card-header .card-details {
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    margin: 1.5rem;
+    white-space: nowrap;
 }
 
 .card-content .card-details {
@@ -568,6 +579,28 @@ p > a:hover {
     margin-top: 2rem;
 }
 
+/* Tags */
+
+.tag {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--color-button-text);
+    background-color: var(--color-button-yellow);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.2rem;
+    user-select: none;
+}
+.tag.blue {
+    background-color: var(--color-button);
+}
+.tag.green {
+    background-color: var(--color-progression);
+}
+.tag.gray {
+    background-color: var(--color-card-dark);
+    color: var(--color-text-faded);
+}
+
 
 /* Buttons + Inputs */
 
@@ -577,6 +610,7 @@ button[type="submit"] {
     font-size: 1em;
     font-weight: 500;
     border: 0.1rem solid var(--color-button);
+    user-select: none;
 }
 
 .button {
@@ -587,6 +621,7 @@ button[type="submit"] {
     color:var(--color-button-text);
     cursor: pointer;
     border: 0.1rem solid var(--color-button);
+    user-select: none;
 }
 
     .button:hover {
@@ -607,6 +642,8 @@ button[type="submit"] {
     }
     .button.hollow.red { border: 0.1rem solid var(--color-button-red); color: var(--color-button-red) }
     .button.hollow.red:hover { border: 0.1rem solid var(--color-button-red-hover); color: var(--color-button-red-hover) }
+    .button.hollow.yellow { border: 0.1rem solid var(--color-button-yellow); color: var(--color-button-yellow) }
+    .button.hollow.yellow:hover { border: 0.1rem solid var(--color-button-yellow-hover); color: var(--color-button-yellow-hover) }
     .button.dashed { border: 0.1rem dashed var(--color-button); color: var(--color-button) }
     .button.dashed:hover { border: 0.1rem dashed var(--color-button-hover); color: var(--color-button-hover) }
 
@@ -1005,6 +1042,10 @@ textarea:not(:placeholder-shown) + .floating-label {
     text-align: center;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
+
 .thin {
     font-weight: 100;
     font-style: normal;
@@ -1128,6 +1169,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     z-index: 1;
     transform: translate(calc(50% - 1rem), -2rem);
     opacity: 0.8;
+    pointer-events: none;
 }
 .link .tooltip-display {
     transform: translate(-1rem, -3rem);
