@@ -10,7 +10,8 @@ class Forløbsskabelon(Base):
     ForløbsskabelonID = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     varighed = Column(Integer, nullable=False)
-    opgave = relationship('Opgave', back_populates='forløbsskabelon')
+    opgave = relationship('Opgave', back_populates='forløbsskabelon', cascade='all, delete')
+    opgave_grupper = relationship('OpgaveGruppe', back_populates='forløbsskabelon', cascade='all, delete')
 
 
 class Forløb(Base):
@@ -23,8 +24,9 @@ class Forløb(Base):
     admin = Column(String, nullable=False)
     usermail = Column(String, nullable=False)
     userdq = Column(String, nullable=False)
-    opgave = relationship('Opgave', back_populates='forløb')
-    mails = relationship('Mail', back_populates='forløb')
+    opgave_grupper = relationship('OpgaveGruppe', back_populates='forløb', cascade='all, delete')
+    opgave = relationship('Opgave', back_populates='forløb', cascade='all, delete')
+    mails = relationship('Mail', back_populates='forløb', cascade='all, delete')
     isPreparation = Column(Boolean, default=True)
 
 
@@ -34,7 +36,7 @@ class Opgaveskabelon(Base):
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     note = Column(String, nullable=True)
-    ressource = relationship('Ressource', back_populates='opgaveskabelon')
+    ressource = relationship('Ressource', back_populates='opgaveskabelon', cascade='all, delete')
     relativ_slutdag = Column(Integer, nullable=False)
 
 
@@ -52,15 +54,15 @@ class Opgave(Base):
     result = Column(Boolean, nullable=False)
     booking = Column(DateTime)
     timestamp = Column(DateTime, nullable=False)
-    ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
+    ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID', ondelete='CASCADE'))
     forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgave')
-    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
+    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID', ondelete='CASCADE'))
     forløb = relationship('Forløb', back_populates='opgave')
-    ressource = relationship('Ressource', back_populates='opgave')
-    OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID'))
+    ressource = relationship('Ressource', back_populates='opgave', cascade='all, delete')
+    OpgaveGruppeID = Column(Integer, ForeignKey('OpgaveGruppe.OpgaveGruppeID', ondelete='CASCADE'))
     opgavegruppe = relationship('OpgaveGruppe', back_populates='opgave')
     note = Column(String, nullable=True)
-    mails = relationship('Mail', back_populates='opgave')
+    mails = relationship('Mail', back_populates='opgave', cascade='all, delete')
 
 
 class Ressource(Base):
@@ -68,20 +70,22 @@ class Ressource(Base):
     RessourceID = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
-    OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID'))
+    OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID', ondelete='CASCADE'))
     opgave = relationship('Opgave', back_populates='ressource')
-    OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID'))
+    OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID', ondelete='CASCADE'))
     opgaveskabelon = relationship('Opgaveskabelon', back_populates='ressource')
 
 
 class OpgaveGruppe(Base):
     __tablename__ = 'OpgaveGruppe'
     OpgaveGruppeID = Column(Integer, primary_key=True, autoincrement=True)
-    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'))
-    ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID'))
+    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID', ondelete='CASCADE'))
+    forløb = relationship('Forløb', back_populates='opgave_grupper')
+    ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID', ondelete='CASCADE'))
+    forløbsskabelon = relationship('Forløbsskabelon', back_populates='opgave_grupper')
     name = Column(String, nullable=False)
     letter = Column(String, nullable=False)
-    opgave = relationship("Opgave", back_populates="opgavegruppe")
+    opgave = relationship("Opgave", back_populates="opgavegruppe", cascade='all, delete')
 
 
 class Mail(Base):
@@ -94,11 +98,15 @@ class Mail(Base):
     isSent = Column(Boolean, default=False)
     sent = Column(DateTime, nullable=True)
     description = Column(String, nullable=True)
-    OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID'), nullable=True)
+    OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID', ondelete='CASCADE'), nullable=True)
     opgave = relationship('Opgave', back_populates='mails')
-    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID'), nullable=True)
+    ForløbID = Column(Integer, ForeignKey('Forløb.ForløbID', ondelete='CASCADE'), nullable=True)
     forløb = relationship('Forløb', back_populates='mails')
-    attachment = relationship('MailAttachment', uselist=False, back_populates='mail')
+    attachments = relationship(
+        'MailAttachment',
+        back_populates='mail',
+        cascade='all, delete-orphan',
+    )
 
 
 class MailAttachment(Base):
@@ -106,5 +114,5 @@ class MailAttachment(Base):
     AttachmentID = Column(Integer, primary_key=True, autoincrement=True)
     filename = Column(String, nullable=False)
     file_data = Column(String, nullable=False)  # Store file data as base64 encoded string
-    MailID = Column(Integer, ForeignKey('Mail.MailID'))
-    mail = relationship('Mail', back_populates='attachment')
+    MailID = Column(Integer, ForeignKey('Mail.MailID', ondelete='CASCADE'), nullable=False)
+    mail = relationship('Mail', back_populates='attachments')

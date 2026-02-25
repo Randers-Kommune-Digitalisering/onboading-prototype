@@ -435,18 +435,6 @@ def delete_forloeb(id):
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
-        # Delete all related Opgave and Ressource records
-        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
-        for gruppe in opgave_grupper:
-            opgaver = session.query(Opgave).filter_by(OpgaveGruppeID=gruppe.OpgaveGruppeID).all()
-            for opgave in opgaver:
-                ressourcer = session.query(Ressource).filter_by(OpgaveID=opgave.OpgaveID).all()
-                for ressource in ressourcer:
-                    session.delete(ressource)
-                session.delete(opgave)
-            session.delete(gruppe)
-        session.commit()
-
         session.delete(forloeb)
         session.commit()
         return jsonify({"message": "Forløb deleted successfully"}), 200
