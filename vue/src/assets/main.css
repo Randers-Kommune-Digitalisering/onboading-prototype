@@ -267,6 +267,7 @@ p > a:hover {
     display: flex;
     align-items: stretch;
     flex-direction: column;
+	position: relative;
 }
 
 .divider {
@@ -665,11 +666,24 @@ button[type="submit"] {
     z-index: 10;
     width: 100%;
 }
+.float-right.helper-text {
+    background-color: var(--color-card-faded);
+    padding: 1rem 1.2rem;
+    border-radius: 0.4rem;
+    position: relative;
+    margin-top: 0!important;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+.helper-text span {
+    display: block;
+    margin-bottom: 0.5rem;
+}
 
 @media only screen and (min-width: 768px) {
     .float-right {
         margin-top: 0rem;
-        position: absolute;
+        position: absolute !important;
         margin-left: calc(100% + 1.5rem);
         max-width: 18rem;
     }
@@ -995,6 +1009,11 @@ textarea:not(:placeholder-shown) + .floating-label {
 
 .header {
     font-size: 1.65em;
+}
+.header-small {
+    font-size: 1em;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 .tiny {
     font-size: 0.6em;
