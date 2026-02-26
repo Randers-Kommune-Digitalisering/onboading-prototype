@@ -445,15 +445,15 @@
                 <div v-if="addToTemplate || isPreparation" class="flex-item">
                     <input type="text" id="startdate" class="padding-input" name="startdate"
                             v-model="inputFields.relativ_startdag" ref="relativStartday"
-                            @input="relativStartday.value=sliceXChars(removeNonIntegers(relativStartday.value), 3)"
+                            @input="relativStartday.value=inputFields.relativ_startdag=sliceXChars(removeNonIntegers(relativStartday.value), 3)"
                             required>
-                    <label for="startdate" class="floating-label">Startes efter </label>
-                    <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}</label>
-                    <div :class="['floating-button', 'indent-floating-button']"
+                    <label for="startdate" class="floating-label">Startes</label>
+                    <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}{{ inputFields.relativ_startdag < 0 ? ' før opstart' : ' efter opstart' }}</label>
+                    <div :class="['floating-button', 'indent-floating-button', { 'disabled': inputFields.relativ_startdag <= -99 }]"
                             @click="inputFields.relativ_startdag--">
                                 <i class="fa fa-minus"></i>
                             </div>
-                    <div class="floating-button" 
+                    <div :class="['floating-button', { 'disabled': inputFields.relativ_startdag >= 999 }]" 
                         @click="inputFields.relativ_startdag++">
                         <i class="fa fa-plus"></i>
                     </div>
@@ -490,14 +490,11 @@
 </template>
 <style scoped>
     .annot-label {
-        left: calc(45% - 0.5rem);
+        left: 2.5rem;
         bottom: 0.6rem;
     }
     .indent-floating-button {
         right: 2.7rem;
-    }
-    .padding-input {
-        padding-left: calc(45% - 2.5rem);
     }
     .input-button {
         border-radius: 0.5rem;

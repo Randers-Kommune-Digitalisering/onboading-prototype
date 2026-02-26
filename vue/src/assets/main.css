@@ -252,6 +252,12 @@ p > a:hover {
     padding-right: 1.5vw;
     padding-top: 5rem;
     padding-bottom: 1.5vh;
+    
+    /* display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%; */
 }
 
 @media only screen and (min-width: 768px) {
@@ -268,6 +274,7 @@ p > a:hover {
     align-items: stretch;
     flex-direction: column;
 	position: relative;
+    width: 100%;
 }
 
 .divider {

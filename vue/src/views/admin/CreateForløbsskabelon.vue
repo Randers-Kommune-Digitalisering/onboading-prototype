@@ -90,13 +90,10 @@
 </template>
 <style scoped>
     .annot-label {
-        left: calc(45% - 0.5rem);
+        left: 2.5rem;
         bottom: 0.6rem;
     }
     .indent-floating-button {
         right: 2.7rem;
-    }
-    .padding-input {
-        padding-left: calc(45% - 2.5rem);
     }
 </style>
