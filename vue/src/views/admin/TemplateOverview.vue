@@ -114,10 +114,4 @@
 .navItems .navItem:not(.selected) {
 	margin-bottom: 0.4rem;
 }
-
-@media only screen and (min-width: 768px) {
-    .navItems {
-        max-width: 38rem;
-    }
-}
 </style>

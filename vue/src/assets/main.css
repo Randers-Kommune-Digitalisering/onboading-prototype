@@ -107,11 +107,6 @@ body {
 p {
     max-width: 100%;
 }
-@media only screen and (min-width: 768px) {
-    p {
-        max-width: 38rem;
-    }
-}
 
 #logo {
     color: var(--color-logo);
@@ -283,8 +278,15 @@ p > a:hover {
     .content > .flex {
         flex-direction: row;
         align-items: flex-start;
+        max-width: calc(68rem - 18rem - 1.5rem);
     }
 }
+@media only screen and (min-width: 768px) and (max-width: 1240px) {
+    .content > .flex:has(.float-right) {
+        max-width: calc(100% - 18rem - 1.5rem);
+    }
+}
+
 
 
 /* Card */
@@ -326,15 +328,6 @@ p > a:hover {
         background-color: var(--color-button-yellow);
         color: var(--color-button-text);
     }
-
-@media only screen and (min-width: 768px) {
-    a:has(.card) {
-        max-width: 38rem;
-    }
-    .card, .notification, .textbox {
-        max-width: 38rem;
-    }
-}
 
 .card.dark {
     background-color: var(--color-card-faded);
@@ -566,12 +559,6 @@ p > a:hover {
     margin: 1rem 0.8rem;
     border: 0;
     gap: 0.5rem;
-}
-
-@media only screen and (min-width: 768px) {
-    .buttons {
-        max-width: 38rem;
-    }
 }
 
 .card-content .buttons {
@@ -846,12 +833,8 @@ input.invalid {
         top: 0.93rem;
         left: 0.8rem;
     }
-    .inputContainer  {
-        width: 30rem;
-    }
     .icon {
         right: auto;
-        left: 27rem;
     }
 }
 
@@ -884,12 +867,6 @@ textarea:not(:placeholder-shown) + .floating-label {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
     overflow: hidden;
-}
-
-@media only screen and (min-width: 768px) {
-    .progression-bar {
-        max-width: 38rem;
-    }
 }
 
 .progression-bar .progression {
