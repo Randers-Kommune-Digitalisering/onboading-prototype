@@ -135,8 +135,11 @@ p {
     }
 }
 
-@media only screen and (max-width: 620px) {
-    #logo, .logo-subtext {
+@media only screen and (max-width: 600px) {
+    .mobile-only:has(#logo) {
+        display: none;
+    }
+    .navbar .divider {
         display: none;
     }
 }
@@ -151,17 +154,34 @@ p {
     width: 100%;
     height: 4.5rem;
     padding-top: 0.3vh;
-    padding-left: 2rem;
+    padding-left: 0.3rem;
     padding-right: 0.3rem;
     padding-bottom: 0.3vh;
 
     display:flex;
     flex-direction: row;
     justify-content: flex-start;
-    align-items: stretch;
     gap: 0.5rem;
 
     z-index: 100;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Flat style scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-navbar-item-hover) var(--color-navbar);
+
+    &::-webkit-scrollbar {
+        height: 8px;
+        background: var(--color-navbar);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-navbar-item-hover);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-navbar-item-selected);
+    }
 }
 
 a, .link {
@@ -197,7 +217,7 @@ p > a:hover {
         padding-right: 0.3rem;
 
         flex-direction: column;
-        justify-content: flex-start;
+        align-items: stretch;
     }
 }
 
@@ -216,12 +236,17 @@ p > a:hover {
         transition: cubic-bezier(0.075, 0.82, 0.165, 1);
 
         white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .navbar .item {
+        width: 5rem;
     }
     
     @media only screen and (min-width: 768px) {
         .navbar .item {
             padding-left: 0rem;
             padding-right: 0rem;
+            width: auto;
         }
     }
 
