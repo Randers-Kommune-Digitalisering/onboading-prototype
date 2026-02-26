@@ -207,7 +207,7 @@ function toggleDarkMode() {
         right: 50%;
         transform: translateX(-42.5rem);
         width: auto;
-        height: 100vh;
+        height: 100dvh;
 
         border-bottom: 0rem;
     }

@@ -89,7 +89,7 @@ body.onboarding-theme-randers {
 html, body, #app, main
 {
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
     margin:0;
 }
 
@@ -277,6 +277,8 @@ p > a:hover {
     padding-right: 1.5vw;
     padding-top: 5rem;
     padding-bottom: 1.5vh;
+
+    overflow-x: hidden;
     
     /* display: flex;
     flex-direction: column;
@@ -331,6 +333,7 @@ p > a:hover {
 }
 
 .card {
+    position: relative;
     background-color: var(--color-card);
 
     max-height: calc(auto);
@@ -1186,7 +1189,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     user-select: none; /* Standard syntax */
 }
 
-.tooltip-display {
+.tooltip-display { /* Position controlled by tooltipHelper.js */
     display: none;
     position: absolute;
     background-color: var(--color-card-text);
@@ -1195,13 +1198,19 @@ textarea:not(:placeholder-shown) + .floating-label {
     border-radius: 0.2rem;
     font-size: 0.8em;
     z-index: 1;
-    transform: translate(calc(50% - 1rem), -2rem);
+    /* transform: translate(calc(50% - 1rem), -2rem);
+    width: max-content;
+    max-inline-size: min(24rem, calc(100vw - 1rem));
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word; */
     opacity: 0.8;
     pointer-events: none;
+    transition: none;
 }
-.link .tooltip-display {
-    transform: translate(-1rem, -3rem);
-}
+/* .link .tooltip-display {
+    transform: translate(-1rem, -0.5rem);
+} */
 .tooltip-hover:hover > .tooltip-display {
     display: block;
 }

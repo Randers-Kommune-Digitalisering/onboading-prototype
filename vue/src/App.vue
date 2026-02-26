@@ -1,11 +1,22 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, onMounted, onBeforeUnmount } from 'vue'
     import { useRoute } from 'vue-router'
 
     import Navbar from './components/Navbar.vue'
+    import { installTooltipHelper } from './utils/tooltipHelper.js'
 
     const currentComponent = ref(null)
     const route = useRoute()
+    let uninstallTooltipHelper = null
+
+    onMounted(() => {
+        uninstallTooltipHelper = installTooltipHelper()
+    })
+
+    onBeforeUnmount(() => {
+        uninstallTooltipHelper?.()
+        uninstallTooltipHelper = null
+    })
 </script>
 
 <template>
