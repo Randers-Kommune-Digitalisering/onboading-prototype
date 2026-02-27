@@ -166,6 +166,7 @@ p {
     z-index: 100;
     overflow-x: auto;
     overflow-y: hidden;
+
     /* Flat style scrollbar */
     scrollbar-width: thin;
     scrollbar-color: var(--color-navbar-item-hover) var(--color-navbar);
@@ -733,6 +734,24 @@ button[type="submit"] {
 
     background-color: var(--color-input-disabled-bg);
     border-radius: 0.2rem;
+    max-height: 28.4rem;
+    overflow-x: auto;
+
+    /* Flat style scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-faded) var(--color-input-disabled-bg);
+    &::-webkit-scrollbar {
+        height: 8px;
+        background: var(--color-input-disabled-bg);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-text-faded);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-text-faded);
+    }
 }
 
 .itemSelector div {
