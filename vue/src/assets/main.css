@@ -396,6 +396,7 @@ p > a:hover {
     display: flex;
     align-items: center;
     height: 4.5rem;
+    gap: 1rem;
     width: 100%;
     position: relative;
     padding: 0rem 1.2rem;
@@ -433,6 +434,20 @@ p > a:hover {
 
     display: flex;
     gap: 0.5rem;
+    align-items: center;
+
+    max-height: 2.8em;
+}
+.card-title > span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;      /* Number of lines to show */
+    -moz-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    -moz-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;  
 }
 .card-title ~ .card-subtitle {
     margin-top: 0.4rem;
@@ -563,6 +578,7 @@ p > a:hover {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    max-height: 100%;
 }
 .card-titles * {
     white-space: normal;
@@ -614,6 +630,10 @@ p > a:hover {
     padding: 0.2rem 0.5rem;
     border-radius: 0.2rem;
     user-select: none;
+    overflow: visible;
+    text-overflow: clip;
+    width: fit-content;
+    height: fit-content;
 }
 .tag.blue {
     background-color: var(--color-button);
