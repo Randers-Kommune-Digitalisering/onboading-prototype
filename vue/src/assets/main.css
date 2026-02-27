@@ -277,6 +277,7 @@ p > a:hover {
     padding-right: 1.5vw;
     padding-top: 5rem;
     padding-bottom: 1.5vh;
+    min-height: 100dvh;
 
     overflow-x: hidden;
     
@@ -317,7 +318,7 @@ p > a:hover {
     }
 }
 @media only screen and (min-width: 768px) and (max-width: 1240px) {
-    .content > .flex:has(.float-right) {
+    .content > .flex:has(.float-right), .flex:has(.float-right-gutter) {
         max-width: calc(100% - 18rem - 1.5rem);
     }
 }
@@ -702,7 +703,7 @@ button[type="submit"] {
     width: 100%;
 }
 .float-right.helper-text {
-    background-color: var(--color-card-faded);
+    background-color: rgb(230, 230, 228);
     padding: 1rem 1.2rem;
     border-radius: 0.4rem;
     position: relative;
@@ -713,6 +714,9 @@ button[type="submit"] {
 .helper-text span {
     display: block;
     margin-bottom: 0.5rem;
+}
+.helper-text span:last-child {
+    margin-bottom: 0;
 }
 
 @media only screen and (min-width: 768px) {
@@ -1189,7 +1193,7 @@ textarea:not(:placeholder-shown) + .floating-label {
     user-select: none; /* Standard syntax */
 }
 
-.tooltip-display { /* Position controlled by tooltipHelper.js */
+.tooltip-display, .tooltip-display-left { /* Position controlled by tooltipHelper.js */
     display: none;
     position: absolute;
     background-color: var(--color-card-text);

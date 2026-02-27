@@ -24,6 +24,7 @@
     const selectedGroup = ref("")
     const isAddingNewGroup = ref(false)
     const isSelectingTemplate = ref(false)
+    const focusedInput = ref(null)
 
     const inputFields = ref({
         title: "",
@@ -38,6 +39,21 @@
         booking: "",
         timestamp: ""
     })
+
+    const inputFieldDescriptions = ref({
+        title: { text: "Opgavens navn", tooltip: "<span>Giv opgaven et beskrivende navn.</span><span>Navnet vil være synligt i forløbets opgaveoverblik.</span>" },
+        ansvarlig: { text: "Ansvarlig medarbejder", tooltip: "<span>Vælg den medarbejder, der skal hjælpe den nye medarbejder med denne opgave (f.eks. introducere, vejlede eller løse opgaven sammen).</span><span>Det er også den ansvarlige, der efterfølgende skal markere opgaven som udført.</span>" },
+        beskrivelse: { text: "Beskrivelse", tooltip: "<span>Giv en detaljeret beskrivelse af opgaven.</span><span>Beskrivelsen er synlig både for den nye medarbejder samt en eventuel ansvarlig medarbejder.</span>" },
+        note: { text: "Note til ansvarlig", tooltip: "<span>Tilføj eventuelle noter til den ansvarlige medarbejder.</span><span>Noten vil kun være synlig for den ansvarlige medarbejder, og kan ikke læses af den nye medarbejder.</span>" },
+        gruppe: { text: "Opgavegruppe", tooltip: "<span>Vælg en opgavegruppe for at gruppere denne opgave med andre opgaver i forløbet.</span><span>Opgaver kan sorteres efter gruppe i forløbets opgaveoverblik, hvilket kan hjælpe med at skabe overblik i forløb med mange opgaver</span>" },
+        nygruppe: { text: "Ny opgavegruppe", tooltip: "<span>Giv den nye opgavegruppe et beskrivende navn.</span><span>Du kan efterfølgende tilføje flere opgaver til denne gruppe for at skabe bedre overblik over opgaverne i forløbet.</span>" },
+        startdato: { text: "Startdato", tooltip: "<span>Vælg startdato for opgaven.</span><span>Startdato bør sættes til den dag, hvor opgaven skal påbegyndes.</span>" },
+        slutdato: { text: "Slutdato", tooltip: "<span>Vælg slutdato for opgaven.</span><span>Slutdato fungerer som en deadline for opgaven, og bør sættes til den dag, opgaven skal være afsluttet inden.</span>" },
+        relativ_startdag: { text: "Relativ startdag", tooltip: "<span>Angiv relativ startdag for opgaven.</span><span>Relativ startdag bruges til at beregne startdatoen baseret på forløbets startdato.</span>" },
+        relativ_slutdag: { text: "Relativ slutdag", tooltip: "<span>Angiv relativ slutdag for opgaven.</span><span>Relativ slutdag bruges til at beregne slutdatoen baseret på forløbets startdato.</span>" },
+        booking: { text: "Bookingtidspunkt", tooltip: "<span>Angiv bookingtidspunkt for opgaven.</span><span>Bookingtidspunkt bruges til at indikere hvornår den ansvarlige medarbejder skal hjælpe med opgaven, eller hvornår der er afsat tid til opgaven.</span><span><b>OBS</b>: Der oprettes ikke automatisk en aftale i kalenderen." }
+    })
+
 
     /* Assistant search */
 
@@ -91,6 +107,30 @@
 
     const returnDagOrDage = (days) => {
         return days == 1 || days == -1 ? 'dag' : 'dage'
+    }
+
+    const onSetStartDate = () => {
+        if(inputFields.value.startdato == inputFields.value.slutdato) {
+            // Subtract 1 day from startdato if startdato and slutdato are the same
+            const date = new Date(inputFields.value.startdato)
+            date.setDate(date.getDate() - 1)
+            inputFields.value.startdato = date.toISOString().split('T')[0]
+        }
+        // If startdate is after enddate, clear enddate
+        else if(inputFields.value.startdato > inputFields.value.slutdato)
+            inputFields.value.slutdato = ""
+    }
+
+    const onSetEndDate = () => {
+        if(inputFields.value.slutdato == inputFields.value.startdato) {
+            // Add 1 day to slutdato if startdato and slutdato are the same
+            const date = new Date(inputFields.value.slutdato)
+            date.setDate(date.getDate() + 1)
+            inputFields.value.slutdato = date.toISOString().split('T')[0]
+        }
+        // If enddate is before startdate, clear startdate
+        else if(inputFields.value.slutdato < inputFields.value.startdato)
+            inputFields.value.startdato = ""
     }
 
     /* Textarea */
@@ -355,8 +395,13 @@
         {{ isTemplate ? '' : ' til ' + (forloeb?.name ?? 'forløbet') }}
     </p>
 
+    <div v-if="focusedInput && !isAssistantSearchOpen" class="float-right helper-text">
+		<div class="header-small">{{ focusedInput.text }}</div>
+        <div v-html="focusedInput.tooltip"></div>
+    </div>
+
     <form @submit.prevent="submitForm">
-    <div class="formContainer">
+    <div class="formContainer float-right-gutter">
 
         <template v-if="!isEditing && !isTemplate && isSelectingTemplate">
             <div class="inputContainer">
@@ -377,7 +422,13 @@
 
         <template v-else>
             <div class="inputContainer">
-                <input type="text" id="title" name="title" placeholder=" " v-model="inputFields.title" required>
+                <input
+                    type="text" id="title" name="title"
+                    placeholder=" "
+                    v-model="inputFields.title"
+                    required
+                    @focus="focusedInput = inputFieldDescriptions.title"
+                    @blur="focusedInput = null">
                 <label for="title" class="floating-label">Opgavens navn</label>
                 <div class="button input-button tooltip-hover" @click="toggleSelectTemplate()" v-if="!isEditing && !isTemplate">
                     <i class="fa-solid fa-folder"></i>
@@ -386,7 +437,14 @@
             </div>
 
             <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
-                <input type="text" id="assistant" name="assistant" placeholder=" " @input="searchAssistants(inputFields.ansvarlig)" v-model="inputFields.ansvarlig" class="locked" :disabled="isAssistantLocked">
+                <input
+                    type="text" id="assistant" name="assistant"
+                    placeholder=" "
+                    @input="searchAssistants(inputFields.ansvarlig)"
+                    v-model="inputFields.ansvarlig" class="locked"
+                    :disabled="isAssistantLocked"
+                    @focus="focusedInput = inputFieldDescriptions.ansvarlig"
+                    @blur="focusedInput = null">
                 <label for="assistant" class="floating-label">Ansvarlig medarbejder</label>
                 <div class="icon" @click="toggleassistantSearch()"><i :class="'fa-solid fa-lock' + (isAssistantLocked ? '' : '-open')"></i></div>
                 
@@ -398,18 +456,47 @@
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-                <textarea id="description" name="description" ref="textareaDescription" @input="resizeTextareaDescriptionToFitContent()" placeholder=" " v-model="inputFields.beskrivelse" required></textarea>
+                <textarea
+                    id="description" name="description"
+                    ref="textareaDescription"
+                    @input="resizeTextareaDescriptionToFitContent()"
+                    placeholder=" "
+                    v-model="inputFields.beskrivelse"
+                    @focus="focusedInput = inputFieldDescriptions.beskrivelse"
+                    @blur="focusedInput = null"
+                    required></textarea>
                 <label for="description" class="floating-label">Beskrivelse</label>
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-                <textarea id="note" name="note" ref="textareaNote" @input="resizeTextareaNoteToFitContent()" placeholder=" " v-model="inputFields.note"></textarea>
+                <textarea
+                    id="note" name="note"
+                    ref="textareaNote"
+                    @input="resizeTextareaNoteToFitContent()"
+                    placeholder=" "
+                    v-model="inputFields.note"
+                    @focus="focusedInput = inputFieldDescriptions.note"
+                    @blur="focusedInput = null"></textarea>
                 <label for="note" class="floating-label">Note til ansvarlig</label>
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
-                <input v-if="isAddingNewGroup" type="text" id="gruppe" name="gruppe" placeholder="" v-model="inputFields.OpgaveGruppeNavn" required>
-                <select v-else id="gruppe" name="gruppe" v-model="selectedGroup" @change="selectGroup(selectedGroup)" required>
+                <input
+                    type="text" id="gruppe" name="gruppe" 
+                    v-if="isAddingNewGroup"
+                    placeholder=""
+                    v-model="inputFields.OpgaveGruppeNavn"
+                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
+                    @blur="focusedInput = null"
+                    required>
+                <select
+                    id="gruppe" name="gruppe" 
+                    v-else
+                    v-model="selectedGroup"
+                    @change="selectGroup(selectedGroup)"
+                    @focus="focusedInput = inputFieldDescriptions.gruppe"
+                    @blur="focusedInput = null"
+                    required>
                     <option value="" disabled selected hidden></option>
                     <option :value="null" style="color:gray">Ingen gruppe</option>
                     <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
@@ -425,18 +512,34 @@
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
                 <div class="flex-item">
-                    <input type="date" id="startdate" name="startdate" v-model="inputFields.startdato" @change="setEndDateFromTemplate()" required>
+                    <input
+                        type="date" id="startdate" name="startdate"
+                        v-model="inputFields.startdato"
+                        @change="onSetStartDate();setEndDateFromTemplate()"
+                        @focus="focusedInput = inputFieldDescriptions.startdato"
+                        @blur="focusedInput = null"
+                        required>
                     <label for="startdate" class="floating-label">Startdato</label>
                 </div>
                 <div class="flex-item">
-                    <input type="date" id="enddate" name="enddate" v-model="inputFields.slutdato" required>
+                    <input type="date" id="enddate" name="enddate"
+                    v-model="inputFields.slutdato"
+                    @change="onSetEndDate()"
+                    @focus="focusedInput = inputFieldDescriptions.slutdato"
+                    @blur="focusedInput = null"
+                    required>
                     <label for="enddate" class="floating-label">Slutdato</label>
                 </div>
             </div>
 
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
-                <input type="datetime-local" id="booking" name="booking" v-model="inputFields.booking">
+                <input
+                    type="datetime-local"
+                    id="booking" name="booking"
+                    v-model="inputFields.booking"
+                    @focus="focusedInput = inputFieldDescriptions.booking"
+                    @blur="focusedInput = null">
                 <label for="booking" class="floating-label">Booking</label>
             </div>
 
@@ -446,6 +549,8 @@
                     <input type="text" id="startdate" class="padding-input" name="startdate"
                             v-model="inputFields.relativ_startdag" ref="relativStartday"
                             @input="relativStartday.value=inputFields.relativ_startdag=sliceXChars(removeNonIntegers(relativStartday.value), 3)"
+                            @focus="focusedInput = inputFieldDescriptions.relativ_startdag"
+                            @blur="focusedInput = null"
                             required>
                     <label for="startdate" class="floating-label">Startes</label>
                     <label for="startdate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_startdag) }}{{ inputFields.relativ_startdag < 0 ? ' før opstart' : ' efter opstart' }}</label>
@@ -462,6 +567,8 @@
                     <input type="text" id="enddate" class="padding-input" name="enddate"
                             v-model="inputFields.relativ_slutdag" ref="relativEndday"
                             @input="relativEndday.value=inputFields.relativ_slutdag=Math.max(1, sliceXChars(removeNonIntegers(relativEndday.value), 3));relativEnddayAtOne = inputFields.relativ_slutdag==1"
+                            @focus="focusedInput = inputFieldDescriptions.relativ_slutdag"
+                            @blur="focusedInput = null"
                             required>
                     <label for="enddate" class="floating-label">Varighed</label>
                     <label for="enddate" class="annot-label">{{ returnDagOrDage(inputFields.relativ_slutdag) }}</label>
@@ -502,11 +609,18 @@
         align-items: center;
         justify-content: center;
     }
-    .tooltip-display
+    .tooltip-display-left
     {
-        transform: translate(0, -2.6rem);
+        position: absolute;
+        display: none;
+        top: -8px;
+        transform: translateY(-100%);
         width: auto;
-        white-space: nowrap;
+        white-space: normal;
+        max-width: 60%;
+    }
+    .tooltip-hover-left:hover .tooltip-display-left {
+        display: block;
     }
     .icon.adjust-for-button {
         transform: translateX(-4rem);
