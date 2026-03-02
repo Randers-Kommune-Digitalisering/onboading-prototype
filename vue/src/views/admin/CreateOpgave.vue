@@ -51,7 +51,7 @@
         slutdato: { text: "Slutdato", tooltip: "<span>Vælg slutdato for opgaven.</span><span>Slutdato fungerer som en deadline for opgaven, og sættes til den dag, opgaven skal være afsluttet inden.</span><span>Slutdato kan tidligst sættes til dagen efter startdato for opgaven.</span>" },
         relativ_startdag: { text: "Relativ startdag", tooltip: "<span>Angiv relativ startdag for opgaven.</span><span>Relativ startdag bruges til at beregne startdatoen baseret på forløbets startdato.</span>" },
         relativ_slutdag: { text: "Relativ slutdag", tooltip: "<span>Angiv relativ slutdag for opgaven.</span><span>Relativ slutdag bruges til at beregne opgavens slutdato baseret på startdatoen, som tildeles når skabelonen omsættes til en opgave.</span>" },
-        booking: { text: "Bookingtidspunkt", tooltip: "<span>Angiv bookingtidspunkt for opgaven.</span><span>Bookingtidspunkt bruges til at indikere hvornår den ansvarlige medarbejder skal hjælpe med opgaven, eller hvornår der er afsat tid til opgaven.</span><span><b>OBS</b>: Der oprettes ikke automatisk en aftale i kalenderen." }
+        booking: { text: "Bookingtidspunkt", tooltip: "<span>Angiv bookingtidspunkt for opgaven.</span><span>Bookingtidspunkt bruges til at indikere hvornår den ansvarlige medarbejder skal hjælpe med opgaven, eller hvornår der er afsat tid til opgaven.</span><span><b>OBS</b>: Der oprettes ikke automatisk en aftale i kalenderen.</span>" }
     })
 
 
