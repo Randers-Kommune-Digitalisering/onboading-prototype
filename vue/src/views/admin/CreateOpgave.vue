@@ -47,8 +47,8 @@
         note: { text: "Note til ansvarlig", tooltip: "<span>Tilføj eventuelle noter til den ansvarlige medarbejder.</span><span>Noten vil kun være synlig for den ansvarlige medarbejder, og kan ikke læses af den nye medarbejder.</span>" },
         gruppe: { text: "Opgavegruppe", tooltip: "<span>Vælg en opgavegruppe for at gruppere denne opgave med andre opgaver i forløbet.</span><span>Opgaver kan sorteres efter gruppe i forløbets opgaveoverblik, hvilket kan hjælpe med at skabe overblik i forløb med mange opgaver</span>" },
         nygruppe: { text: "Ny opgavegruppe", tooltip: "<span>Giv den nye opgavegruppe et beskrivende navn.</span><span>Du kan efterfølgende tilføje flere opgaver til denne gruppe for at skabe bedre overblik over opgaverne i forløbet.</span>" },
-        startdato: { text: "Startdato", tooltip: "<span>Vælg startdato for opgaven.</span><span>Startdato bør sættes til den dag, hvor opgaven skal påbegyndes.</span>" },
-        slutdato: { text: "Slutdato", tooltip: "<span>Vælg slutdato for opgaven.</span><span>Slutdato fungerer som en deadline for opgaven, og bør sættes til den dag, opgaven skal være afsluttet inden.</span>" },
+        startdato: { text: "Startdato", tooltip: "<span>Vælg startdato for opgaven.</span><span>Startdato sættes til den dag, hvor opgaven skal påbegyndes.</span>" },
+        slutdato: { text: "Slutdato", tooltip: "<span>Vælg slutdato for opgaven.</span><span>Slutdato fungerer som en deadline for opgaven, og sættes til den dag, opgaven skal være afsluttet inden.</span><span>Slutdato kan tidligst sættes til dagen efter startdato for opgaven.</span>" },
         relativ_startdag: { text: "Relativ startdag", tooltip: "<span>Angiv relativ startdag for opgaven.</span><span>Relativ startdag bruges til at beregne startdatoen baseret på forløbets startdato.</span>" },
         relativ_slutdag: { text: "Relativ slutdag", tooltip: "<span>Angiv relativ slutdag for opgaven.</span><span>Relativ slutdag bruges til at beregne opgavens slutdato baseret på startdatoen, som tildeles når skabelonen omsættes til en opgave.</span>" },
         booking: { text: "Bookingtidspunkt", tooltip: "<span>Angiv bookingtidspunkt for opgaven.</span><span>Bookingtidspunkt bruges til at indikere hvornår den ansvarlige medarbejder skal hjælpe med opgaven, eller hvornår der er afsat tid til opgaven.</span><span><b>OBS</b>: Der oprettes ikke automatisk en aftale i kalenderen." }
@@ -111,10 +111,8 @@
 
     const onSetStartDate = () => {
         if(inputFields.value.startdato == inputFields.value.slutdato) {
-            // Subtract 1 day from startdato if startdato and slutdato are the same
-            const date = new Date(inputFields.value.startdato)
-            date.setDate(date.getDate() - 1)
-            inputFields.value.startdato = date.toISOString().split('T')[0]
+            // Advance slutdato by 1 day if startdato and slutdato are the same
+            _advanceEndDateByOneDay()
         }
         // If startdate is after enddate, clear enddate
         else if(inputFields.value.startdato > inputFields.value.slutdato)
@@ -123,14 +121,18 @@
 
     const onSetEndDate = () => {
         if(inputFields.value.slutdato == inputFields.value.startdato) {
-            // Add 1 day to slutdato if startdato and slutdato are the same
-            const date = new Date(inputFields.value.slutdato)
-            date.setDate(date.getDate() + 1)
-            inputFields.value.slutdato = date.toISOString().split('T')[0]
+            // Advance slutdato by 1 day if startdato and slutdato are the same
+            _advanceEndDateByOneDay()
         }
         // If enddate is before startdate, clear startdate
         else if(inputFields.value.slutdato < inputFields.value.startdato)
             inputFields.value.startdato = ""
+    }
+
+    const _advanceEndDateByOneDay = () => {
+        const date = new Date(inputFields.value.slutdato)
+        date.setDate(date.getDate() + 1)
+        inputFields.value.slutdato = date.toISOString().split('T')[0]
     }
 
     /* Textarea */
