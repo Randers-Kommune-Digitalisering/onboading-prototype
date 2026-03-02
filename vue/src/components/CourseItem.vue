@@ -195,9 +195,6 @@
 
 </template>
 <style scoped>
-    .tooltipContainer {
-        position: relative;
-    }
     .tooltip {
         background-color: var(--color-card-dark);
         padding: 0.5rem 0.8rem;
@@ -206,7 +203,7 @@
         visibility: hidden;
         opacity: 0;
         position: absolute;
-        right: -0.75rem;
+        right: 1rem;
 
         font-size: 0.75rem;
         cursor: default;
@@ -225,6 +222,8 @@
         display: flex;
         gap: 0.5rem;
         align-items: center;
+        justify-content: end;
+        min-width: 12rem !important;
     }
     .mail-recipient {
         max-width: 15rem;

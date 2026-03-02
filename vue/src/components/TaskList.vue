@@ -140,11 +140,6 @@
         width: 100%;
         z-index: 1;
     }
-    @media only screen and (min-width: 768px) {
-        .start-spacer, .start-spacer > .line {
-            max-width: 38rem;
-        }
-    }
     .start-spacer > .text {
         background-color: var(--color-background);
         padding: 0 0.5rem;

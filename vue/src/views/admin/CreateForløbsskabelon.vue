@@ -18,6 +18,12 @@
     const varighed = ref(null)
     const durationAtOne = ref(false)
 
+    const focusedInput = ref(null)
+    const inputFieldDescriptions = ref({
+        name: { text: "Forløbsskabelonens navn", tooltip: "<span>Giv skabelonen et beskrivende navn.</span><span>Navnet bruges, når du senere vælger en skabelon ved oprettelse af et forløb.</span>" },
+        varighed: { text: "Forløbets varighed", tooltip: "<span>Angiv hvor mange dage forløbet skal vare.</span><span>Varigheden bruges til at bestemme udgangspunktet for hvornår forløbet afsluttes.</span>" }
+    })
+
     /* Instantiate */
     onMounted(() => {
         if (isEditing) {
@@ -60,16 +66,25 @@
 <template>
 	<p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløbsskabelon' : 'Opret forløbsskabelon' }}</p>
 
+    <div v-if="focusedInput" class="float-right helper-text">
+        <div class="header-small">{{ focusedInput.text }}</div>
+        <div v-html="focusedInput.tooltip"></div>
+    </div>
+
 	<form @submit.prevent="submitForm">
-	<div class="formContainer">
+	<div class="formContainer float-right-gutter">
 
 		<div class="inputContainer">
-			<input type="text" id="title" name="title" placeholder=" " v-model="inputFields.name" required>
+            <input type="text" id="title" name="title" placeholder=" " v-model="inputFields.name" required
+                @focus="focusedInput = inputFieldDescriptions.name"
+                @blur="focusedInput = null">
 			<label for="title" class="floating-label">Forløbsskabelonens navn</label>
 		</div>
 
 		<div class="inputContainer">
-			<input type="text" id="duration" name="duration" placeholder=" " class="padding-input" ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 3)" required>
+			<input type="text" id="duration" name="duration" placeholder=" " class="padding-input" ref="varighed" v-model="inputFields.varighed" @input="varighed.value=varighed.value.replace(/(?![0-9])./gmi,'').slice(0, 3)" required
+				@focus="focusedInput = inputFieldDescriptions.varighed"
+				@blur="focusedInput = null">
 			<label for="duration" class="floating-label">Forløbets varighed</label>
             <label for="duration" class="annot-label">{{ returnDagOrDage(inputFields.varighed) }}</label>
             <div :class="['floating-button', 'indent-floating-button', { 'disabled': durationAtOne}]"
@@ -90,13 +105,10 @@
 </template>
 <style scoped>
     .annot-label {
-        left: calc(45% - 0.5rem);
+        left: 2.5rem;
         bottom: 0.6rem;
     }
     .indent-floating-button {
         right: 2.7rem;
-    }
-    .padding-input {
-        padding-left: calc(45% - 2.5rem);
     }
 </style>

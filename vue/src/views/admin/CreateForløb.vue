@@ -25,6 +25,14 @@
         userdq: ""
     })
 
+    const focusedInput = ref(null)
+    const inputFieldDescriptions = ref({
+        usermail: { text: "Medarbejder mailadresse", tooltip: "<span>Indtast mailadressen på den nye medarbejder.</span><span>Du kan vælge en medarbejder fra listen, når der vises forslag.</span>" },
+        name: { text: "Medarbejder navn", tooltip: "<span>Indtast medarbejderens navn.</span><span>Hvis du vælger mail fra listen, udfyldes navnet automatisk.</span>" },
+        admin: { text: "Ansvarlig leder", tooltip: "<span>Vælg den leder, der er ansvarlig for forløbet.</span><span>Forløbet tilføjes til den valgte leders overblik, og det er lederens ansvar at følge op på forløbet.</span>" },
+        template: { text: "Skabelon", tooltip: "<span>Vælg en forløbsskabelon som udgangspunkt (valgfrit).</span><span>Hvis du vælger en skabelon, kopieres opgaverne fra skabelonen ind i det nye forløb.</span>" }
+    })
+
     /* User mail search */
     const isUserMailValid = ref(true)
     const userList = ref([])
@@ -221,11 +229,18 @@
 <template>
     <p class="indent-tiny bold uppercase p-header-adjust">{{ isPreparation ? 'Opret forløbsforberedelse' : 'Opret forløb' }}</p>
 
+    <div v-if="focusedInput && !isUserMailSearchOpen && !isAdminSearchOpen" class="float-right helper-text">
+		<div class="header-small">{{ focusedInput.text }}</div>
+        <div v-html="focusedInput.tooltip"></div>
+    </div>
+
     <form @submit.prevent="submitForm">
-    <div class="formContainer">
+    <div class="formContainer float-right-gutter">
 
         <div class="inputContainer">
-            <input type="text" id="mail" name="mail" placeholder=" " @input="searchUserMails(inputFields.usermail)" v-model="inputFields.usermail" :class="{'invalid': !isUserMailValid}" required>
+            <input type="text" id="mail" name="mail" placeholder=" " @input="searchUserMails(inputFields.usermail)" v-model="inputFields.usermail" :class="{'invalid': !isUserMailValid}" required
+                @focus="focusedInput = inputFieldDescriptions.usermail"
+                @blur="focusedInput = null">
             <label for="mail" class="floating-label">Medarbejder mailadresse</label>
 
             <div class="itemSelector float-right" v-if="isUserMailSearchOpen">
@@ -236,12 +251,16 @@
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen  }]">
-            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required>
+            <input type="text" id="name" name="name" placeholder=" " v-model="inputFields.name" required
+                @focus="focusedInput = inputFieldDescriptions.name"
+                @blur="focusedInput = null">
             <label for="name" class="floating-label">Medarbejder navn</label>
         </div>
 
         <div :class="['inputContainer', { 'hideOnMobile': isUserMailSearchOpen }]">
-            <input type="text" id="admin" name="admin" placeholder=" " @input="searchAdmins(inputFields.admin)" v-model="inputFields.admin" class="locked" required :disabled="isAdminLocked">
+            <input type="text" id="admin" name="admin" placeholder=" " @input="searchAdmins(inputFields.admin)" v-model="inputFields.admin" class="locked" required :disabled="isAdminLocked"
+                @focus="focusedInput = inputFieldDescriptions.admin"
+                @blur="focusedInput = null">
             <label for="admin" class="floating-label">Ansvarlig leder</label>
             <div class="icon" @click="toggleadminSearch()"><i :class="'fa-solid fa-lock' + (isAdminLocked ? '' : '-open')"></i></div>
             
@@ -253,7 +272,9 @@
         </div>
 
         <div class="inputContainer" :class="{ 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }">
-            <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required>
+            <select id="template" name="template" v-model="inputFields.ForløbsskabelonID" required
+                @focus="focusedInput = inputFieldDescriptions.template"
+                @blur="focusedInput = null">
                 <option value="" disabled selected hidden></option>
                 <option :value="null" style="color:gray">Ingen skabelon</option>
                 <option v-for="template in templates" :value="template.ForløbsskabelonID">{{template.name}}</option>

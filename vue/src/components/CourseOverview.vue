@@ -399,8 +399,7 @@
     }
     @media only screen and (min-width: 768px) {
         .sort-container {
-            max-width: 38rem;
-        transform: translateY(1.7rem);
+            transform: translateY(1.7rem);
         }
     }
     .sort-container > .sort-title {
