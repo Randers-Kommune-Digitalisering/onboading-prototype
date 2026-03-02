@@ -611,19 +611,6 @@
         align-items: center;
         justify-content: center;
     }
-    .tooltip-display-left
-    {
-        position: absolute;
-        display: none;
-        top: -8px;
-        transform: translateY(-100%);
-        width: auto;
-        white-space: normal;
-        max-width: 60%;
-    }
-    .tooltip-hover-left:hover .tooltip-display-left {
-        display: block;
-    }
     .icon.adjust-for-button {
         transform: translateX(-4rem);
     }
