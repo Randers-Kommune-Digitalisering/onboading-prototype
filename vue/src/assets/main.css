@@ -755,7 +755,7 @@ button[type="submit"] {
     background-color: var(--color-input-disabled-bg);
     border-radius: 0.2rem;
     max-height: 28.4rem;
-    overflow-x: auto;
+    overflow-y: auto;
 
     /* Flat style scrollbar */
     scrollbar-width: thin;
