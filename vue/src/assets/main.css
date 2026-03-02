@@ -761,7 +761,6 @@ button[type="submit"] {
     scrollbar-width: thin;
     scrollbar-color: var(--color-text-faded) var(--color-input-disabled-bg);
     &::-webkit-scrollbar {
-        height: 8px;
         background: var(--color-input-disabled-bg);
         border-radius: 4px;
     }
