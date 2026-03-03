@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiRequest } from './apiRequest';
 
 let CACHED_USER_INFO = null;
 let IN_FLIGHT_USER_INFO_PROMISE = null;
@@ -37,7 +37,7 @@ function normalizeUserInfo(rawUserInfo) {
 
 export const getUserInfoFromBackend = () => {
     // Leading slash avoids route-relative requests like /forloeb-overview/api/userinfo
-    return axios.get('/api/userinfo');
+    return apiRequest({ method: 'get', url: '/api/userinfo' });
 };
 
 export async function getUserInfo() {

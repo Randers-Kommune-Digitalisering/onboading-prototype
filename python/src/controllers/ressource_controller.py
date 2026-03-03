@@ -104,7 +104,7 @@ def get_ressources_by_opgaveid(opgave_id):
     try:
         ressources = session.query(Ressource).filter_by(OpgaveID=opgave_id).all()
         if not ressources:
-            return jsonify({"error": "No ressources found for the specified OpgaveID"}), 404
+            return jsonify([])
 
         ressource_data = [
             {
@@ -125,7 +125,7 @@ def get_ressources_by_opgaveskabelonid(opgaveskabelon_id):
     try:
         ressources = session.query(Ressource).filter_by(OpgaveskabelonID=opgaveskabelon_id).all()
         if not ressources:
-            return jsonify({"error": "No ressources found for the specified OpgaveskabelonID"}), 404
+            return jsonify([])
 
         ressource_data = [
             {

@@ -1,4 +1,28 @@
 <script setup>
+    import { onMounted, ref } from 'vue'
+    import { useRouter } from 'vue-router'
+    import { getUserInfo } from '@/services/keycloakService.js'
+
+    const router = useRouter()
+    const userInfo = ref({
+        roles: [],
+        email: '',
+        isAdmin: false,
+        isAnsvarlig: false,
+        isMedarbejder: false,
+    })
+
+    onMounted(async () => {
+        try {
+            userInfo.value = await getUserInfo()
+            if (userInfo) {
+                const latestRoute = router.options.history.state.back || '/';
+                router.replace(latestRoute);
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    })
 </script>
 
 <template>

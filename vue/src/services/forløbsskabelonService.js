@@ -1,27 +1,27 @@
-import axios from 'axios';
+import { apiRequest } from './apiRequest';
 
 const API_URL = 'api';
 
 export const createForloebsskabelon = (data) => {
-    return axios.post(`${API_URL}/forlobsskabelon`, data);
+    return apiRequest({ method: 'post', url: `${API_URL}/forlobsskabelon`, data });
 };
 
 export const getForloebsskabeloner = () => {
-    return axios.get(`${API_URL}/forlobsskabelon`);
+    return apiRequest({ method: 'get', url: `${API_URL}/forlobsskabelon` });
 };
 
 export const getForloebsskabelonById = (id) => {
-    return axios.get(`${API_URL}/forlobsskabelon/${id}`);
+    return apiRequest({ method: 'get', url: `${API_URL}/forlobsskabelon/${id}` });
 };
 
 export const getForloebsskabelonerWithOpgavers = () => {
-    return axios.get(`${API_URL}/forlobsskabelon/opgaver`);
+    return apiRequest({ method: 'get', url: `${API_URL}/forlobsskabelon/opgaver` });
 };
 
 export const updateForloebsskabelon = (forloebsskabelon_id, data) => {
-    return axios.put(`${API_URL}/forlobsskabelon/${forloebsskabelon_id}`, data);
+    return apiRequest({ method: 'put', url: `${API_URL}/forlobsskabelon/${forloebsskabelon_id}`, data });
 };
 
 export const deleteForloebsskabelon = (forloebsskabelon_id) => {
-    return axios.delete(`${API_URL}/forlobsskabelon/${forloebsskabelon_id}`);
+    return apiRequest({ method: 'delete', url: `${API_URL}/forlobsskabelon/${forloebsskabelon_id}` });
 };

@@ -286,7 +286,7 @@ def get_forloeb_by_email(mail):
     try:
         forloeb = session.query(Forløb).filter(Forløb.usermail.ilike(mail.lower())).first()
         if not forloeb:
-            return jsonify({"error": "Forløb not found"}), 404
+            return jsonify(None), 200
 
         opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
 
@@ -321,7 +321,7 @@ def get_forloeb_by_admin(admin_name):
     try:
         forloeb_list = session.query(Forløb).filter_by(admin=admin_name).all()
         if not forloeb_list:
-            return jsonify({"error": "No Forløb found for this admin"}), 404
+            return jsonify([]), 200
 
         result = []
         for forloeb in forloeb_list:

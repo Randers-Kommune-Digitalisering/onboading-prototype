@@ -1,7 +1,7 @@
-import axios from 'axios';
+import { apiRequest } from './apiRequest';
 
 const API_URL = 'api';
 
 export const deleteMail = (data) => {
-  return axios.delete(`${API_URL}/mail/delete/${data.id}`);
+  return apiRequest({ method: 'delete', url: `${API_URL}/mail/delete/${data.id}` });
 };

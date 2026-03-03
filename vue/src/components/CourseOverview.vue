@@ -74,6 +74,10 @@
                                         : await getForloebById(props.id, { headers })
                 isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
+                if (forloeb_response && forloeb.value == null) {
+                    isOpgaverFetched.value = true
+                    return
+                }
                 isUnderPreparation.value = forloeb.value?.isPreparation || false
                 isForloebCompleted.value = !isUnderPreparation.value && forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 isForloebOngoing.value = !isUnderPreparation.value && forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false

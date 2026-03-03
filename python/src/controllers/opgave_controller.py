@@ -227,7 +227,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
         opgave = query.all()
 
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbsskabelonID and usermail"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -312,7 +312,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
     try:
         opgave = session.query(Opgave).filter_by(ForløbsskabelonID=forlobsskabelon_id).all()
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbsskabelonID"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -355,7 +355,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
     try:
         opgave = session.query(Opgave).filter_by(ForløbID=forlob_id).all()
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbID"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -407,7 +407,7 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
         opgave = query.all()
 
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified usermail"}), 404
+            return jsonify([])
 
         opgave_data = []
         for opg in opgave:
@@ -467,7 +467,7 @@ def get_opgave_by_forloeb_id(forlob_id):
         opgave = query.all()
 
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbID and usermail"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
