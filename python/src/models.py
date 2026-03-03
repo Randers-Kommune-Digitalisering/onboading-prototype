@@ -29,6 +29,11 @@ class Forløb(Base):
     mails = relationship('Mail', back_populates='forløb', cascade='all, delete')
     isPreparation = Column(Boolean, default=True)
 
+    # External (public) access via one-time emailed magic link.
+    # Store only a hash (never the raw key) + an expiry timestamp.
+    external_access_key_hash = Column(String, nullable=True)
+    external_access_expires_at = Column(DateTime, nullable=True)
+
 
 class Opgaveskabelon(Base):
     __tablename__ = 'Opgaveskabelon'

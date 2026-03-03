@@ -1,12 +1,18 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 
 # loads .env file, will not overide already set enviroment variables (will do nothing when testing, building and deploying)
 load_dotenv()
 
+# Test defaults: keep pytest runs deterministic regardless of local .env.
+if 'pytest' in sys.modules:
+	os.environ['DEBUG'] = 'False'
+	os.environ.setdefault('POD_NAME', 'test-pod')
 
-DEBUG = os.getenv('DEBUG', 'True')
+
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't', 'yes', 'y')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
 DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')

@@ -14,6 +14,11 @@ export const getOpgaverByForloebID = (forloebID, config) => {
   return apiRequest({ method: 'get', url: `${API_URL}/opgave/forloeb/${forloebID}`, config });
 };
 
+export const getOpgaverByForloebIDExternal = (forloebID, accessKey) => {
+  const key = encodeURIComponent(accessKey || '');
+  return apiRequest({ method: 'get', url: `${API_URL}/external/opgave/forloeb/${forloebID}?accessKey=${key}` });
+};
+
 export const getOpgaverByAnsvarligEmail = (config) => {
   return apiRequest({ method: 'get', url: `${API_URL}/opgave/admin`, config });
 };

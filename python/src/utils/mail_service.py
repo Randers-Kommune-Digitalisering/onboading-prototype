@@ -219,6 +219,23 @@ def create_mail_ansvarlig(new_opgave):
     return subject, message
 
 
+def create_mail_external_access(forloeb, link: str, expires_at):
+    subject = "Midlertidig adgang til onboardingforløb"
+    try:
+        expires_str = expires_at.astimezone(None).strftime('%d/%m %H:%M')
+    except Exception:
+        expires_str = str(expires_at)
+
+    message = (
+        "Hej\n\n"
+        "Du har anmodet om midlertidig adgang til dit onboardingforløb.\n\n"
+        f"Åbn forløbet her (linket udløber {expires_str}):\n{link}\n\n"
+        "Hvis du ikke selv har anmodet om dette link, kan du ignorere mailen.\n\n"
+        "Venlig hilsen\nRanders Kommune"
+    )
+    return subject, message
+
+
 def create_mail_expired_ansvarlig(opgave):
     opgave = {
         "ansvarlig": opgave.ansvarlig,

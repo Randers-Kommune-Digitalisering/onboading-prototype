@@ -2,10 +2,11 @@
     import { ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
     import { getUserInfo } from '@/services/keycloakService.js'
+    import { getExternalUserInfo } from '@/services/externalAccessService.js'
     
-    import { getForloebByEmail, getForloebById, completeForloeb, deleteForloeb } from '@/services/forløbService.js'
+    import { getForloebByEmail, getForloebById, getForloebByIdExternal, completeForloeb, deleteForloeb } from '@/services/forløbService.js'
     import { getForloebsskabelonById, deleteForloebsskabelon } from '@/services/forløbsskabelonService.js'
-    import { getOpgaverByForloebID, getOpgaverByForloebIDAdmin, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService.js'
+    import { getOpgaverByForloebID, getOpgaverByForloebIDExternal, getOpgaverByForloebIDAdmin, getOpgaverByForloebsskabelonID, getOpgaverByAnsvarligEmail } from '@/services/opgaveService.js'
     import TaskList from '@/components/TaskList.vue'
     import CourseItem from '@/components/CourseItem.vue'
     import Placeholder from '@/components/Placeholder.vue'
@@ -32,6 +33,14 @@
         ansvarligView: {
             type: Boolean,
             default: false
+        },
+        external: {
+            type: Boolean,
+            default: false
+        },
+        accessKey: {
+            type: String,
+            default: null
         }
     })
 
@@ -58,9 +67,89 @@
     const opgaver_template = ref([])
     const sortBy = ref(router.currentRoute.value.query.sort || 'deadline')
     const start_message_index = ref(-1)
+    const externalAccessDenied = ref(false)
 
     const fetchOpgaver = async () => {
+        // External access flow
         try {
+            if (props.external) {
+                externalAccessDenied.value = false
+                const externalInfoResponse = await getExternalUserInfo(props.id, props.accessKey)
+                userInfo.value = {
+                    roles: ['Public'],
+                    email: externalInfoResponse?.data?.email || '',
+                    isAdmin: false,
+                    isAnsvarlig: false,
+                    isMedarbejder: false,
+                }
+
+                const forloeb_response = await getForloebByIdExternal(props.id, props.accessKey)
+                isForloebFetched.value = true
+                forloeb.value = forloeb_response?.data
+
+                if (forloeb_response && forloeb.value == null) {
+                    isOpgaverFetched.value = true
+                    return
+                }
+
+                isUnderPreparation.value = forloeb.value?.isPreparation || false
+                isForloebCompleted.value = !isUnderPreparation.value && forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
+                isForloebOngoing.value = !isUnderPreparation.value && forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
+                forloeb_id.value = forloeb.value?.ForløbID
+                userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
+
+                if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+                    forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
+
+                const opgaver_response = await getOpgaverByForloebIDExternal(forloeb_id.value, props.accessKey)
+
+                if (opgaver_response?.data == null) {
+                    console.warn('No tasks found')
+                    isOpgaverFetched.value = true
+                    return
+                }
+
+                if (!Array.isArray(opgaver_response.data))
+                    opgaver_response.data = [opgaver_response.data]
+
+                if (isUnderPreparation.value)
+                    opgaver_response.data.sort((a, b) => a.relativ_startdag - b.relativ_startdag)
+                else
+                    opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
+
+                opgaver_all.value = opgaver_response.data
+                completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
+
+                if (isUnderPreparation.value)
+                {
+                    opgaver_template.value = opgaver_response.data
+                    start_message_index.value = opgaver_template.value
+                        .map(opgave => opgave.relativ_startdag > -1)
+                        .findIndex(opgave => opgave)
+                }
+                else
+                {
+                    for (const item of opgaver_response.data) {
+                        if (item.result)
+                            opgaver_completed.value.push(item)
+                        else
+                        if (new Date(item.startdato) > new Date())
+                            opgaver_future.value.push(item)
+                        else 
+                            opgaver_ongoing.value.push(item)
+                    }
+                    opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
+                    if (!isForloebOngoing.value && forloeb.value?.startdate)
+                        start_message_index.value = opgaver_future.value
+                            .map(opgave => new Date(opgave.startdato) > new Date(forloeb.value.startdate))
+                            .findIndex(opgave => opgave)
+                }
+
+                isOpgaverFetched.value = true
+                return
+            }
+
+            // Internal access flow (logged in AD users)
             if (userInfo.value) {
                 const headers = { usermail: userInfo.value.email }
                 // Get forloeb
@@ -150,6 +239,11 @@
 
         } catch (error) {
             console.error(error)
+
+            // If external access, show specific message if 403 Forbidden (likely expired or invalid link)
+            if (props.external && error?.response?.status === 403)
+                externalAccessDenied.value = true
+
             isForloebFetched.value = true
             isOpgaverFetched.value = true
         }
@@ -186,7 +280,8 @@
 
     onMounted(async () => {
         try {
-            userInfo.value = await getUserInfo()
+            if (!props.external)
+                userInfo.value = await getUserInfo()
             await fetchOpgaver()
         } catch (error) {
             console.error(error)
@@ -229,13 +324,16 @@
     })
 </script>
 <template>
-    <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView" class="indent-tiny notification">
+    <p v-if="externalAccessDenied" class="indent-tiny notification">
+        <span class="bold">OBS</span>: Linket er ugyldigt eller udløbet. <router-link :to="`/forloeb-overview?id=${props.id}&external=true`">Anmod om et nyt link</router-link>.
+    </p>
+    <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView && !externalAccessDenied" class="indent-tiny notification">
         <span class="bold">OBS</span>: Det ser ikke ud til, at du har et onboardingforløb tilknyttet.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.
     </p>
     <p v-if="forloeb != null && isForloebFetched && userInfo.isAdmin && isForloebOngoing && !forloeb.usermail.includes('@randers.dk')" class="indent-tiny notification yellow">
-        <span class="bold">OBS</span>: Forløbet er oprettet med medarbejderens private mailadresse. Husk at opdatere til medarbejderens nye Randers-mail, så onboardingforløbet kan tilgås.
+        <span class="bold">OBS</span>: Forløbet er oprettet med medarbejderens private mailadresse. Husk at opdatere til medarbejderens nye Randers-mail når medarbejderen er startet i kommunen.
     </p>
-    <p v-if="showDetails" class="indent-tiny bold uppercase p-header-adjust">
+    <p v-if="showDetails && forloeb != null" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt
     </p>
     <CourseItem v-if="forloeb != null && isOpgaverFetched && showDetails"

@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session, request
+from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_cors import CORS
 from healthcheck import HealthCheck
 from prometheus_client import generate_latest
@@ -31,7 +31,29 @@ def create_app():
 
         @app.before_request
         def check_authenticated():
-            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics', '/api/cron/notify-expired-tasks', '/api/cron/send-planned-mails']:
+            if 'user' in session:
+                return None
+
+            # Always allow static assets for the SPA to load.
+            if request.path.startswith('/assets/'):
+                return None
+
+            if request.path == '/favicon.ico':
+                return None
+
+            # Allow the external access flow only on the ForløbOverview route.
+            if request.path == '/forloeb-overview' and request.args.get('external', '').lower() == 'true':
+                return None
+
+            # Allow external API endpoints (they validate via accessKey).
+            if request.path.startswith('/api/external/'):
+                return None
+
+            # Allow userinfo lookup to return a JSON 401 (frontend falls back to Public).
+            if request.path == '/api/userinfo':
+                return None
+
+            if request.path not in ['/login', '/auth', '/healthz', '/metrics', '/api/cron/notify-expired-tasks', '/api/cron/send-planned-mails']:
                 return redirect(url_for("login"))
 
         @app.route("/login")
@@ -52,7 +74,7 @@ def create_app():
                 user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', ["Ny medarbejder", "Ansvarlig"])
                 return user_info, 200
             else:
-                return redirect(url_for('login'))
+                return jsonify({"error": "Not authenticated"}), 401
 
     # Create database client
     create_db_client()
