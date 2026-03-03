@@ -8,8 +8,8 @@ load_dotenv()
 
 # Test defaults: keep pytest runs deterministic regardless of local .env.
 if 'pytest' in sys.modules:
-	os.environ['DEBUG'] = 'False'
-	os.environ.setdefault('POD_NAME', 'test-pod')
+    os.environ['DEBUG'] = 'False'
+    os.environ.setdefault('POD_NAME', 'test-pod')
 
 
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't', 'yes', 'y')

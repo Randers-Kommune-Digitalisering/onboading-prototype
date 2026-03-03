@@ -592,7 +592,7 @@ def notify_expired_tasks():
     session = db_client.get_session()
     try:
         now = datetime.now()
-        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result == False, Opgave.ForløbID != None).all()
+        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result is False, Opgave.ForløbID is not None).all()
         logger.info(f"Found {len(opgaver)} expired tasks to notify.")
 
         for opgave in opgaver:
