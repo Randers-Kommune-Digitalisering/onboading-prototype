@@ -2,7 +2,7 @@
 <script setup>
     import { useRoute } from 'vue-router'
     import CourseOverview from '@/components/CourseOverview.vue'
-    import { getUserInfo } from '@/services/keycloakService'
+    import { getUserInfo } from '@/services/keycloakService.js'
     import { ref } from 'vue'
 
     const route = useRoute()
@@ -10,24 +10,10 @@
     const isTemplate = route.query.tid !== undefined
 	const _expandItem = route.query.item
 	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
-
-    const adminView = ref(false)
-    const ansvarligView = ref(false)
     const userInfo = ref(null)
 
     getUserInfo().then((response) => {
         userInfo.value = response
-        if (!userInfo.value) {
-            console.error('User info not found in response:', response)
-            return
-        }
-        let userRoles = userInfo.value.roles
-        if (userRoles) {
-            adminView.value = userRoles.includes('Admin')
-            ansvarligView.value = !adminView.value && userRoles.includes('Ansvarlig')
-        } else {
-            console.error('User roles not found in response:', response)
-        }
     }).catch((error) => {
         console.error('Error fetching user info:', error)
     })
@@ -36,10 +22,9 @@
 
 <template>
     <div>
-        <CourseOverview v-if="userInfo != null && (adminView || ansvarligView)"
+        <CourseOverview v-if="userInfo != null && (userInfo.isAdmin || userInfo.isAnsvarlig)"
                         :id="id"
                         :showDetails="true"
-                        :userInfo="userInfo"
                         :isTemplate="isTemplate"
                         :expandItem="expandItem" />
     </div>

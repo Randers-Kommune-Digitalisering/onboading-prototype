@@ -103,11 +103,11 @@ const routes = [
         path: '/forloeb-overview',
         name: 'ForløbOverview',
         component: ForløbOverview,
-        meta: { roles: ['Admin', 'Ansvarlig'] }
+        meta: { roles: ['Admin', 'Ansvarlig', 'Public'] }
     },
     {
         path: '/forloeb-download',
-        name: 'DownloadForloeb',
+        name: 'DownloadForløb',
         component: DownloadForløb,
         meta: { roles: ['Admin', 'Ansvarlig'], hideNavbar: true }
     },
@@ -121,6 +121,10 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: Login,
+        meta: { hideNavbar: true }
+    },
+    {
+        path: '/auth',
         meta: { hideNavbar: true }
     }
 ]

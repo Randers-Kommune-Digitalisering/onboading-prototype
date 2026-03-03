@@ -13,10 +13,6 @@
             type: Boolean,
             default: false
         },
-        userInfo : {
-            type: Object,
-            required: true
-        },
         username: {
             type: String,
             default: null
@@ -89,7 +85,6 @@
                     </span>
                 </div>
                 <Card
-                    :userInfo="userInfo"
                     :id="task.OpgaveID ?? task.OpgaveskabelonID"
                     :forloebId="task.ForløbID"
                     :username="task.name"

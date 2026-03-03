@@ -98,7 +98,6 @@
 			  title=""
 			  :expandFirstItem="false"
 			  :templateView="true"
-			  :userInfo="{}"
 			  :expandItem="expandItem" />
 </template>
 

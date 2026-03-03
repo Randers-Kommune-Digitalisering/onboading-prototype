@@ -2,6 +2,8 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
+    import { getUserInfo } from '@/services/keycloakService.js'
+
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
     import { deleteMail } from '@/services/mailService.js'
@@ -10,6 +12,13 @@
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
+    const userInfo = ref({
+        roles: [],
+        email: '',
+        isAdmin: false,
+        isAnsvarlig: false,
+        isMedarbejder: false,
+    })
 
     const expandCard = () => {
         cardRef.value.classList.toggle('expand-content')
@@ -71,10 +80,6 @@
     var props = defineProps({
         id: {
             type: Number,
-            required: true
-        },
-        userInfo: {
-            type: Object,
             required: true
         },
         forloebId: {
@@ -257,7 +262,8 @@
 
     /* Instantiate */
 
-    onMounted(() => {
+    onMounted(async () => {
+        userInfo.value = await getUserInfo()
         isFutureTask.value = new Date(props.startdate) > new Date()
         if (props.expandByDefault) {
             scrollTo()

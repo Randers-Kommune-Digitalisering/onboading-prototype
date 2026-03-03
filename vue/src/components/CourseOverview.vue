@@ -1,6 +1,7 @@
 <script setup>
     import { ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
+    import { getUserInfo } from '@/services/keycloakService.js'
     
     import { getForloebByEmail, getForloebById, completeForloeb, deleteForloeb } from '@/services/forløbService.js'
     import { getForloebsskabelonById, deleteForloebsskabelon } from '@/services/forløbsskabelonService.js'
@@ -16,10 +17,6 @@
         showDetails: {
             type: Boolean,
             default: false
-        },
-        userInfo: {
-            type: Object,
-            required: true
         },
         id: {
             type: Number
@@ -41,6 +38,13 @@
     const forloeb = ref(null)
     const forloeb_id = ref(null)
     const userTitle = ref(null)
+    const userInfo = ref({
+        roles: [],
+        email: '',
+        isAdmin: false,
+        isAnsvarlig: false,
+        isMedarbejder: false,
+    })
     const isForloebCompleted = ref(false)
     const isForloebOngoing = ref(false)
     const isForloebFetched = ref(false)
@@ -57,13 +61,13 @@
 
     const fetchOpgaver = async () => {
         try {
-            if (props.userInfo) {
-                const headers = { usermail: props.userInfo.email }
+            if (userInfo.value) {
+                const headers = { usermail: userInfo.value.email }
                 // Get forloeb
                                         // As ansvarlig fetch no forløb unless id is provided (fetch opgaver only)
-                const forloeb_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? null
+                const forloeb_response =  userInfo.value.isAnsvarlig && !props.id && props.ansvarligView ? null
                                         // As medarbejder fetch forløb by email
-                                        : props.userInfo.isMedarbejder && !props.id ? await getForloebByEmail({ headers })
+                                        : userInfo.value.isMedarbejder && !props.id ? await getForloebByEmail({ headers })
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getForloebsskabelonById(props.id)
                                         // Otherwise fetch by id and user email (for admins and ansvarlig users)
@@ -80,11 +84,11 @@
                 
                 // Get opgaver
                                         // As ansvarlig fetch opgaver
-                const opgaver_response =  props.userInfo.isAnsvarlig && !props.id && props.ansvarligView ? await getOpgaverByAnsvarligEmail({ headers }) 
+                const opgaver_response =  userInfo.value.isAnsvarlig && !props.id && props.ansvarligView ? await getOpgaverByAnsvarligEmail({ headers }) 
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
                                         // Otherwise fetch by forløb id and user email (for medarbejder users, admins and ansvarlig users)
-                                        : props.userInfo.isAdmin ? await getOpgaverByForloebIDAdmin(forloeb_id.value)
+                                        : userInfo.value.isAdmin ? await getOpgaverByForloebIDAdmin(forloeb_id.value)
                                         : await getOpgaverByForloebID(forloeb_id.value)
 
                 if (opgaver_response?.data == null)
@@ -176,9 +180,10 @@
             })
     }
 
-    onMounted(() => {
+    onMounted(async () => {
         try {
-            fetchOpgaver()
+            userInfo.value = await getUserInfo()
+            await fetchOpgaver()
         } catch (error) {
             console.error(error)
         }
@@ -314,7 +319,6 @@
         <TaskList v-if="forloeb != null && (isTemplate || isUnderPreparation)"
                 :tasks="opgaver_template"
                 :isFetchingTasks="!isOpgaverFetched"
-                :userInfo="userInfo"
                 title="Alle opgaver"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
@@ -327,7 +331,6 @@
         <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_ongoing"
                 :isFetchingTasks="!isOpgaverFetched"
-                :userInfo="userInfo"
                 :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
                 :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
                 :expandFirstItem="false"
@@ -336,7 +339,6 @@
         <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_future"
                 :isFetchingTasks="!isOpgaverFetched"
-                :userInfo="userInfo"
                 title="Kommende opgaver"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
@@ -348,7 +350,6 @@
         <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_completed"
                 :isFetchingTasks="!isOpgaverFetched"
-                :userInfo="userInfo"
                 title="Afsluttede opgaver"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
@@ -360,7 +361,6 @@
         <TaskList v-if="forloeb != null" v-for="group in forloeb.opgave_grupper" :key="group.id"
                 :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID === group.OpgaveGruppeID)"
                 :isFetchingTasks="!isOpgaverFetched"
-                :userInfo="userInfo"
                 :title="group.name"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
@@ -372,7 +372,6 @@
         <TaskList v-if="forloeb != null"
                 :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null)"
                 :isFetchingTasks="!isOpgaverFetched"
-                :userInfo="userInfo"
                 title="Ingen gruppe"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
