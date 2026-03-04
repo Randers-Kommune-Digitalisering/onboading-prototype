@@ -175,11 +175,15 @@ def send_all_mails():
 
 def send_mail(recipient_email, subject, message, attachments=None, reply_to=None):
     """
-    Sends an email via SMTP using rk-digi.
+    Sends an email via SMTP using rk-digi and the configured SMTP sender.
+
     Parameters:
-        sender_email (str): The sender's email address.
+        recipient_email (str or list[str]): Email address or list of addresses to send the email to.
         subject (str): The subject of the email.
         message (str): The body of the email.
+        attachments (list[dict] | None): Optional list of attachments, each with at least
+            "filename" and "file_data" (base64-encoded string). Defaults to None.
+        reply_to (str | None): Optional reply-to email address to set on the message.
     """
     try:
         if not MAIL_SMTP_SERVER or not MAIL_SMTP_SENDER or not MAIL_SMTP_PASSWORD:
