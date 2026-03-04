@@ -78,7 +78,7 @@ def request_external_access():
         subject, message = create_mail_external_access(forloeb, link, expires_at)
         sent = send_mail(forloeb.usermail, subject, message, attachments=None, reply_to=forloeb.admin)
         if not sent:
-            logger.error("Failed sending external access email for ForløbID=%s with link %s", forloeb_id_int, link)
+            logger.error("Failed sending external access email for ForløbID=%s", forloeb_id_int)
 
         return jsonify({"message": "If the forløb exists, an email has been sent."}), 200
 
@@ -171,32 +171,31 @@ def get_opgaver_forloeb_external(forloeb_id: int):
 
         result = []
         for opgave in opgaver:
-            ressources = session.query(Ressource).filter_by(OpgaveID=opgave.OpgaveID).all()
             result.append({
-                "OpgaveID": opgave.OpgaveID,
-                "title": opgave.title,
-                "beskrivelse": opgave.beskrivelse,
-                "ansvarlig": opgave.ansvarlig,
-                "ansvarligEmail": opgave.ansvarligEmail,
-                "startdato": opgave.startdato.isoformat() if opgave.startdato else None,
-                "slutdato": opgave.slutdato.isoformat() if opgave.slutdato else None,
-                "relativ_startdag": opgave.relativ_startdag,
-                "relativ_slutdag": opgave.relativ_slutdag,
-                "result": opgave.result,
-                "booking": opgave.booking.isoformat() if opgave.booking else None,
-                "timestamp": opgave.timestamp.isoformat() if opgave.timestamp else None,
-                "ForløbID": opgave.ForløbID,
-                "OpgaveGruppeID": opgave.OpgaveGruppeID,
-                "note": opgave.note,
-                "ressource": [
+                'OpgaveID': opgave.OpgaveID,
+                'title': opgave.title,
+                'beskrivelse': opgave.beskrivelse,
+                'resourcer': [
                     {
-                        "RessourceID": r.RessourceID,
-                        "name": r.name,
-                        "url": r.url,
-                        "OpgaveID": r.OpgaveID,
-                    }
-                    for r in ressources
+                        'RessourceID': ressource.RessourceID,
+                        'name': ressource.name,
+                        'url': ressource.url
+                    } for ressource in opgave.ressource
                 ],
+                'gruppe': {
+                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
+                    'name': opgave.opgavegruppe.name,
+                    'letter': opgave.opgavegruppe.letter
+                } if opgave.opgavegruppe else None,
+                'ansvarlig': opgave.ansvarlig,
+                'ansvarligEmail': opgave.ansvarligEmail,
+                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
+                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
+                'relativ_startdag': opgave.relativ_startdag,
+                'relativ_slutdag': opgave.relativ_slutdag,
+                'result': opgave.result,
+                'booking': opgave.booking.isoformat() if opgave.booking else None,
+                'timestamp': opgave.timestamp.isoformat()
             })
 
         response = jsonify(result)
