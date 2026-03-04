@@ -258,7 +258,7 @@
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opdater forløb</button>
+            <button :class="['button', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected()" type="submit" :disabled="isSubmitting">Opdater forløb</button>
         </div>
 
     </div>

@@ -1,4 +1,4 @@
-from flask import make_response, request, jsonify
+from flask import request, jsonify
 from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
@@ -185,8 +185,8 @@ def start_preparation_forloeb():
                 plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
 
         if data.get('planWelcome') is True:
-            subject, message, attachment = create_mail_forloeb_start(forloeb)
-            plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID, attachment=attachment)
+            subject, message = create_mail_forloeb_start(forloeb)
+            plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID)
 
         return jsonify({"message": "Forløb started successfully", "startdate": forloeb.startdate.isoformat(), "enddate": forloeb.enddate.isoformat(), "uid": forloeb.ForløbID}), 200
     except Exception as e:
@@ -369,25 +369,6 @@ def get_forloeb_by_admin(admin_name):
         session.close()
 
 
-def download_forloeb(forloeb_id=None):
-    try:
-        from utils.pdf import create_pdf
-
-        # Get the forløb ID from the query parameters
-        forloeb_id = int(forloeb_id) if forloeb_id else int(request.args.get('id'))
-        forloeb = get_forloeb(forloeb_id)[0].get_json()
-        pdf = create_pdf(forloeb_id)
-
-        # Generate PDF content
-        response = make_response(pdf)
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = f'attachment; filename={forloeb["name"]}.pdf'
-        return response
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 def update_forloeb(id):
     data = request.json
     session = db_client.get_session()
@@ -407,8 +388,8 @@ def update_forloeb(id):
 
         if len(forloeb.mails) == 0 or all(mail.isSent for mail in forloeb.mails):
             if data.get('planWelcome') is True:
-                subject, message, attachment = create_mail_forloeb_start(forloeb)
-                plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID, attachment=attachment)
+                subject, message = create_mail_forloeb_start(forloeb)
+                plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID)
 
         session.commit()
         return jsonify({"message": "Forløb updated successfully", "uid": forloeb.ForløbID}), 200

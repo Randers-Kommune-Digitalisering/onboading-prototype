@@ -7,7 +7,6 @@ from rkdigi import EmailSender
 from utils.config import MAIL_SMTP_SENDER, MAIL_SMTP_PASSWORD, MAIL_SMTP_PORT, MAIL_SMTP_SERVER
 from models import Mail, MailAttachment
 from utils.db_connection import get_db_client
-from utils.pdf import create_pdf
 
 db_client = get_db_client()
 logger = logging.getLogger(__name__)
@@ -60,10 +59,14 @@ def _attachments_for_rkdigi(attachments):
 def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None):
     """
     Adds an email to DB to be sent at a later point.
+
     Parameters:
         recipient_email (str): The recipient's email address.
         subject (str): The subject of the email.
         message (str): The body of the email.
+        opgave_id (int, optional): The ID of the related Opgave, if applicable.
+        forloeb_id (int, optional): The ID of the related Forløb, if applicable.
+        attachment (dict, optional): An optional attachment with keys "filename" and "file_data" (base64 string or raw bytes).
     """
     session = db_client.get_session()
     try:
@@ -137,6 +140,9 @@ def get_planned_mails():
 
 
 def send_all_mails():
+    """
+    Fetches all planned mails from DB and attempts to send them. Updates DB status accordingly.
+    """
     mails = get_planned_mails()
     if mails is None or len(mails) == 0:
         return jsonify({"message": "No planned emails to send"}), 200
@@ -214,6 +220,8 @@ def send_mail(recipient_email, subject, message, attachments=None, reply_to=None
         logger.error(f"Error sending email to {recipient_email}: {e}")
         return False
 
+
+# Helper functions to create email content for different scenarios in the onboarding process.
 
 def create_mail_ansvarlig(new_opgave):
     new_opgave = {
@@ -294,24 +302,46 @@ def create_mail_expired(forloeb, opgave):
     return subject, message
 
 
-def create_mail_forloeb_start(forloeb):
+def create_custom_forloeb_start_mail(forloeb, custom_message):
+    forloeb = {
+        "id": forloeb.ForløbID,
+        "name": forloeb.name,
+        "startdate": forloeb.startdate
+    }
+    link = f"http://onboarding.data.randers.dk/forloeb-overview?forloebId={forloeb['id']}"
+    if forloeb.get('userdq') is None:
+        link += "&external=true"
+
+    subject = "Dit onboardingforløb er startet"
+    message = str(
+        f"Hej {forloeb['name']},\n" +
+        (f"\n{custom_message}\n" if custom_message else "") +
+        f"Du kan tilgå dit forløb her: {link}.\n" +
+        "\nVenlig hilsen,\nRanders Kommune"
+    )
+    return subject, message
+
+
+def create_mail_forloeb_start(forloeb, custom_message=None):
+    default_message = "Velkommen til Randers Kommune! Dit onboardingforløb er nu klar."
     forloeb = {
         "id": forloeb.ForløbID,
         "name": forloeb.name,
         "userdq": forloeb.userdq,
         "startdate": forloeb.startdate
     }
+    link = f"http://onboarding.data.randers.dk/forloeb-overview?forloebId={forloeb['id']}"
+    if forloeb.get('userdq') is None:
+        link += "&external=true"
+
     subject = "Dit onboardingforløb er startet"
-    pdf = create_pdf(forloeb['id'])
-    attachment = {"filename": "onboarding_forloeb.pdf", "content": pdf}
     message = str(
-        f"Hej {forloeb['name']}," + "\n\n" +
-        "Velkommen til Randers Kommune! Dit onboardingforløb er nu startet." + "\n\n" +
-        "Du kan se et overblik over dit forløb i den vedhæftede PDF-fil.\n" +
-        "Du kan også tilgå dit forløbet her: http://onboarding.data.randers.dk/ - kræver login med din medarbejderkonto.\n" +
+        f"Hej {forloeb['name']},\n" +
+        (f"\n{custom_message}\n" if custom_message else default_message) +
+        f"Du kan tilgå dit forløb her: {link}.\n" +
         "\nVenlig hilsen,\nRanders Kommune"
     )
-    return subject, message, attachment
+    return subject, message
 
 
 def delete_planned_mail(mail_id):

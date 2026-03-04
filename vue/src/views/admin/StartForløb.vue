@@ -192,7 +192,7 @@
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen }]" type="submit" :disabled="isSubmitting">Start forløb</button>
+            <button :class="['button', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen }]" type="submit" :disabled="isSubmitting">Start forløb</button>
         </div>
 
     </div>

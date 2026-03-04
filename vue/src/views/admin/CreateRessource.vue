@@ -128,7 +128,7 @@
 
 		<div class="inputContainer submit">
 			<div v-if="isEditing" class="button hollow red" @click="deleteItem()">Slet ressource</div>
-			<button class="button button-outline" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater' : '+ Tilføj' }} ressource</button>
+			<button class="button" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater' : '+ Tilføj' }} ressource</button>
 		</div>
 
 	</div>

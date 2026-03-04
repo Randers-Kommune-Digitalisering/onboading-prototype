@@ -34,8 +34,7 @@ from controllers.forloeb_controller import (
     get_forloeb_by_admin,
     complete_forloeb,
     update_forloeb,
-    delete_forloeb,
-    download_forloeb
+    delete_forloeb
 )
 from controllers.user_controller import (
     get_admin_data,
@@ -178,11 +177,6 @@ def get_all_forloeb_endpoint():
     if admin_name:
         return get_forloeb_by_admin(admin_name)
     return get_all_forloeb()
-
-
-@api_endpoints.route('/forloeb-download', methods=['GET'])
-def download_forloeb_endpoint():
-    return download_forloeb()
 
 
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['DELETE'])

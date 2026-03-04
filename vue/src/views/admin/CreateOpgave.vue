@@ -397,7 +397,12 @@
         {{ isTemplate ? '' : ' til ' + (forloeb?.name ?? 'forløbet') }}
     </p>
 
-    <div v-if="focusedInput && !isAssistantSearchOpen" class="float-right helper-text">
+    <div
+        v-if="focusedInput && !isAssistantSearchOpen"
+        class="float-right helper-text"
+        @mousedown.prevent
+        @click.prevent
+    >
 		<div class="header-small">{{ focusedInput.text }}</div>
         <div v-html="focusedInput.tooltip"></div>
     </div>
@@ -585,7 +590,7 @@
             </div>
 
             <div :class="['inputContainer', 'submit', { 'hideOnMobile': isAssistantSearchOpen }]">
-                <button :class="['button', 'button-outline', { 'disabled': isSubmitting }]"
+                <button :class="['button', { 'disabled': isSubmitting }]"
                         type="submit"
                         @click="clearAssistantIfNotSelected();selectNoTemplateIfNotSelected();selectNoGroupIfNotSelected()"
                         :disabled="isSubmitting">

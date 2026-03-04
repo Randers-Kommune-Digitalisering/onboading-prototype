@@ -22,8 +22,8 @@ import Help from '@/views/Help.vue'
 import ForløbOverview from '@/views/ForløbOverview.vue'
 import TemplateOverview from '@/views/admin/TemplateOverview.vue'
 import Blank from '@/views/Blank.vue'
-import DownloadForløb from '@/views/DownloadForløb.vue'
 import Login from '@/views/Login.vue'
+import SendWelcome from './views/admin/SendWelcome.vue'
 
 // Define routes
 const routes = [ 
@@ -61,6 +61,12 @@ const routes = [
         path: '/create-forloebsskabelon',
         name: 'CreateForløbsskabelon',
         component: CreateForløbsskabelon,
+        meta: { roles: ['Admin'] }
+    },
+    {
+        path: '/send-velkomst',
+        name: 'SendVelkomst',
+        component: SendWelcome,
         meta: { roles: ['Admin'] }
     },
     {
@@ -104,12 +110,6 @@ const routes = [
         name: 'ForløbOverview',
         component: ForløbOverview,
         meta: { roles: ['Admin', 'Ansvarlig', 'Public'] }
-    },
-    {
-        path: '/forloeb-download',
-        name: 'DownloadForløb',
-        component: DownloadForløb,
-        meta: { roles: ['Admin', 'Ansvarlig'], hideNavbar: true }
     },
     {
         path: '/reload',
