@@ -15,8 +15,15 @@ export const getOpgaverByForloebID = (forloebID, config) => {
 };
 
 export const getOpgaverByForloebIDExternal = (forloebID, accessKey) => {
-  const key = encodeURIComponent(accessKey || '');
-  return apiRequest({ method: 'get', url: `${API_URL}/external/opgave/forloeb/${forloebID}?accessKey=${key}` });
+  return apiRequest({
+    method: 'get',
+    url: `${API_URL}/external/opgave/forloeb/${forloebID}`,
+    config: {
+      headers: {
+        'X-External-Access-Key': accessKey || '',
+      },
+    },
+  });
 };
 
 export const getOpgaverByAnsvarligEmail = (config) => {

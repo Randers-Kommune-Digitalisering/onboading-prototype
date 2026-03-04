@@ -27,8 +27,15 @@ export const getForloebById = (id, config) => {
 };
 
 export const getForloebByIdExternal = (id, accessKey) => {
-  const key = encodeURIComponent(accessKey || '');
-  return apiRequest({ method: 'get', url: `${API_URL}/external/forloeb/${id}?accessKey=${key}` });
+  return apiRequest({
+    method: 'get',
+    url: `${API_URL}/external/forloeb/${id}`,
+    config: {
+      headers: {
+        'X-External-Access-Key': accessKey || '',
+      },
+    },
+  });
 };
 
 export const getAllForloeb = () => {

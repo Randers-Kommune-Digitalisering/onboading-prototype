@@ -29,6 +29,17 @@ def _hash_access_key(access_key: str) -> str:
     return hashlib.sha256(access_key.encode('utf-8')).hexdigest()
 
 
+def _get_access_key_from_request(default: str = '') -> str:
+    """Fetch accessKey without relying on URL query params.
+
+    Uses header-based transport to avoid access keys being captured in URL logs.
+    """
+    header_value = request.headers.get('X-External-Access-Key')
+    if header_value:
+        return header_value
+    return default
+
+
 def _is_valid_access_key(forloeb: Forløb, access_key: str) -> bool:
     if not access_key or not isinstance(access_key, str):
         return False
@@ -92,8 +103,10 @@ def request_external_access():
         session.commit()
 
         base_url = request.url_root.rstrip('/')
-        query = urlencode({"id": forloeb_id_int, "external": "true", "accessKey": access_key})
-        link = f"{base_url}/forloeb-overview?{query}"
+        # Put accessKey in the URL fragment to avoid it being sent in Referer headers
+        # and being captured in query-string logs. The SPA reads the fragment.
+        query = urlencode({"id": forloeb_id_int, "external": "true"})
+        link = f"{base_url}/forloeb-overview?{query}#accessKey={access_key}"
 
         subject, message = create_mail_external_access(forloeb, link, expires_at)
         sent = send_mail(forloeb.usermail, subject, message, attachments=None, reply_to=forloeb.admin)
@@ -112,12 +125,14 @@ def request_external_access():
 
 
 def get_external_userinfo():
-    """GET /api/external/userinfo?forloebId=..&accessKey=..
+    """GET /api/external/userinfo?forloebId=..
+
+    The access key is expected in the `X-External-Access-Key` header.
 
     Returns a Public userInfo with the forløb usermail as email.
     """
     forloeb_id = request.args.get('forloebId')
-    access_key = request.args.get('accessKey', '')
+    access_key = _get_access_key_from_request('')
 
     try:
         forloeb_id_int = int(forloeb_id)
@@ -130,17 +145,22 @@ def get_external_userinfo():
         if not forloeb or not _is_valid_access_key(forloeb, access_key):
             return jsonify({"error": "Invalid access"}), 403
 
-        return jsonify({
+        response = jsonify({
             "roles": ["Public"],
             "email": forloeb.usermail,
-        }), 200
+        })
+        response.headers['Cache-Control'] = 'no-store'
+        return response, 200
     finally:
         session.close()
 
 
 def get_forloeb_external(forloeb_id: int):
-    """GET /api/external/forloeb/<id>?accessKey=.. (read-only)."""
-    access_key = request.args.get('accessKey', '')
+    """GET /api/external/forloeb/<id> (read-only).
+
+    The access key is expected in the `X-External-Access-Key` header.
+    """
+    access_key = _get_access_key_from_request('')
 
     session = db_client.get_session()
     try:
@@ -178,8 +198,11 @@ def get_forloeb_external(forloeb_id: int):
 
 
 def get_opgaver_forloeb_external(forloeb_id: int):
-    """GET /api/external/opgave/forloeb/<id>?accessKey=.. (read-only)."""
-    access_key = request.args.get('accessKey', '')
+    """GET /api/external/opgave/forloeb/<id> (read-only).
+
+    The access key is expected in the `X-External-Access-Key` header.
+    """
+    access_key = _get_access_key_from_request('')
 
     session = db_client.get_session()
     try:

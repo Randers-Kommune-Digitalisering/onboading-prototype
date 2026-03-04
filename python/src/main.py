@@ -15,7 +15,14 @@ set_logging_configuration()
 
 def create_app():
     app = Flask(__name__, static_folder='dist')
-    CORS(app)
+    CORS(app, allow_headers=['Content-Type', 'usermail', 'X-External-Access-Key'])
+
+    @app.after_request
+    def add_security_headers(response):
+        # Defense-in-depth: avoid sending URLs as referrers to other origins.
+        # (Fragments aren't included in Referer, but this also covers other URLs.)
+        response.headers.setdefault('Referrer-Policy', 'no-referrer')
+        return response
 
     if DISABLE_KEYCLOAK:
         @app.route('/api/userinfo')

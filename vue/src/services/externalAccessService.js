@@ -11,9 +11,13 @@ export const requestExternalAccess = (forloebId) => {
 };
 
 export const getExternalUserInfo = (forloebId, accessKey) => {
-  const key = encodeURIComponent(accessKey || '');
   return apiRequest({
     method: 'get',
-    url: `${API_URL}/external/userinfo?forloebId=${forloebId}&accessKey=${key}`,
+    url: `${API_URL}/external/userinfo?forloebId=${forloebId}`,
+    config: {
+      headers: {
+        'X-External-Access-Key': accessKey || '',
+      },
+    },
   });
 };
