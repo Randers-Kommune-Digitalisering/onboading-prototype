@@ -61,12 +61,38 @@ from controllers.opgaveskabelon_controller import (
     delete_opgaveskabelon,
     get_opgaveskabelon
 )
+from controllers.external_access_controller import (
+    request_external_access,
+    get_external_userinfo,
+    get_forloeb_external,
+    get_opgaver_forloeb_external,
+)
 from utils.mail_service import purge_mails, send_all_mails, get_planned_mails, delete_planned_mail
 
 logger = logging.getLogger(__name__)
 db_client = get_db_client()
 
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
+
+
+@api_endpoints.route('/external/request-access', methods=['POST'])
+def request_external_access_endpoint():
+    return request_external_access()
+
+
+@api_endpoints.route('/external/userinfo', methods=['GET'])
+def external_userinfo_endpoint():
+    return get_external_userinfo()
+
+
+@api_endpoints.route('/external/forloeb/<int:forloeb_id>', methods=['GET'])
+def external_forloeb_by_id_endpoint(forloeb_id):
+    return get_forloeb_external(forloeb_id)
+
+
+@api_endpoints.route('/external/opgave/forloeb/<int:forloeb_id>', methods=['GET'])
+def external_opgaver_by_forloeb_id_endpoint(forloeb_id):
+    return get_opgaver_forloeb_external(forloeb_id)
 
 
 @api_endpoints.route('/mitforloeb', methods=['GET'])

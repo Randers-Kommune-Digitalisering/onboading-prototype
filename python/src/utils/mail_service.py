@@ -1,9 +1,10 @@
 from flask import jsonify
 import base64
 import logging
-import requests
 from datetime import datetime, timedelta
-from utils.config import MAIL_SERVICE_URL, MAIL_SERVICE_SENDER
+from rkdigi import EmailSender
+
+from utils.config import MAIL_SMTP_SENDER, MAIL_SMTP_PASSWORD, MAIL_SMTP_PORT, MAIL_SMTP_SERVER
 from models import Mail, MailAttachment
 from utils.db_connection import get_db_client
 from utils.pdf import create_pdf
@@ -33,24 +34,26 @@ def _to_bytes(data):
     raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
 
 
-def _attachments_for_transport(attachments):
+def _attachments_for_rkdigi(attachments):
+    """Convert our attachment dicts to rk-digi EmailSender attachments.
+
+    rk-digi accepts attachments as either file paths (str) or (filename, bytes) tuples.
+    Our DB payloads are lists of dicts containing base64 strings or raw bytes.
+    """
     if attachments is None:
         return None
+
     transformed = []
     for attachment in attachments:
-        if attachment is None:
+        if not attachment:
             continue
-        filename = attachment.get("filename")
+        filename = attachment.get("filename") or "attachment"
         content = attachment.get("file_data", attachment.get("content"))
         content_bytes = _to_bytes(content)
         if content_bytes is None:
             raise ValueError("Attachment content is missing")
 
-        # Mail service expects a JSON byte array
-        transformed.append({
-            "filename": filename,
-            "content": {"data": list(content_bytes)},
-        })
+        transformed.append((filename, content_bytes))
     return transformed
 
 
@@ -143,14 +146,19 @@ def send_all_mails():
     total_count = len(mails) if mails else 0
     try:
         for mail_dict in mails:
+            mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
+
+            reply_to = None
+            if mail_obj is not None and getattr(mail_obj, 'forløb', None) is not None:
+                reply_to = getattr(mail_obj.forløb, 'admin', None)
+
             status = send_mail(
                 mail_dict.get('recipient'),
                 mail_dict.get('subject'),
                 mail_dict.get('body'),
-                attachments=mail_dict.get('attachments', None)
+                attachments=mail_dict.get('attachments', None),
+                reply_to=reply_to,
             )
-            # Fetch the actual Mail ORM object
-            mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
             if mail_obj:
                 mail_obj.isSent = status
                 if status:
@@ -165,36 +173,45 @@ def send_all_mails():
     return jsonify({"message": "Planned emails sent successfully", "count": total_count, "sent": sent_count}), 200
 
 
-def send_mail(recipient_email, subject, message, attachments=None):
+def send_mail(recipient_email, subject, message, attachments=None, reply_to=None):
     """
-    Sends an email via an API request.
+    Sends an email via SMTP using rk-digi and the configured SMTP sender.
+
     Parameters:
-        sender_email (str): The sender's email address.
+        recipient_email (str or list[str]): Email address or list of addresses to send the email to.
         subject (str): The subject of the email.
         message (str): The body of the email.
+        attachments (list[dict] | None): Optional list of attachments, each with at least
+            "filename" and "file_data" (base64-encoded string). Defaults to None.
+        reply_to (str | None): Optional reply-to email address to set on the message.
     """
-    headers = {
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "from": MAIL_SERVICE_SENDER,
-        "to": recipient_email,
-        "title": subject,
-        "body": message,
-        "attachments": _attachments_for_transport(attachments)
-    }
-
     try:
-        response = requests.post(MAIL_SERVICE_URL, headers=headers, json=payload)
-        # Print response content regardless of status code
-        if response.status_code != 200:
-            logger.error(f"Mail service response ({response.status_code}): {response.text}")
-        response.raise_for_status()
+        if not MAIL_SMTP_SERVER or not MAIL_SMTP_SENDER or not MAIL_SMTP_PASSWORD:
+            raise ValueError("SMTP configuration is incomplete. Check environment variables.")
+
+        if EmailSender is None:
+            raise ImportError(
+                "EmailSender implementation not available. "
+                "Install/verify the rk-digi (rkdigi) package, or provide a compatible EmailSender."
+            )
+
+        email_sender = EmailSender(
+            smtp_server=MAIL_SMTP_SERVER,
+            smtp_port=MAIL_SMTP_PORT,
+            sender_email=MAIL_SMTP_SENDER,
+            sender_password=MAIL_SMTP_PASSWORD,
+            sender_name="Randers Kommune Onboarding",
+            reply_to_email=reply_to
+        )
+        email_sender.send_email(
+            recipients=recipient_email,
+            subject=subject,
+            body=message,
+            attachments=_attachments_for_rkdigi(attachments),
+        )
         return True
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         logger.error(f"Error sending email to {recipient_email}: {e}")
-        if hasattr(e, 'response') and e.response is not None:
-            logger.error(f"Mail service error response ({e.response.status_code}): {e.response.text}")
         return False
 
 
@@ -215,6 +232,23 @@ def create_mail_ansvarlig(new_opgave):
         (f"Der er registret en kalenderbooking d. {new_opgave['booking'].strftime('%d/%m %H:%M')}.\n" if new_opgave['booking'] is not None else '') +
         "Du kan se opgaven under 'Mine ansvar' i onboardingmodulet: http://onboarding.data.randers.dk/ansvarlig-overview.\n" +
         "\nVenlig hilsen,\nRanders Kommune"
+    )
+    return subject, message
+
+
+def create_mail_external_access(forloeb, link: str, expires_at):
+    subject = "Midlertidig adgang til onboardingforløb"
+    try:
+        expires_str = expires_at.astimezone(None).strftime('%d/%m %H:%M')
+    except Exception:
+        expires_str = str(expires_at)
+
+    message = (
+        f"Hej {forloeb.name}," + "\n\n" +
+        "Du har anmodet om midlertidig adgang til dit onboardingforløb.\n\n"
+        f"Åbn forløbet her (linket udløber {expires_str}):\n{link}\n\n"
+        "Hvis du ikke selv har anmodet om dette link, kan du ignorere mailen.\n\n"
+        "Venlig hilsen\nRanders Kommune"
     )
     return subject, message
 

@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from models import Forløbsskabelon, Opgave, OpgaveGruppe
 from utils.db_connection import get_db_client
+from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 
@@ -29,23 +30,25 @@ def create_forloebsskabelon():
 def get_all_forloebsskabeloner():
     session = db_client.get_session()
     try:
-        forloebsskabeloner = session.query(Forløbsskabelon).all()
+        forloebsskabeloner = (
+            session.query(Forløbsskabelon)
+            .options(selectinload(Forløbsskabelon.opgave_grupper))
+            .all()
+        )
         forloebsskabeloner_data = [
             {
                 'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
                 'name': forloebsskabelon.name,
-                'varighed': forloebsskabelon.varighed
+                'varighed': forloebsskabelon.varighed,
+                'opgave_grupper': [
+                    {
+                        'OpgaveGruppeID': opgave_gruppe.OpgaveGruppeID,
+                        'name': opgave_gruppe.name,
+                        'letter': opgave_gruppe.letter
+                    } for opgave_gruppe in forloebsskabelon.opgave_grupper
+                ]
             } for forloebsskabelon in forloebsskabeloner
         ]
-        for skabelon in forloebsskabeloner_data:
-            opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=skabelon['ForløbsskabelonID']).all()
-            skabelon['opgave_grupper'] = [
-                {
-                    'OpgaveGruppeID': opgave_gruppe.OpgaveGruppeID,
-                    'name': opgave_gruppe.name,
-                    'letter': opgave_gruppe.letter
-                } for opgave_gruppe in opgave_grupper
-            ]
         return jsonify(forloebsskabeloner_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

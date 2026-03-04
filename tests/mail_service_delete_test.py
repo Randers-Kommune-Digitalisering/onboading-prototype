@@ -4,8 +4,8 @@ from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from python.src.models import Base, Mail, MailAttachment
-from python.src.utils import mail_service
+from models import Base, Mail, MailAttachment
+from utils import mail_service
 
 
 class _TestDbClient:

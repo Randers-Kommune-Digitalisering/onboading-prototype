@@ -4,6 +4,7 @@ from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource,
 from utils.db_connection import get_db_client
 from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
 import logging
+from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 logger = logging.getLogger(__name__)
@@ -101,7 +102,14 @@ def create_opgavegruppe(name, forløb_id=None, forloeb_skabelon_id=None):
 def get_all_opgaver():
     session = db_client.get_session()
     try:
-        opgaver = session.query(Opgave).all()
+        opgaver = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .all()
+        )
         opgave_data = [
             {
                 'OpgaveID': opgave.OpgaveID,
@@ -220,7 +228,15 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
     try:
         usermail = request.headers.get('usermail')
 
-        query = session.query(Opgave).join(Forløb).filter(Opgave.ForløbsskabelonID == forlobsskabelon_id)
+        query = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .join(Forløb)
+            .filter(Opgave.ForløbsskabelonID == forlobsskabelon_id)
+        )
         if usermail:
             query = query.filter(Forløb.usermail == usermail)
 
@@ -310,7 +326,15 @@ def get_opgave(opgave_id):
 def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgave).filter_by(ForløbsskabelonID=forlobsskabelon_id).all()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .filter_by(ForløbsskabelonID=forlobsskabelon_id)
+            .all()
+        )
         if not opgave:
             return jsonify([])
 
@@ -353,7 +377,16 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
 def get_opgave_by_forloeb_id_admin(forlob_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgave).filter_by(ForløbID=forlob_id).all()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+                selectinload(Opgave.mails),
+            )
+            .filter_by(ForløbID=forlob_id)
+            .all()
+        )
         if not opgave:
             return jsonify([])
 
@@ -403,7 +436,15 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
 def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad naming
     session = db_client.get_session()
     try:
-        query = session.query(Opgave).filter(Opgave.ansvarligEmail.ilike(adminmail.lower()))
+        query = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+                selectinload(Opgave.forløb),
+            )
+            .filter(Opgave.ansvarligEmail.ilike(adminmail.lower()))
+        )
         opgave = query.all()
 
         if not opgave:
@@ -411,11 +452,7 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
 
         opgave_data = []
         for opg in opgave:
-            forloeb_name = None
-            if opg.ForløbID:
-                forloeb = session.query(Forløb).filter_by(ForløbID=opg.ForløbID).first()
-                if forloeb:
-                    forloeb_name = forloeb.name
+            forloeb_name = opg.forløb.name if getattr(opg, 'forløb', None) else None
 
             opgave_data.append({
                 'OpgaveID': opg.OpgaveID,
@@ -460,7 +497,15 @@ def get_opgave_by_forloeb_id(forlob_id):
     try:
         usermail = request.headers.get('usermail')
 
-        query = session.query(Opgave).join(Forløb).filter(Opgave.ForløbID == forlob_id)
+        query = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .join(Forløb)
+            .filter(Opgave.ForløbID == forlob_id)
+        )
         if usermail:
             query = query.filter(Forløb.usermail == usermail)
 
@@ -592,11 +637,16 @@ def notify_expired_tasks():
     session = db_client.get_session()
     try:
         now = datetime.now()
-        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result == False, Opgave.ForløbID != None).all()
+        opgaver = (
+            session.query(Opgave)
+            .options(selectinload(Opgave.forløb))
+            .filter(Opgave.slutdato < now, Opgave.result.is_(False), Opgave.ForløbID.is_not(None))
+            .all()
+        )
         logger.info(f"Found {len(opgaver)} expired tasks to notify.")
 
         for opgave in opgaver:
-            forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
+            forloeb = getattr(opgave, 'forløb', None)
             if not forloeb:
                 return jsonify({"error": "Forløb not found"}), 404
 
