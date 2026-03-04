@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 from flask import jsonify, request
+from sqlalchemy.orm import selectinload
 
 from models import Forløb, Opgave, OpgaveGruppe
 from utils.db_connection import get_db_client
@@ -186,7 +187,16 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         if not forloeb or not _is_valid_access_key(forloeb, access_key):
             return jsonify({"error": "Invalid access"}), 403
 
-        opgaver = session.query(Opgave).filter_by(ForløbID=forloeb_id).all()
+        # Avoid N+1 queries when iterating opgaver and accessing relationships.
+        opgaver = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .filter_by(ForløbID=forloeb_id)
+            .all()
+        )
 
         result = []
         for opgave in opgaver:

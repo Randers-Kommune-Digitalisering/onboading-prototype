@@ -4,6 +4,7 @@ from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_forloeb_start
 import logging
+from sqlalchemy.orm import selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -319,13 +320,20 @@ def get_forloeb_by_email(mail):
 def get_forloeb_by_admin(admin_name):
     session = db_client.get_session()
     try:
-        forloeb_list = session.query(Forløb).filter_by(admin=admin_name).all()
+        forloeb_list = (
+            session.query(Forløb)
+            .options(
+                selectinload(Forløb.opgave_grupper),
+                selectinload(Forløb.mails),
+            )
+            .filter_by(admin=admin_name)
+            .all()
+        )
         if not forloeb_list:
             return jsonify([]), 200
 
         result = []
         for forloeb in forloeb_list:
-            opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
             result.append(
                 {
                     "ForløbID": forloeb.ForløbID,
@@ -341,7 +349,7 @@ def get_forloeb_by_admin(admin_name):
                             "name": gruppe.name,
                             "letter": gruppe.letter,
                         }
-                        for gruppe in opgave_grupper
+                        for gruppe in forloeb.opgave_grupper
                     ],
                     "isPreparation": forloeb.isPreparation,
                     "varighed": forloeb.varighed,
