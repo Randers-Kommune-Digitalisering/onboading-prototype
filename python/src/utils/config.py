@@ -38,8 +38,14 @@ KEYCLOAK_CLIENT_ID = os.environ["KEYCLOAK_CLIENT_ID"].strip()
 KEYCLOAK_CLIENT_SECRET = os.environ["KEYCLOAK_CLIENT_SECRET"].strip()
 COOKIE_SECRET = os.environ["COOKIE_SECRET"].strip()
 
-MAIL_SERVICE_URL = os.environ["MAIL_SERVICE_URL"].strip()
-MAIL_SERVICE_SENDER = os.environ["MAIL_SERVICE_SENDER"].strip()
+# SMTP settings for rk-digi EmailSender
+MAIL_SMTP_SERVER = os.getenv("MAIL_SMTP_SERVER", os.getenv("SMTP_SERVER", "")).strip()
+MAIL_SMTP_SENDER = os.getenv("MAIL_SMTP_SENDER", "").strip()
+MAIL_SMTP_PASSWORD = os.getenv("MAIL_SMTP_PASSWORD", "").strip()
+try:
+    MAIL_SMTP_PORT = int(os.getenv("MAIL_SMTP_PORT", os.getenv("SMTP_PORT", "587")))
+except ValueError:
+    MAIL_SMTP_PORT = 587
 
 # SFTP_HOST = os.environ['SFTP_HOST'].rstrip()
 # SFTP_USER = os.environ['SFTP_USER'].rstrip()

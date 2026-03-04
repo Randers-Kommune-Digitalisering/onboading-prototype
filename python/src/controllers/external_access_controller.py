@@ -76,7 +76,7 @@ def request_external_access():
         link = f"{base_url}/forloeb-overview?{query}"
 
         subject, message = create_mail_external_access(forloeb, link, expires_at)
-        sent = send_mail(forloeb.usermail, subject, message)
+        sent = send_mail(forloeb.usermail, subject, message, attachments=None, reply_to=forloeb.admin)
         if not sent:
             logger.error("Failed sending external access email for ForløbID=%s with link %s", forloeb_id_int, link)
 
