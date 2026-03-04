@@ -146,15 +146,19 @@ def send_all_mails():
     total_count = len(mails) if mails else 0
     try:
         for mail_dict in mails:
+            mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
+
+            reply_to = None
+            if mail_obj is not None and getattr(mail_obj, 'forløb', None) is not None:
+                reply_to = getattr(mail_obj.forløb, 'admin', None)
+
             status = send_mail(
                 mail_dict.get('recipient'),
                 mail_dict.get('subject'),
                 mail_dict.get('body'),
                 attachments=mail_dict.get('attachments', None),
-                reply_to=mail_dict.get('forløb', {}).get('admin', None)
+                reply_to=reply_to,
             )
-            # Fetch the actual Mail ORM object
-            mail_obj = session.query(Mail).filter_by(MailID=mail_dict.get('id')).first()
             if mail_obj:
                 mail_obj.isSent = status
                 if status:
@@ -180,6 +184,12 @@ def send_mail(recipient_email, subject, message, attachments=None, reply_to=None
     try:
         if not MAIL_SMTP_SERVER or not MAIL_SMTP_SENDER or not MAIL_SMTP_PASSWORD:
             raise ValueError("SMTP configuration is incomplete. Check environment variables.")
+
+        if EmailSender is None:
+            raise ImportError(
+                "EmailSender implementation not available. "
+                "Install/verify the rk-digi (rkdigi) package, or provide a compatible EmailSender."
+            )
 
         email_sender = EmailSender(
             smtp_server=MAIL_SMTP_SERVER,

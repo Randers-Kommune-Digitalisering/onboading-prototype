@@ -10,7 +10,7 @@ prometheus-client
 python-dotenv
 requests==2.31.0
 requests-pkcs12==1.24
-rk-digi==0.1.0
+rk-digi==1.1.0
 SQLAlchemy
 pandas
 flask-cors
