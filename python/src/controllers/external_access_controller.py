@@ -7,13 +7,17 @@ from urllib.parse import urlencode
 
 from flask import jsonify, request
 
-from models import Forløb, Opgave, OpgaveGruppe, Ressource
+from models import Forløb, Opgave, OpgaveGruppe
 from utils.db_connection import get_db_client
 from utils.mail_service import send_mail, create_mail_external_access
 
 logger = logging.getLogger(__name__)
 
 db_client = get_db_client()
+
+
+_EXTERNAL_ACCESS_TTL = timedelta(hours=1)
+_EXTERNAL_ACCESS_COOLDOWN = timedelta(minutes=1)
 
 
 def _utc_now():
@@ -64,8 +68,23 @@ def request_external_access():
         if not forloeb:
             return jsonify({"message": "If the forløb exists, an email has been sent."}), 200
 
+        # Basic throttling to reduce email spam: do not re-issue/send if an unexpired
+        # key was generated very recently for this Forløb.
+        existing_hash = getattr(forloeb, 'external_access_key_hash', None)
+        existing_expires_at = getattr(forloeb, 'external_access_expires_at', None)
+        if existing_hash and existing_expires_at:
+            expires_at = existing_expires_at
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            now = _utc_now()
+
+            if now < expires_at:
+                issued_at = expires_at - _EXTERNAL_ACCESS_TTL
+                if now - issued_at < _EXTERNAL_ACCESS_COOLDOWN:
+                    return jsonify({"message": "If the forløb exists, an email has been sent."}), 200
+
         access_key = secrets.token_urlsafe(32)
-        expires_at = _utc_now() + timedelta(hours=1)
+        expires_at = _utc_now() + _EXTERNAL_ACCESS_TTL
 
         forloeb.external_access_key_hash = _hash_access_key(access_key)
         forloeb.external_access_expires_at = expires_at.replace(tzinfo=None)
