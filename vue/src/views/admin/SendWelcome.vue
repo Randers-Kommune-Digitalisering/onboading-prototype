@@ -39,7 +39,7 @@ Randers Kommune",
 
     const inputFieldDescriptions = {
         subject: { text: "Emne", tooltip: "<span>Indtast velkomstmailens emne.</span>" },
-        content: { text: "Indhold", tooltip: "<span>Indtast det indhold, som skal være i velkomstmailen.</span><span>Du kan bruge følgende variabler, som vil blive erstattet med det relevante indhold for det specifikke forløb.</span><span><b>{navn}</b> - Medarbejderens fornavn</span><span><b>{efternavn}</b> - Medarbejderens efternavn(e)</span><span><b>{link}</b> - Knap med link til forløbet</span><span><b>{startdato}</b> - Forløbets startdato</span><span><b>{slutdato}</b> - Forløbets slutdato</span><span><b>{forløb}</b> - Forløbets navn</span><span><b>{randers kommune}</b> - Randers Kommune med logo" }
+        content: { text: "Indhold", tooltip: "<span>Indtast det indhold, som skal være i velkomstmailen.</span><span>Du kan bruge følgende variabler, som vil blive erstattet med det relevante indhold for det specifikke forløb.</span><span><b>{navn}</b> - Medarbejderens fornavn</span><span><b>{efternavn}</b> - Medarbejderens efternavn(e)</span><span><b>{link}</b> - Knap med link til forløbet</span><span><b>{startdato}</b> - Forløbets startdato</span><span><b>{slutdato}</b> - Forløbets slutdato</span>" }
     }
 
     const previewContent = computed(() => {
@@ -50,7 +50,6 @@ Randers Kommune",
         content = content.replaceAll(/{link}/g, '<a href="#" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 10px;">Se dit onboarding-forløb</a>')
         content = content.replaceAll(/{startdato}/g, "01-01-2024")
         content = content.replaceAll(/{slutdato}/g, "31-12-2024")
-        content = content.replaceAll(/{forløb}/g, "Onboarding forløb")
         content = content.replaceAll(/\n/g, "<br>")
         return content
     })

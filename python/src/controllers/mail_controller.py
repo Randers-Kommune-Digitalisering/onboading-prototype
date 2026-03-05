@@ -5,7 +5,14 @@ from datetime import datetime
 from rkdigi import EmailSender
 from typing import Optional, List, Dict
 
-from utils.config import MAIL_SMTP_SENDER, MAIL_SMTP_PASSWORD, MAIL_SMTP_PORT, MAIL_SMTP_SERVER
+from utils.config import (
+    MAIL_SMTP_SENDER,
+    MAIL_SMTP_PASSWORD,
+    MAIL_SMTP_PORT,
+    MAIL_SMTP_SERVER,
+    MAIL_DESC_NEW_TASK_USER,
+    MAIL_DESC_NEW_TASK_ANSVARLIG,
+)
 from models import Mail, MailAttachment, Forløb, Opgave
 from utils.db_connection import get_db_client
 from sqlalchemy.orm import selectinload
@@ -16,9 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 SUBJECT_ANSVARLIG_NEW_TASK = "Ny opgave tildelt i onboardingforløb"
-
-MAIL_DESC_NEW_TASK_USER = "NEW_TASK_USER"
-MAIL_DESC_NEW_TASK_ANSVARLIG = "NEW_TASK_ANSVARLIG"
 
 
 # Helpers
@@ -85,12 +89,12 @@ def _is_external_forloeb(forloeb: Forløb) -> bool:
         return False
 
 
-def _forloeb_overview_url(forloeb: Forløb, opgave_id: Optional[int] = None) -> str:
+def _forloeb_overview_url(forloeb: Forløb, opgave_id: Optional[int] = None, force_internal: bool = False) -> str:
     # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
     url = f"http://onboarding.data.randers.dk/forloeb-overview?id={forloeb.ForløbID}"
     if opgave_id is not None:
         url += f"&item={opgave_id}"
-    if _is_external_forloeb(forloeb):
+    if _is_external_forloeb(forloeb) and not force_internal:
         url += "&external=true"
     return url
 
@@ -141,7 +145,7 @@ def _render_task_blocks_for_ansvarlig(opgaver: List[Opgave]) -> str:
         forloeb = getattr(opgave, "forløb", None)
         if not forloeb:
             continue
-        url = _forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID)
+        url = _forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID, force_internal=True)
         blocks.append(
             "".join(
                 [
@@ -172,6 +176,7 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
         opgave_id (int, optional): The ID of the related Opgave, if applicable.
         forloeb_id (int, optional): The ID of the related Forløb, if applicable.
         attachment (dict, optional): An optional attachment with keys "filename" and "file_data" (base64 string or raw bytes).
+        description (str, optional): An optional description to categorize the email ("NEW_TASK_USER" or "NEW_TASK_ANSVARLIG").
     """
     session = db_client.get_session()
     try:
@@ -351,14 +356,13 @@ def _send_new_tasks_mail_to_forloeb(forloeb: Forløb, opgaver: List[Opgave]) -> 
     first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     context = {
         "navn": first_name,
-        "forløb": getattr(forloeb, "name", ""),
         "tasks": _render_task_blocks_for_forloeb(forloeb, opgaver),
     }
 
     subject = "Nye opgaver på dit onboarding-forløb"
     template = (
         "Kære {navn},\n\n"
-        "Der er blevet tilføjet nye opgaver til dit onboarding-forløb '{forløb}'.\n\n"
+        "Der er blevet tilføjet nye opgaver til dit onboarding-forløb.\n\n"
         "{tasks}\n"
         "Med venlig hilsen,\n"
         "Randers Kommune"
@@ -372,10 +376,10 @@ def _send_new_tasks_mail_to_ansvarlig(ansvarlig_email: str, opgaver: List[Opgave
         "tasks": _render_task_blocks_for_ansvarlig(opgaver),
     }
 
-    subject = "Nye opgaver tildelt i onboardingforløb"
+    subject = "Nye opgaver tildelt i onboardingmodulet"
     template = (
         "Kære kollega,\n\n"
-        "Du er blevet tildelt nye opgaver i onboardingforløb.\n\n"
+        "Du er blevet tildelt som ansvarlig på nye opgaver i onboardingmodulet.\n\n"
         "{tasks}\n"
         "Med venlig hilsen,\n"
         "Randers Kommune"
@@ -540,14 +544,13 @@ def create_mail_new_task_user(forloeb: Forløb, opgave: Opgave):
     first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     context = {
         "navn": first_name,
-        "forløb": getattr(forloeb, "name", ""),
         "tasks": _render_task_blocks_for_forloeb(forloeb, [opgave]),
     }
 
     subject = "Ny opgave på dit onboarding-forløb"
     template = (
         "Kære {navn},\n\n"
-        "Der er blevet tilføjet en ny opgave til dit onboarding-forløb '{forløb}'.\n\n"
+        "Der er blevet tilføjet en ny opgave til dit onboarding-forløb.\n\n"
         "{tasks}\n"
         "Med venlig hilsen,\n"
         "Randers Kommune"
@@ -663,9 +666,10 @@ def compose_welcome_mail(forloeb, custom_message):
     if forloeb.get('userdq') is None:
         link += "&external=true"
 
+    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     context = {
-        "navn": forloeb['name'].split()[0] if forloeb.get('name') else '',
-        "efternavn": " ".join(forloeb['name'].split()[1:]) if forloeb.get('name') and len(forloeb['name'].split()) > 1 else '',
+        "navn": first_name,
+        "efternavn": _last_name,
         "link": f'<a href="{link}" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 20px;">Se dit onboarding-forløb</a>',
         "startdato": forloeb['startdate'].strftime('%d/%m %Y') if forloeb.get('startdate') else '',
         "slutdato": forloeb['slutdate'].strftime('%d/%m %Y') if forloeb.get('slutdate') else ''
@@ -748,13 +752,13 @@ def notify_expired_tasks_aggregated():
             first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
             context = {
                 "navn": first_name,
-                "forløb": getattr(forloeb, "name", ""),
+                "efternavn": _last_name,
                 "tasks": _render_task_blocks_for_forloeb(forloeb, list(opgaver_by_id.values())),
             }
             subject = "Overskredne opgaver på dit onboarding-forløb"
             template = (
                 "Kære {navn},\n\n"
-                "Du har én eller flere opgaver på dit onboarding-forløb '{forløb}' hvor deadline er overskredet.\n\n"
+                "Du har én eller flere opgaver på dit onboarding-forløb hvor deadline er overskredet.\n\n"
                 "{tasks}\n"
                 "Med venlig hilsen,\n"
                 "Randers Kommune"

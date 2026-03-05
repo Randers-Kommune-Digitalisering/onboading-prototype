@@ -6,7 +6,7 @@
 
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
-    import { deleteMail } from '@/services/mailService.js'
+    import { deleteMail, NEW_TASK_ANSVARLIG } from '@/services/mailService.js'
 
     const router = useRouter()
 
@@ -303,7 +303,7 @@
                     <div class="tooltip">
                         <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
                             <div>
-                                <div class="nowrap">Notifikation</div>
+                                <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
                                 <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
                             </div>
                             <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>

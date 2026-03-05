@@ -20,17 +20,13 @@
         startdate: "",
         enddate: "",
         name: "",
-        userdq: "",
-        planWelcome: false
+        userdq: ""
     })
 
     /* User mail search */
     const isUserMailValid = ref(true)
     const isRandersMail = (email) => {
-        let result = email.toLowerCase().endsWith('@randers.dk')
-        if (!result)
-            inputFields.value.planWelcome = false
-        return result
+        return email.toLowerCase().endsWith('@randers.dk')
     }
     const welcomeMailPlanned = ref(false)
     const userList = ref([])
@@ -167,12 +163,10 @@
             const formattedData = {
                 ...forloebResponse.data,
                 startdate: forloebResponse.data.startdate ? forloebResponse.data.startdate.split('T')[0] : '',
-                enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : '',
-                planWelcome: forloebResponse.data.pending_emails?.filter(mail => !mail.isSent).length > 0
+                enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : ''
             }
             formattedData.admin = selectedAdmin.value.name
             isPreparation.value = forloebResponse.data.isPreparation
-            welcomeMailPlanned.value = formattedData.planWelcome
             Object.assign(inputFields.value, formattedData)
         } catch (error) {
             console.error('Error fetching forløb:', error)
@@ -246,15 +240,6 @@
                 <input type="date" id="enddate" name="enddate" v-model="inputFields.enddate" required>
                 <label for="enddate" class="floating-label">Slutdato</label>
             </div>
-        </div>
-
-        <div :class="['inputContainer checkbox', { 'hideOnMobile': isUserMailSearchOpen }]" v-if="!isPreparation">
-            <input type="checkbox" id="planWelcome" name="planWelcome" v-model="inputFields.planWelcome" :disabled="!isRandersMail(inputFields.usermail) || isUserMailSearchOpen || welcomeMailPlanned">
-            <label for="planWelcome" :class="['checkbox-label', { 'faded': !isRandersMail(inputFields.usermail) || isUserMailSearchOpen || welcomeMailPlanned }]">
-                Planlæg afsendelse velkomstmail til ny medarbejder<br />
-                <div class="tag" v-if="inputFields.usermail != '' && !isRandersMail(inputFields.usermail)">Kræver at at medarbejderen benytter en @randers.dk-mailadresse</div>
-                <div class="tag green" v-if="welcomeMailPlanned">Velkomstmail allerede planlagt. Slet denne, hvis du ønsker at planlægge en ny.</div>
-            </label>
         </div>
 
         <div class="inputContainer submit">

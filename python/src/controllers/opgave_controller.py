@@ -2,14 +2,13 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
+from utils.config import MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG
 from controllers.mail_controller import (
     plan_mail,
     create_mail_ansvarlig,
     create_mail_new_task_user,
     create_mail_expired_ansvarlig,
     create_mail_expired,
-    MAIL_DESC_NEW_TASK_USER,
-    MAIL_DESC_NEW_TASK_ANSVARLIG,
 )
 import logging
 from sqlalchemy.orm import selectinload
@@ -475,7 +474,8 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                     {
                         'id': mail.MailID,
                         'recipient': mail.recipient,
-                        'subject': mail.subject
+                        'subject': mail.subject,
+                        'description': mail.description
                     } for mail in opgave.mails if not mail.isSent
                 ]
             } for opgave in opgave
@@ -651,7 +651,7 @@ def update_opgave(opgave_id):
         # Send mail notification to the responsible person
         if opgave.startdato and opgave.slutdato and is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
-            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
+            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID, forloeb_id=opgave.ForløbID, description=MAIL_DESC_NEW_TASK_ANSVARLIG)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -682,41 +682,6 @@ def delete_opgave(opgave_id):
         return jsonify({"message": "Opgave deleted successfully"}), 200
     except Exception as e:
         session.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
-
-
-def notify_expired_tasks():
-    session = db_client.get_session()
-    try:
-        now = datetime.now()
-        opgaver = (
-            session.query(Opgave)
-            .options(selectinload(Opgave.forløb))
-            .filter(Opgave.slutdato < now, Opgave.result.is_(False), Opgave.ForløbID.is_not(None))
-            .all()
-        )
-        logger.info(f"Found {len(opgaver)} expired tasks to notify.")
-
-        for opgave in opgaver:
-            forloeb = getattr(opgave, 'forløb', None)
-            if not forloeb:
-                return jsonify({"error": "Forløb not found"}), 404
-
-            subject, message = create_mail_expired(forloeb, opgave)
-            status = plan_mail(forloeb.usermail, subject, message, opgave_id=opgave.OpgaveID)
-            if not status:
-                return jsonify({"error": "Failed to plan email"}), 500
-
-            if opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
-                subject, message = create_mail_expired_ansvarlig(opgave)
-                status = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
-                if not status:
-                    return jsonify({"error": "Failed to plan email"}), 500
-
-        return jsonify({"message": "Expired tasks notifications planned successfully", "planned_count": len(opgaver)}), 200
-    except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()

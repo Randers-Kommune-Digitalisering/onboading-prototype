@@ -15,17 +15,13 @@
         usermail: "",
         startdate: "",
         enddate: "",
-        planMails: true,
-        planWelcome: false
+        planMails: true
     })
 
     /* User mail search */
     const isUserMailValid = ref(true)
     const isRandersMail = (email) => {
-        let result = email.toLowerCase().endsWith('@randers.dk')
-        if (!result)
-            inputFields.value.planWelcome = false
-        return result
+        return email.toLowerCase().endsWith('@randers.dk')
     }
     const userList = ref([])
     const userMailSearchResults = ref([])
@@ -63,8 +59,6 @@
         inputFields.value.name = user.name
         isUserMailSearchOpen.value = false
         evaluateEmail()
-        if (isRandersMail(inputFields.value.usermail))
-            inputFields.value.planWelcome = true
     }
 
     const evaluateEmail = () => {
@@ -105,8 +99,6 @@
                 return
             }
             Object.assign(inputFields.value, forloebResponse.data)
-            if (isRandersMail(inputFields.value.usermail))
-                inputFields.value.planWelcome = true
         } catch (error) {
             console.error('Error fetching forløb:', error)
         }
@@ -126,8 +118,7 @@
                 ForløbID: forloeb_id,
                 startdate: inputFields.value.startdate,
                 enddate: inputFields.value.enddate,
-                planMails: inputFields.value.planMails,
-                planWelcome: inputFields.value.planWelcome
+                planMails: inputFields.value.planMails
             }
             const response = await startForloeb(formData)
             if(response.data?.uid)
@@ -174,14 +165,6 @@
                 <input type="date" id="enddate" name="enddate" v-model="inputFields.enddate" required>
                 <label for="enddate" class="floating-label">Slutdato</label>
             </div>
-        </div>
-
-        <div :class="['inputContainer checkbox', { 'hideOnMobile': isUserMailSearchOpen }]">
-            <input type="checkbox" id="planWelcome" name="planWelcome" v-model="inputFields.planWelcome" :disabled="!isRandersMail(inputFields.usermail) || isUserMailSearchOpen">
-            <label for="planWelcome" :class="['checkbox-label', { 'faded': !isRandersMail(inputFields.usermail) || isUserMailSearchOpen }]">
-                Planlæg afsendelse velkomstmail til ny medarbejder<br />
-                <div class="tag" v-if="inputFields.usermail != '' && !isRandersMail(inputFields.usermail)">Kræver at at medarbejderen benytter en @randers.dk-mailadresse</div>
-            </label>
         </div>
 
         <div :class="['inputContainer checkbox', { 'hideOnMobile': isUserMailSearchOpen }]">

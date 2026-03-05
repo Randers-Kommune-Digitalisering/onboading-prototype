@@ -38,6 +38,10 @@ KEYCLOAK_CLIENT_ID = os.environ["KEYCLOAK_CLIENT_ID"].strip()
 KEYCLOAK_CLIENT_SECRET = os.environ["KEYCLOAK_CLIENT_SECRET"].strip()
 COOKIE_SECRET = os.environ["COOKIE_SECRET"].strip()
 
+# Mail description constants used to categorize planned emails in DB
+MAIL_DESC_NEW_TASK_USER = "NEW_TASK_USER"
+MAIL_DESC_NEW_TASK_ANSVARLIG = "NEW_TASK_ANSVARLIG"
+
 # SMTP settings for rk-digi EmailSender
 MAIL_SMTP_SERVER = os.getenv("MAIL_SMTP_SERVER", os.getenv("SMTP_SERVER", "")).strip()
 MAIL_SMTP_SENDER = os.getenv("MAIL_SMTP_SENDER", "").strip()

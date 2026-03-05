@@ -2,7 +2,8 @@ from flask import request, jsonify
 from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from controllers.mail_controller import plan_mail, create_mail_ansvarlig, create_mail_forloeb_start
+from utils.config import MAIL_DESC_NEW_TASK_ANSVARLIG
+from controllers.mail_controller import plan_mail, create_mail_ansvarlig
 import logging
 from sqlalchemy.orm import selectinload
 
@@ -179,14 +180,17 @@ def start_preparation_forloeb():
             opgave.slutdato = opgave.startdato + timedelta(days=opgave.relativ_slutdag)
             session.commit()
 
-            # Optionally send plan mails
+            # Optionally plan mails for ansvarlige on opgaver when starting the forløb
             if opgave.ansvarligEmail and data.get('planMails') is True:
                 subject, message = create_mail_ansvarlig(opgave)
-                plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
-
-        if data.get('planWelcome') is True:
-            subject, message = create_mail_forloeb_start(forloeb)
-            plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID)
+                plan_mail(
+                    opgave.ansvarligEmail,
+                    subject,
+                    message,
+                    opgave_id=opgave.OpgaveID,
+                    forloeb_id=forloeb.ForløbID,
+                    description=MAIL_DESC_NEW_TASK_ANSVARLIG,
+                )
 
         return jsonify({"message": "Forløb started successfully", "startdate": forloeb.startdate.isoformat(), "enddate": forloeb.enddate.isoformat(), "uid": forloeb.ForløbID}), 200
     except Exception as e:
@@ -227,7 +231,8 @@ def get_forloeb(forloeb_id: int):
                 {
                     "id": mail.MailID,
                     "recipient": mail.recipient,
-                    "subject": mail.subject
+                    "subject": mail.subject,
+                    "description": mail.description
                 } for mail in forloeb.mails if not mail.isSent
             ]
         }
@@ -357,7 +362,8 @@ def get_forloeb_by_admin(admin_name):
                         {
                             "id": mail.MailID,
                             "recipient": mail.recipient,
-                            "subject": mail.subject
+                            "subject": mail.subject,
+                            "description": mail.description
                         } for mail in forloeb.mails if not mail.isSent
                     ]
                 }
@@ -385,11 +391,6 @@ def update_forloeb(id):
         forloeb.admin = data.get('admin', forloeb.admin)
         forloeb.usermail = data.get('usermail', forloeb.usermail)
         forloeb.userdq = data.get('userdq', forloeb.userdq)
-
-        if len(forloeb.mails) == 0 or all(mail.isSent for mail in forloeb.mails):
-            if data.get('planWelcome') is True:
-                subject, message = create_mail_forloeb_start(forloeb)
-                plan_mail(forloeb.usermail, subject, message, forloeb_id=forloeb.ForløbID)
 
         session.commit()
         return jsonify({"message": "Forløb updated successfully", "uid": forloeb.ForløbID}), 200
