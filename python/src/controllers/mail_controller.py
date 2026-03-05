@@ -3,13 +3,22 @@ import base64
 import logging
 from datetime import datetime
 from rkdigi import EmailSender
+from typing import Optional, List, Dict
 
 from utils.config import MAIL_SMTP_SENDER, MAIL_SMTP_PASSWORD, MAIL_SMTP_PORT, MAIL_SMTP_SERVER
-from models import Mail, MailAttachment, Forløb
+from models import Mail, MailAttachment, Forløb, Opgave
 from utils.db_connection import get_db_client
+from sqlalchemy.orm import selectinload
+from sqlalchemy import or_, and_
 
 db_client = get_db_client()
 logger = logging.getLogger(__name__)
+
+
+SUBJECT_ANSVARLIG_NEW_TASK = "Ny opgave tildelt i onboardingforløb"
+
+MAIL_DESC_NEW_TASK_USER = "NEW_TASK_USER"
+MAIL_DESC_NEW_TASK_ANSVARLIG = "NEW_TASK_ANSVARLIG"
 
 
 # Helpers
@@ -58,9 +67,101 @@ def _attachments_for_rkdigi(attachments):
     return transformed
 
 
+def _split_name(full_name: str):
+    if not full_name:
+        return "", ""
+    parts = str(full_name).split()
+    if not parts:
+        return "", ""
+    first_name = parts[0]
+    last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+    return first_name, last_name
+
+
+def _is_external_forloeb(forloeb: Forløb) -> bool:
+    try:
+        return not bool(getattr(forloeb, "userdq", None))
+    except Exception:
+        return False
+
+
+def _forloeb_overview_url(forloeb: Forløb, opgave_id: Optional[int] = None) -> str:
+    # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
+    url = f"http://onboarding.data.randers.dk/forloeb-overview?id={forloeb.ForløbID}"
+    if opgave_id is not None:
+        url += f"&item={opgave_id}"
+    if _is_external_forloeb(forloeb):
+        url += "&external=true"
+    return url
+
+
+def _button_link_html(url: str, text: str) -> str:
+    # Keep styling consistent with existing welcome button.
+    return (
+        f'<a href="{url}" '
+        'style="text-decoration: none; background-color: rgb(56, 65, 84); '
+        'border: 10px solid rgb(56, 65, 84); color: rgb(237, 229, 220) !important; '
+        'cursor: pointer; user-select: none; display: inline-block; margin-bottom: 20px;">'
+        f"{text}</a>"
+    )
+
+
+def _format_date(dt: Optional[datetime]) -> str:
+    if not dt:
+        return ""
+    try:
+        return dt.strftime("%d/%m %Y")
+    except Exception:
+        return str(dt)
+
+
+def _render_task_blocks_for_forloeb(forloeb: Forløb, opgaver: List[Opgave]) -> str:
+    blocks: List[str] = []
+    for opgave in opgaver:
+        url = _forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID)
+        blocks.append(
+            "".join(
+                [
+                    f"<div>- <strong>{opgave.title}</strong></div>\n",
+                    f"<div>Starter: {_format_date(opgave.startdato)}</div>" if opgave.startdato else "",
+                    f"<div>Deadline: {_format_date(opgave.slutdato)}</div>" if opgave.slutdato else "",
+                    f"<div style=\"margin-top: 12px;\">{_button_link_html(url, 'Se opgaven i dit onboarding-forløb')}</div>\n",
+                ]
+            )
+        )
+
+    if len(blocks) <= 1:
+        return "".join(blocks)
+    return "<hr>".join(blocks)
+
+
+def _render_task_blocks_for_ansvarlig(opgaver: List[Opgave]) -> str:
+    blocks: List[str] = []
+    for opgave in opgaver:
+        forloeb = getattr(opgave, "forløb", None)
+        if not forloeb:
+            continue
+        url = _forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID)
+        blocks.append(
+            "".join(
+                [
+                    f"<div>- <strong>{opgave.title}</strong></div>\n",
+                    f"<div>Medarbejder: {forloeb.name}</div>" if getattr(forloeb, "name", None) else "",
+                    f"<div>Starter: {_format_date(opgave.startdato)}</div>" if opgave.startdato else "",
+                    f"<div>Deadline: {_format_date(opgave.slutdato)}</div>" if opgave.slutdato else "",
+                    f"<div style=\"margin-top: 12px;\">{_button_link_html(url, 'Se opgaven i onboarding-forløbet')}</div>\n",
+                ]
+            )
+        )
+
+    if len(blocks) <= 1:
+        return "".join(blocks)
+    return "<hr>\n".join(blocks)
+
+
 # Plan and send mail functions
 
-def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None):
+def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None, description=None):
     """
     Adds an email to DB to be sent at a later point.
 
@@ -80,7 +181,8 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
             recipient=recipient_email,
             created=datetime.now(),
             OpgaveID=opgave_id,
-            ForløbID=forloeb_id
+            ForløbID=forloeb_id,
+            description=description,
         )
         session.add(mail)
         session.commit()  # Commit to get MailID
@@ -245,7 +347,309 @@ def compose_mail_content(template, context):
     return f"<html>{content}</html>"
 
 
-# Welcome mails
+def _send_new_tasks_mail_to_forloeb(forloeb: Forløb, opgaver: List[Opgave]) -> bool:
+    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+    context = {
+        "navn": first_name,
+        "forløb": getattr(forloeb, "name", ""),
+        "tasks": _render_task_blocks_for_forloeb(forloeb, opgaver),
+    }
+
+    subject = "Nye opgaver på dit onboarding-forløb"
+    template = (
+        "Kære {navn},\n\n"
+        "Der er blevet tilføjet nye opgaver til dit onboarding-forløb '{forløb}'.\n\n"
+        "{tasks}\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return send_mail(forloeb.usermail, subject, body, reply_to=getattr(forloeb, "admin", None))
+
+
+def _send_new_tasks_mail_to_ansvarlig(ansvarlig_email: str, opgaver: List[Opgave]) -> bool:
+    context = {
+        "tasks": _render_task_blocks_for_ansvarlig(opgaver),
+    }
+
+    subject = "Nye opgaver tildelt i onboardingforløb"
+    template = (
+        "Kære kollega,\n\n"
+        "Du er blevet tildelt nye opgaver i onboardingforløb.\n\n"
+        "{tasks}\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return send_mail(ansvarlig_email, subject, body)
+
+
+def send_planned_new_tasks_notifications():
+    """Cron: Send consolidated 'new task' notifications based on planned Mail rows.
+
+    This cron consumes planned Mail rows of two types:
+    - Mail.description == NEW_TASK_USER: queued for Forløb.usermail
+    - Mail.description == NEW_TASK_ANSVARLIG: queued for Opgave.ansvarligEmail
+
+    Legacy support:
+    - If description is NULL but subject matches SUBJECT_ANSVARLIG_NEW_TASK, it is treated as NEW_TASK_ANSVARLIG.
+    """
+    session = db_client.get_session()
+    try:
+        planned = (
+            session.query(Mail)
+            .options(selectinload(Mail.opgave).selectinload(Opgave.forløb))
+            .filter(
+                Mail.isSent.is_(False),
+                Mail.OpgaveID.is_not(None),
+                or_(
+                    Mail.description.in_([MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG]),
+                    and_(Mail.description.is_(None), Mail.subject == SUBJECT_ANSVARLIG_NEW_TASK),
+                ),
+            )
+            .all()
+        )
+
+        if not planned:
+            return jsonify({"message": "No planned new-task emails to process"}), 200
+
+        planned_user: List[Mail] = []
+        planned_ansvarlig: List[Mail] = []
+        for mail in planned:
+            desc = getattr(mail, "description", None)
+            if desc == MAIL_DESC_NEW_TASK_USER:
+                planned_user.append(mail)
+            elif desc == MAIL_DESC_NEW_TASK_ANSVARLIG or (desc is None and mail.subject == SUBJECT_ANSVARLIG_NEW_TASK):
+                planned_ansvarlig.append(mail)
+
+        # USER mails: 1 per Forløb
+        user_forloeb_to_mails: Dict[int, List[Mail]] = {}
+        for mail in planned_user:
+            opgave = getattr(mail, "opgave", None)
+            forloeb = getattr(opgave, "forløb", None) if opgave else None
+            if not forloeb or not getattr(forloeb, "ForløbID", None):
+                continue
+            user_forloeb_to_mails.setdefault(forloeb.ForløbID, []).append(mail)
+
+        # ANSVARLIG mails: 1 per recipient email
+        ansvarlig_to_mails: Dict[str, List[Mail]] = {}
+        for mail in planned_ansvarlig:
+            recipient = (getattr(mail, "recipient", None) or "").strip().lower()
+            if not recipient:
+                continue
+            ansvarlig_to_mails.setdefault(recipient, []).append(mail)
+
+        now = datetime.now()
+        marked_sent_user = 0
+        marked_sent_ansvarlig = 0
+
+        for forloeb_id, mails in user_forloeb_to_mails.items():
+            opgaver_by_id: Dict[int, Opgave] = {}
+            forloeb_obj = None
+            for mail in mails:
+                opgave = getattr(mail, "opgave", None)
+                if not opgave:
+                    continue
+                opgaver_by_id[opgave.OpgaveID] = opgave
+                if forloeb_obj is None:
+                    forloeb_obj = getattr(opgave, "forløb", None)
+
+            if not forloeb_obj or not getattr(forloeb_obj, "usermail", None):
+                continue
+
+            if _send_new_tasks_mail_to_forloeb(forloeb_obj, list(opgaver_by_id.values())):
+                for mail in mails:
+                    mail.isSent = True
+                    mail.sent = now
+                    marked_sent_user += 1
+
+        for recipient, mails in ansvarlig_to_mails.items():
+            opgaver_by_id: Dict[int, Opgave] = {}
+            for mail in mails:
+                opgave = getattr(mail, "opgave", None)
+                if not opgave:
+                    continue
+                opgaver_by_id[opgave.OpgaveID] = opgave
+
+            if _send_new_tasks_mail_to_ansvarlig(recipient, list(opgaver_by_id.values())):
+                for mail in mails:
+                    mail.isSent = True
+                    mail.sent = now
+                    marked_sent_ansvarlig += 1
+
+        session.commit()
+        return (
+            jsonify(
+                {
+                    "message": "Processed planned new-task notifications",
+                    "planned_count": len(planned),
+                    "forloeb_count": len(user_forloeb_to_mails),
+                    "ansvarlig_count": len(ansvarlig_to_mails),
+                    "marked_sent_user": marked_sent_user,
+                    "marked_sent_ansvarlig": marked_sent_ansvarlig,
+                }
+            ),
+            200,
+        )
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error processing planned new-task emails: {e}")
+        return jsonify({"message": "Error processing planned new-task emails", "error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def create_mail_ansvarlig(opgave: Opgave):
+    subject = SUBJECT_ANSVARLIG_NEW_TASK
+    ansvarlig_navn = getattr(opgave, "ansvarlig", "")
+    booking = getattr(opgave, "booking", None)
+    booking_line = f"Kalenderbooking: {_format_date(booking)}\n" if booking else ""
+
+    context = {
+        "ansvarlig": ansvarlig_navn,
+        "opgave": getattr(opgave, "title", ""),
+        "note": getattr(opgave, "note", "") or "",
+        "slutdato": _format_date(getattr(opgave, "slutdato", None)),
+        "booking": booking_line,
+        "link": _button_link_html(
+            "http://onboarding.data.randers.dk/ansvarlig-overview",
+            "Se opgaven under 'Mine ansvar'",
+        ),
+    }
+
+    template = (
+        "Kære {ansvarlig},\n\n"
+        "Du er blevet tildelt en ny opgave: {opgave}.\n"
+        "Du er ansvarlig for opgaven og skal hjælpe den nye medarbejder med at løse denne.\n\n"
+        "{note}\n"
+        "Deadline: {slutdato}.\n"
+        "{booking}"
+        "{link}\n\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+
+    # Only show note block if present
+    if context["note"]:
+        context["note"] = f"Note til ansvarlig: {context['note']}"
+    body = compose_mail_content(template, context)
+    return subject, body
+
+
+def create_mail_new_task_user(forloeb: Forløb, opgave: Opgave):
+    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+    context = {
+        "navn": first_name,
+        "forløb": getattr(forloeb, "name", ""),
+        "tasks": _render_task_blocks_for_forloeb(forloeb, [opgave]),
+    }
+
+    subject = "Ny opgave på dit onboarding-forløb"
+    template = (
+        "Kære {navn},\n\n"
+        "Der er blevet tilføjet en ny opgave til dit onboarding-forløb '{forløb}'.\n\n"
+        "{tasks}\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return subject, body
+
+
+def create_mail_forloeb_start(forloeb: Forløb, custom_message: Optional[str] = None):
+    default_message = "Velkommen til Randers Kommune! Dit onboardingforløb er nu klar."
+    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+    link = _button_link_html(_forloeb_overview_url(forloeb), "Se dit onboarding-forløb")
+
+    context = {
+        "navn": first_name,
+        "custom": (custom_message or default_message),
+        "link": link,
+        "startdato": _format_date(getattr(forloeb, "startdate", None)),
+    }
+    subject = "Dit onboardingforløb er startet"
+    template = (
+        "Kære {navn},\n\n"
+        "{custom}\n\n"
+        "{link}\n\n"
+        "Forløbet starter den {startdato}.\n\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return subject, body
+
+
+def create_mail_expired(forloeb: Forløb, opgave: Opgave):
+    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+    link = _button_link_html(_forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID), "Se opgaven i dit onboarding-forløb")
+
+    context = {
+        "navn": first_name,
+        "opgave": getattr(opgave, "title", ""),
+        "slutdato": _format_date(getattr(opgave, "slutdato", None)),
+        "link": link,
+    }
+    subject = "Deadline overskredet for opgave i onboardingforløb"
+    template = (
+        "Kære {navn},\n\n"
+        "Du har en opgave i dit onboardingforløb, hvor deadline er overskredet:\n"
+        "{opgave}\n\n"
+        "Deadline var den {slutdato}.\n\n"
+        "{link}\n\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return subject, body
+
+
+def create_mail_expired_ansvarlig(opgave: Opgave):
+    context = {
+        "ansvarlig": getattr(opgave, "ansvarlig", ""),
+        "opgave": getattr(opgave, "title", ""),
+        "slutdato": _format_date(getattr(opgave, "slutdato", None)),
+        "link": _button_link_html("http://onboarding.data.randers.dk/ansvarlig-overview", "Se opgaven under 'Mine ansvar'"),
+    }
+    subject = "Deadline overskredet for opgave i onboardingforløb"
+    template = (
+        "Kære {ansvarlig},\n\n"
+        "Du er ansvarlig for en opgave hvor deadline er overskredet:\n"
+        "{opgave}\n\n"
+        "Deadline var den {slutdato}.\n\n"
+        "{link}\n\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return subject, body
+
+
+def create_mail_external_access(forloeb: Forløb, link: str, expires_at):
+    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+    try:
+        expires_str = expires_at.astimezone(None).strftime('%d/%m %H:%M')
+    except Exception:
+        expires_str = str(expires_at)
+
+    context = {
+        "navn": first_name,
+        "expires": expires_str,
+        "link": _button_link_html(link, "Åbn onboarding-forløb"),
+    }
+    subject = "Midlertidig adgang til onboardingforløb"
+    template = (
+        "Kære {navn},\n\n"
+        "Du har anmodet om midlertidig adgang til dit onboardingforløb.\n\n"
+        "Linket udløber {expires}.\n\n"
+        "{link}\n\n"
+        "Hvis du ikke selv har anmodet om dette link, kan du ignorere mailen.\n\n"
+        "Med venlig hilsen,\n"
+        "Randers Kommune"
+    )
+    body = compose_mail_content(template, context)
+    return subject, body
+
 
 def compose_welcome_mail(forloeb, custom_message):
     forloeb = {
@@ -264,8 +668,7 @@ def compose_welcome_mail(forloeb, custom_message):
         "efternavn": " ".join(forloeb['name'].split()[1:]) if forloeb.get('name') and len(forloeb['name'].split()) > 1 else '',
         "link": f'<a href="{link}" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 20px;">Se dit onboarding-forløb</a>',
         "startdato": forloeb['startdate'].strftime('%d/%m %Y') if forloeb.get('startdate') else '',
-        "slutdato": forloeb['slutdate'].strftime('%d/%m %Y') if forloeb.get('slutdate') else '',
-        "forløb": forloeb['name'],
+        "slutdato": forloeb['slutdate'].strftime('%d/%m %Y') if forloeb.get('slutdate') else ''
     }
     return compose_mail_content(custom_message, context)
 
@@ -303,3 +706,94 @@ def send_welcome_mail(forloeb_id, subject, custom_message):
             return jsonify({"message": "Failed to send welcome mail", "recipient": forloeb.usermail}), 500
     else:
         return jsonify({"message": "Failed to compose welcome mail", "recipient": forloeb.usermail}), 500
+
+
+def notify_expired_tasks_aggregated():
+    """Cron: Send consolidated notifications for expired tasks (repeat reminders)."""
+    session = db_client.get_session()
+    try:
+        now = datetime.now()
+        opgaver = (
+            session.query(Opgave)
+            .options(selectinload(Opgave.forløb))
+            .filter(Opgave.slutdato <= now, Opgave.result.is_(False), Opgave.ForløbID.is_not(None))
+            .all()
+        )
+
+        if not opgaver:
+            return jsonify({"message": "No expired tasks to notify"}), 200
+
+        forloeb_to_opgaver: Dict[int, Dict[int, Opgave]] = {}
+        ansvarlig_to_opgaver: Dict[str, Dict[int, Opgave]] = {}
+
+        for opgave in opgaver:
+            forloeb = getattr(opgave, "forløb", None)
+            if not forloeb:
+                continue
+
+            forloeb_to_opgaver.setdefault(forloeb.ForløbID, {})[opgave.OpgaveID] = opgave
+            ansvarlig_email = (getattr(opgave, "ansvarligEmail", None) or "").strip().lower()
+            if ansvarlig_email:
+                ansvarlig_to_opgaver.setdefault(ansvarlig_email, {})[opgave.OpgaveID] = opgave
+
+        sent_user = 0
+        sent_ansvarlig = 0
+
+        for forloeb_id, opgaver_by_id in forloeb_to_opgaver.items():
+            any_opgave = next(iter(opgaver_by_id.values()), None)
+            forloeb = getattr(any_opgave, "forløb", None) if any_opgave else None
+            if not forloeb or not getattr(forloeb, "usermail", None):
+                continue
+
+            first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+            context = {
+                "navn": first_name,
+                "forløb": getattr(forloeb, "name", ""),
+                "tasks": _render_task_blocks_for_forloeb(forloeb, list(opgaver_by_id.values())),
+            }
+            subject = "Overskredne opgaver på dit onboarding-forløb"
+            template = (
+                "Kære {navn},\n\n"
+                "Du har én eller flere opgaver på dit onboarding-forløb '{forløb}' hvor deadline er overskredet.\n\n"
+                "{tasks}\n"
+                "Med venlig hilsen,\n"
+                "Randers Kommune"
+            )
+            body = compose_mail_content(template, context)
+            if send_mail(forloeb.usermail, subject, body, reply_to=getattr(forloeb, "admin", None)):
+                sent_user += 1
+
+        for ansvarlig_email, opgaver_by_id in ansvarlig_to_opgaver.items():
+            context = {
+                "tasks": _render_task_blocks_for_ansvarlig(list(opgaver_by_id.values())),
+            }
+            subject = "Overskredne opgaver i onboardingforløb"
+            template = (
+                "Kære kollega,\n\n"
+                "Du er ansvarlig for én eller flere opgaver hvor deadline er overskredet.\n\n"
+                "{tasks}\n"
+                "Med venlig hilsen,\n"
+                "Randers Kommune"
+            )
+            body = compose_mail_content(template, context)
+            if send_mail(ansvarlig_email, subject, body):
+                sent_ansvarlig += 1
+
+        return (
+            jsonify(
+                {
+                    "message": "Expired task notifications sent",
+                    "expired_task_count": len(opgaver),
+                    "forloeb_count": len(forloeb_to_opgaver),
+                    "ansvarlig_count": len(ansvarlig_to_opgaver),
+                    "sent_user": sent_user,
+                    "sent_ansvarlig": sent_ansvarlig,
+                }
+            ),
+            200,
+        )
+    except Exception as e:
+        logger.error(f"Error notifying expired tasks: {e}")
+        return jsonify({"message": "Error notifying expired tasks", "error": str(e)}), 500
+    finally:
+        session.close()

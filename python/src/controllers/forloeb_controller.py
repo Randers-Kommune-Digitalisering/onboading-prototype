@@ -2,7 +2,7 @@ from flask import request, jsonify
 from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_forloeb_start
+from controllers.mail_controller import plan_mail, create_mail_ansvarlig, create_mail_forloeb_start
 import logging
 from sqlalchemy.orm import selectinload
 

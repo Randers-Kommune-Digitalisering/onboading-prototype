@@ -2,7 +2,15 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
+from controllers.mail_controller import (
+    plan_mail,
+    create_mail_ansvarlig,
+    create_mail_new_task_user,
+    create_mail_expired_ansvarlig,
+    create_mail_expired,
+    MAIL_DESC_NEW_TASK_USER,
+    MAIL_DESC_NEW_TASK_ANSVARLIG,
+)
 import logging
 from sqlalchemy.orm import selectinload
 
@@ -68,12 +76,35 @@ def create_opgave():
         session.add(new_opgave)
         session.commit()
 
-        # Send mail notification to the responsible person
-        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
-            subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
-            if not planned_mail:
-                logger.error("Failed to plan email")
+        # Send mail notifications to the user and responsible person (ansvarlig)
+        if new_opgave.startdato and new_opgave.slutdato:
+            if new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
+                subject, message = create_mail_ansvarlig(new_opgave)
+                planned_mail = plan_mail(
+                    new_opgave.ansvarligEmail,
+                    subject,
+                    message,
+                    opgave_id=new_opgave.OpgaveID,
+                    forloeb_id=new_opgave.ForløbID,
+                    description=MAIL_DESC_NEW_TASK_ANSVARLIG,
+                )
+                if not planned_mail:
+                    logger.error("Failed to plan email to ansvarlig")
+            # Plan mail to the forløb user only when forløbet is started.
+            forloeb = getattr(new_opgave, 'forløb', None)
+            if forloeb is not None and getattr(forloeb, 'isPreparation', True) is False:
+                if getattr(forloeb, 'usermail', None):
+                    user_subject, user_message = create_mail_new_task_user(forloeb, new_opgave)
+                    planned_user_mail = plan_mail(
+                        forloeb.usermail,
+                        user_subject,
+                        user_message,
+                        opgave_id=new_opgave.OpgaveID,
+                        forloeb_id=forloeb.ForløbID,
+                        description=MAIL_DESC_NEW_TASK_USER,
+                    )
+                    if not planned_user_mail:
+                        logger.error("Failed to plan email to user")
 
         return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -208,12 +239,35 @@ def create_opgave_with_opgaveskabelon():
             session.add(new_ressource)
         session.commit()
 
-        # Send mail notification to the responsible person
-        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
-            subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
-            if not planned_mail:
-                logger.error("Failed to plan email")
+        # Send mail notifications to the user and responsible person (ansvarlig)
+        if new_opgave.startdato and new_opgave.slutdato:
+            if new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
+                subject, message = create_mail_ansvarlig(new_opgave)
+                planned_mail = plan_mail(
+                    new_opgave.ansvarligEmail,
+                    subject,
+                    message,
+                    opgave_id=new_opgave.OpgaveID,
+                    forloeb_id=new_opgave.ForløbID,
+                    description=MAIL_DESC_NEW_TASK_ANSVARLIG,
+                )
+                if not planned_mail:
+                    logger.error("Failed to plan email to ansvarlig")
+
+            forloeb = getattr(new_opgave, 'forløb', None)
+            if forloeb is not None and getattr(forloeb, 'isPreparation', True) is False:
+                if getattr(forloeb, 'usermail', None):
+                    user_subject, user_message = create_mail_new_task_user(forloeb, new_opgave)
+                    planned_user_mail = plan_mail(
+                        forloeb.usermail,
+                        user_subject,
+                        user_message,
+                        opgave_id=new_opgave.OpgaveID,
+                        forloeb_id=forloeb.ForløbID,
+                        description=MAIL_DESC_NEW_TASK_USER,
+                    )
+                    if not planned_user_mail:
+                        logger.error("Failed to plan email to user")
 
         return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:

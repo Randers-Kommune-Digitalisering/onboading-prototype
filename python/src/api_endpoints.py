@@ -13,7 +13,6 @@ from controllers.opgave_controller import (
     get_opgave_by_forloebsskabelon_id_admin,
     get_opgave_by_forloeb_id_admin,
     get_opgave_by_admin,
-    notify_expired_tasks
 )
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
@@ -68,8 +67,10 @@ from controllers.external_access_controller import (
 )
 from controllers.mail_controller import (
     send_welcome_mail,
+    send_planned_new_tasks_notifications,
+    notify_expired_tasks_aggregated,
 )
-from utils.mail_service import purge_mails, send_all_mails, get_planned_mails, delete_planned_mail
+from utils.mail_service import purge_mails, get_planned_mails, delete_planned_mail
 
 logger = logging.getLogger(__name__)
 db_client = get_db_client()
@@ -324,12 +325,12 @@ def get_all_admin_data_endpoint():
 
 @api_endpoints.route('/cron/notify-expired-tasks', methods=['POST'])
 def notify_expired_tasks_endpoint():
-    return notify_expired_tasks()
+    return notify_expired_tasks_aggregated()
 
 
 @api_endpoints.route('/cron/send-planned-mails', methods=['POST'])
 def send_planned_mails_endpoint():
-    return send_all_mails()
+    return send_planned_new_tasks_notifications()
 
 
 @api_endpoints.route('/cron/get-planned-mails', methods=['GET'])
