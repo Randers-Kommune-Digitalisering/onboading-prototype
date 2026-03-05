@@ -6,9 +6,7 @@ from utils.config import MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG
 from controllers.mail_controller import (
     plan_mail,
     create_mail_ansvarlig,
-    create_mail_new_task_user,
-    create_mail_expired_ansvarlig,
-    create_mail_expired,
+    create_mail_new_task_user
 )
 import logging
 from sqlalchemy.orm import selectinload
