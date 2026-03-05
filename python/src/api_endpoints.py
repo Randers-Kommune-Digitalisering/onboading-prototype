@@ -66,6 +66,9 @@ from controllers.external_access_controller import (
     get_forloeb_external,
     get_opgaver_forloeb_external,
 )
+from controllers.mail_controller import (
+    send_welcome_mail,
+)
 from utils.mail_service import purge_mails, send_all_mails, get_planned_mails, delete_planned_mail
 
 logger = logging.getLogger(__name__)
@@ -199,6 +202,11 @@ def get_forloeb_endpoint(forloeb_id):
     return get_forloeb(forloeb_id)
 
 
+@api_endpoints.route('/forloeb/<int:forloeb_id>/send-welcome', methods=['POST'])
+def send_mail_forloeb_endpoint(forloeb_id):
+    return send_welcome_mail(forloeb_id, request.json.get('subject', ''), request.json.get('content', ''))
+
+
 @api_endpoints.route('/forloeb/opgaver', methods=['GET'])
 def get_forloeb_with_opgaver_endpoint():
     return get_forloeb_with_opgaver()
@@ -307,11 +315,6 @@ def get_dq_numbers_endpoint():
 @api_endpoints.route('/users/fullname', methods=['GET'])
 def get_fullname_endpoint():
     return get_fullname()
-
-
-# @api_endpoints.route('/users/azure', methods=['GET'])
-# def get_and_save_azure_ad_data_endpoint():
-#     return get_and_save_azure_ad_data()
 
 
 @api_endpoints.route('/users/admin', methods=['GET'])
