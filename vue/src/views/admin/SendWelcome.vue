@@ -47,7 +47,7 @@ Randers Kommune",
         let content = inputFields.value.content
         content = content.replaceAll(/{navn}/g, "Test")
         content = content.replaceAll(/{efternavn}/g, "Testesen")
-        content = content.replaceAll(/{link}/g, '<div style="margin-top: 8px;margin-bottom: 16px;display: inline-block"><a href="#" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display:block;">Se dit onboarding-forløb</a></div>')
+        content = content.replaceAll(/{link}/g, '<a href="#" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 10px;">Se dit onboarding-forløb</a>')
         content = content.replaceAll(/{startdato}/g, "01-01-2024")
         content = content.replaceAll(/{slutdato}/g, "31-12-2024")
         content = content.replaceAll(/{forløb}/g, "Onboarding forløb")

@@ -262,7 +262,7 @@ def compose_welcome_mail(forloeb, custom_message):
     context = {
         "navn": forloeb['name'].split()[0] if forloeb.get('name') else '',
         "efternavn": " ".join(forloeb['name'].split()[1:]) if forloeb.get('name') and len(forloeb['name'].split()) > 1 else '',
-        "link": f'<a href="{link}" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none;">Se dit onboarding-forløb</a></div>',
+        "link": f'<a href="{link}" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 20px;">Se dit onboarding-forløb</a>',
         "startdato": forloeb['startdate'].strftime('%d/%m %Y') if forloeb.get('startdate') else '',
         "slutdato": forloeb['slutdate'].strftime('%d/%m %Y') if forloeb.get('slutdate') else '',
         "forløb": forloeb['name'],
