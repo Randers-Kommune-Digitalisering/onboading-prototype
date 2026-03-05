@@ -1,7 +1,7 @@
 from flask import jsonify
 import base64
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from rkdigi import EmailSender
 from typing import Optional, List, Dict
 
@@ -250,6 +250,40 @@ def get_planned_mails():
         session.close()
 
 
+def delete_planned_mail(mail_id: int):
+    session = db_client.get_session()
+    try:
+        mail = session.query(Mail).filter_by(MailID=mail_id, isSent=False).first()
+        if mail is None:
+            return jsonify({"message": "No unsent email found with the provided ID"}), 404
+        session.delete(mail)
+        session.commit()
+        return jsonify({"message": "Planned email deleted successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"message": "Error deleting planned email", "error": str(e)}), 500
+    finally:
+        session.close()
+
+
+def purge_mails(days: int = 30):
+    """Delete mails older than the specified number of days."""
+    session = db_client.get_session()
+    try:
+        threshold_date = datetime.now() - timedelta(days=days)
+        old_mails = session.query(Mail).filter(Mail.created < threshold_date).all()
+        for mail in old_mails:
+            session.delete(mail)
+        session.commit()
+        return jsonify({"message": f"Deleted mails older than {days} days", "deleted_count": len(old_mails)}), 200
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error purging old emails: {e}")
+        return jsonify({"message": "Error purging old emails", "error": str(e)}), 500
+    finally:
+        session.close()
+
+
 def send_all_mails():
     """
     Fetches all planned mails from DB and attempts to send them. Updates DB status accordingly.
@@ -318,7 +352,7 @@ def send_mail(recipient_email, subject, message, attachments=None, reply_to=None
             recipients=recipient_email,
             subject=subject,
             body=message,
-            # attachments=_attachments_for_rkdigi(attachments),
+            attachments=_attachments_for_rkdigi(attachments),
         )
         return True
     except Exception as e:

@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from models import Base, Mail, MailAttachment
-from utils import mail_service
+from controllers import mail_controller as mail_service
 
 
 class _TestDbClient:

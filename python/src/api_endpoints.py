@@ -69,8 +69,10 @@ from controllers.mail_controller import (
     send_welcome_mail,
     send_planned_new_tasks_notifications,
     notify_expired_tasks_aggregated,
+    purge_mails,
+    get_planned_mails,
+    delete_planned_mail,
 )
-from utils.mail_service import purge_mails, get_planned_mails, delete_planned_mail
 
 logger = logging.getLogger(__name__)
 db_client = get_db_client()
