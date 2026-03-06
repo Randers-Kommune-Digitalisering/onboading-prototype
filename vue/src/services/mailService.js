@@ -10,4 +10,4 @@ export const deleteMail = (data) => {
 
 export const sendWelcomeMail = (forloebId, content) => {
   return apiRequest({ method: 'post', url: `${API_URL}/forloeb/${forloebId}/send-welcome`, data: content });
-}
+};
