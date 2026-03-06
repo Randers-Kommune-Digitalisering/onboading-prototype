@@ -1,9 +1,9 @@
-from flask import jsonify
+from flask import jsonify, Response
 import base64
 import logging
 from datetime import datetime, timedelta
 from rkdigi import EmailSender
-from typing import Optional, List, Dict
+from typing import List, Dict, Any
 
 from utils.config import (
     MAIL_SMTP_SENDER,
@@ -27,7 +27,7 @@ SUBJECT_ANSVARLIG_NEW_TASK = "Ny opgave tildelt i onboardingforløb"
 
 # Helpers
 
-def _to_base64_str(data):
+def _to_base64_str(data: str | bytes | bytearray | memoryview | None) -> str | None:
     if data is None:
         return None
     if isinstance(data, str):
@@ -37,7 +37,7 @@ def _to_base64_str(data):
     raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
 
 
-def _to_bytes(data):
+def _to_bytes(data: str | bytes | bytearray | memoryview | None) -> bytes | None:
     if data is None:
         return None
     if isinstance(data, (bytes, bytearray, memoryview)):
@@ -48,7 +48,7 @@ def _to_bytes(data):
     raise TypeError(f"Unsupported attachment content type: {type(data)!r}")
 
 
-def _attachments_for_rkdigi(attachments):
+def _attachments_for_rkdigi(attachments: list[dict[str, Any]] | None) -> list[tuple[str, bytes]] | None:
     """Convert our attachment dicts to rk-digi EmailSender attachments.
 
     rk-digi accepts attachments as either file paths (str) or (filename, bytes) tuples.
@@ -71,7 +71,7 @@ def _attachments_for_rkdigi(attachments):
     return transformed
 
 
-def _split_name(full_name: str):
+def _split_name(full_name: str) -> tuple[str, str]:
     if not full_name:
         return "", ""
     parts = str(full_name).split()
@@ -89,7 +89,7 @@ def _is_external_forloeb(forloeb: Forløb) -> bool:
         return False
 
 
-def _forloeb_overview_url(forloeb: Forløb, opgave_id: Optional[int] = None, force_internal: bool = False) -> str:
+def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, force_internal: bool = False) -> str:
     # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
     url = f"http://onboarding.data.randers.dk/forloeb-overview?id={forloeb.ForløbID}"
     if opgave_id is not None:
@@ -110,7 +110,7 @@ def _button_link_html(url: str, text: str) -> str:
     )
 
 
-def _format_date(dt: Optional[datetime]) -> str:
+def _format_date(dt: datetime | None) -> str:
     if not dt:
         return ""
     try:
@@ -165,7 +165,7 @@ def _render_task_blocks_for_ansvarlig(opgaver: List[Opgave]) -> str:
 
 # Plan and send mail functions
 
-def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None, attachment=None, description=None):
+def plan_mail(recipient_email: str, subject: str, message: str, opgave_id: int | None = None, forloeb_id: int | None = None, attachment: dict | None = None, description: str | None = None) -> bool:
     """
     Adds an email to DB to be sent at a later point.
 
@@ -217,7 +217,7 @@ def plan_mail(recipient_email, subject, message, opgave_id=None, forloeb_id=None
         session.close()
 
 
-def get_planned_mails():
+def get_planned_mails() -> list[dict[str, Any]] | None:
     session = db_client.get_session()
     try:
         mails = session.query(Mail).filter_by(isSent=False).all()
@@ -250,7 +250,7 @@ def get_planned_mails():
         session.close()
 
 
-def delete_planned_mail(mail_id: int):
+def delete_planned_mail(mail_id: int) -> tuple[Response, int]:
     session = db_client.get_session()
     try:
         mail = session.query(Mail).filter_by(MailID=mail_id, isSent=False).first()
@@ -266,7 +266,7 @@ def delete_planned_mail(mail_id: int):
         session.close()
 
 
-def purge_mails(days: int = 30):
+def purge_mails(days: int = 30) -> tuple[Response, int]:
     """Delete mails older than the specified number of days."""
     session = db_client.get_session()
     try:
@@ -284,7 +284,7 @@ def purge_mails(days: int = 30):
         session.close()
 
 
-def send_all_mails():
+def send_all_mails() -> tuple[Response, int]:
     """
     Fetches all planned mails from DB and attempts to send them. Updates DB status accordingly.
     """
@@ -324,7 +324,7 @@ def send_all_mails():
     return jsonify({"message": "Planned emails sent successfully", "count": total_count, "sent": sent_count}), 200
 
 
-def send_mail(recipient_email, subject, message, attachments=None, reply_to=None):
+def send_mail(recipient_email: str | list[str], subject: str, message: str, attachments: list[dict] | None = None, reply_to: str | None = None) -> bool:
     """
     Sends an email via SMTP using rk-digi and the configured SMTP sender.
 
@@ -362,7 +362,7 @@ def send_mail(recipient_email, subject, message, attachments=None, reply_to=None
 
 # Helper function to create email content from a template with placeholders replaced by context values
 
-def compose_mail_content(template, context):
+def compose_mail_content(template: str, context: dict[str, Any]) -> str:
     """
     Composes email content by replacing placeholders in the template with values from the context.
     Adds <html> tags around the content to ensure proper formatting in HTML emails.
@@ -422,7 +422,7 @@ def _send_new_tasks_mail_to_ansvarlig(ansvarlig_email: str, opgaver: List[Opgave
     return send_mail(ansvarlig_email, subject, body)
 
 
-def send_planned_new_tasks_notifications():
+def send_planned_new_tasks_notifications() -> tuple[Response, int]:
     """Cron: Send consolidated 'new task' notifications based on planned Mail rows.
 
     This cron consumes planned Mail rows of two types:
@@ -537,7 +537,7 @@ def send_planned_new_tasks_notifications():
         session.close()
 
 
-def create_mail_ansvarlig(opgave: Opgave):
+def create_mail_ansvarlig(opgave: Opgave) -> tuple[str, str]:
     subject = SUBJECT_ANSVARLIG_NEW_TASK
     ansvarlig_navn = getattr(opgave, "ansvarlig", "")
     booking = getattr(opgave, "booking", None)
@@ -574,7 +574,7 @@ def create_mail_ansvarlig(opgave: Opgave):
     return subject, body
 
 
-def create_mail_new_task_user(forloeb: Forløb, opgave: Opgave):
+def create_mail_new_task_user(forloeb: Forløb, opgave: Opgave) -> tuple[str, str]:
     first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     context = {
         "navn": first_name,
@@ -593,7 +593,7 @@ def create_mail_new_task_user(forloeb: Forløb, opgave: Opgave):
     return subject, body
 
 
-def create_mail_forloeb_start(forloeb: Forløb, custom_message: Optional[str] = None):
+def create_mail_forloeb_start(forloeb: Forløb, custom_message: str | None = None) -> tuple[str, str]:
     default_message = "Velkommen til Randers Kommune! Dit onboardingforløb er nu klar."
     first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     link = _button_link_html(_forloeb_overview_url(forloeb), "Se dit onboarding-forløb")
@@ -617,7 +617,7 @@ def create_mail_forloeb_start(forloeb: Forløb, custom_message: Optional[str] = 
     return subject, body
 
 
-def create_mail_expired(forloeb: Forløb, opgave: Opgave):
+def create_mail_expired(forloeb: Forløb, opgave: Opgave) -> tuple[str, str]:
     first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     link = _button_link_html(_forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID), "Se opgaven i dit onboarding-forløb")
 
@@ -641,7 +641,7 @@ def create_mail_expired(forloeb: Forløb, opgave: Opgave):
     return subject, body
 
 
-def create_mail_expired_ansvarlig(opgave: Opgave):
+def create_mail_expired_ansvarlig(opgave: Opgave) -> tuple[str, str]:
     context = {
         "ansvarlig": getattr(opgave, "ansvarlig", ""),
         "opgave": getattr(opgave, "title", ""),
@@ -662,7 +662,7 @@ def create_mail_expired_ansvarlig(opgave: Opgave):
     return subject, body
 
 
-def create_mail_external_access(forloeb: Forløb, link: str, expires_at):
+def create_mail_external_access(forloeb: Forløb, link: str, expires_at) -> tuple[str, str]:
     first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
     try:
         expires_str = expires_at.astimezone(None).strftime('%d/%m %H:%M')
@@ -688,30 +688,27 @@ def create_mail_external_access(forloeb: Forløb, link: str, expires_at):
     return subject, body
 
 
-def compose_welcome_mail(forloeb, custom_message):
-    forloeb = {
-        "id": forloeb.ForløbID,
-        "name": forloeb.name,
-        "userdq": forloeb.userdq,
-        "startdate": forloeb.startdate,
-        "slutdate": forloeb.enddate
-    }
-    link = f"http://onboarding.data.randers.dk/forloeb-overview?forloebId={forloeb['id']}"
-    if forloeb.get('userdq') is None:
-        link += "&external=true"
+def compose_welcome_mail(forloeb: Forløb, custom_message: str) -> str:
+    if not isinstance(forloeb, Forløb):
+        raise TypeError(f"compose_welcome_mail expects Forløb, got {type(forloeb)!r}")
 
-    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
+    name = getattr(forloeb, "name", "")
+    startdate = getattr(forloeb, "startdate", None)
+    enddate = getattr(forloeb, "enddate", None)
+    url = _forloeb_overview_url(forloeb)
+
+    first_name, last_name = _split_name(name)
     context = {
         "navn": first_name,
-        "efternavn": _last_name,
-        "link": f'<a href="{link}" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 20px;">Se dit onboarding-forløb</a>',
-        "startdato": forloeb['startdate'].strftime('%d/%m %Y') if forloeb.get('startdate') else '',
-        "slutdato": forloeb['slutdate'].strftime('%d/%m %Y') if forloeb.get('slutdate') else ''
+        "efternavn": last_name,
+        "link": _button_link_html(url, "Se dit onboarding-forløb"),
+        "startdato": _format_date(startdate),
+        "slutdato": _format_date(enddate),
     }
     return compose_mail_content(custom_message, context)
 
 
-def send_welcome_mail(forloeb_id, subject, custom_message):
+def send_welcome_mail(forloeb_id: int, subject: str, custom_message: str) -> tuple[Response, int]:
     """
     Composes and sends a welcome email to the user associated with the given forløb ID, using the provided custom message template.
 
@@ -746,7 +743,7 @@ def send_welcome_mail(forloeb_id, subject, custom_message):
         return jsonify({"message": "Failed to compose welcome mail", "recipient": forloeb.usermail}), 500
 
 
-def notify_expired_tasks_aggregated():
+def notify_expired_tasks_aggregated() -> tuple[Response, int]:
     """Cron: Send consolidated notifications for expired tasks (repeat reminders)."""
     session = db_client.get_session()
     try:
