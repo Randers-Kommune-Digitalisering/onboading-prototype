@@ -728,19 +728,22 @@ def send_welcome_mail(forloeb_id: int, subject: str, custom_message: str) -> tup
         return jsonify({"message": "Subject must be a non-empty string."}), 400
 
     session = db_client.get_session()
-    forloeb = session.query(Forløb).filter_by(ForløbID=forloeb_id_int).first()
-    if not forloeb:
-        return jsonify({"message": f"Forløb with ID {forloeb_id} not found."}), 404
+    try:
+        forloeb = session.query(Forløb).filter_by(ForløbID=forloeb_id_int).first()
+        if not forloeb:
+            return jsonify({"message": f"Forløb with ID {forloeb_id} not found."}), 404
 
-    mail_content = compose_welcome_mail(forloeb, custom_message)
-    if mail_content:
-        res = send_mail(forloeb.usermail, subject, mail_content, reply_to=forloeb.admin)
-        if res:
-            return jsonify({"message": "Welcome mail sent successfully", "recipient": forloeb.usermail}), 200
+        mail_content = compose_welcome_mail(forloeb, custom_message)
+        if mail_content:
+            res = send_mail(forloeb.usermail, subject, mail_content, reply_to=forloeb.admin)
+            if res:
+                return jsonify({"message": "Welcome mail sent successfully", "recipient": forloeb.usermail}), 200
+            else:
+                return jsonify({"message": "Failed to send welcome mail", "recipient": forloeb.usermail}), 500
         else:
-            return jsonify({"message": "Failed to send welcome mail", "recipient": forloeb.usermail}), 500
-    else:
-        return jsonify({"message": "Failed to compose welcome mail", "recipient": forloeb.usermail}), 500
+            return jsonify({"message": "Failed to compose welcome mail", "recipient": forloeb.usermail}), 500
+    finally:
+        session.close()
 
 
 def notify_expired_tasks_aggregated() -> tuple[Response, int]:
