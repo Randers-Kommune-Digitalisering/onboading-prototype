@@ -170,7 +170,7 @@ Randers Kommune",
             </div>
 
             <div class="inputContainer submit">
-                <button :class="['button', 'hollow', { 'disabled': isSubmitting }]" type="submit" @click="isPreviewing = false; nextTick(() => { resizeTextareaContentToFitContent() })">Redigér indhold</button>
+                <button :class="['button', 'hollow', { 'disabled': isSubmitting }]" type="button" @click="isPreviewing = false; nextTick(() => { resizeTextareaContentToFitContent() })">Redigér indhold</button>
                 <button :class="['button', { 'disabled': isSubmitting }]" type="submit" :disabled="isSubmitting">Send velkomstmail</button>
             </div>
         </template>
