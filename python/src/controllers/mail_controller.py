@@ -127,7 +127,7 @@ def _render_task_blocks_for_forloeb(forloeb: Forløb, opgaver: List[Opgave]) -> 
             "".join(
                 [
                     f"<div>- <strong>{opgave.title}</strong></div>\n",
-                    f"<div>Starter: {_format_date(opgave.startdato)}</div>" if opgave.startdato else "",
+                    f"<div>Start: {_format_date(opgave.startdato)}</div>" if opgave.startdato else "",
                     f"<div>Deadline: {_format_date(opgave.slutdato)}</div>" if opgave.slutdato else "",
                     f"<div style=\"margin-top: 12px;\">{_button_link_html(url, 'Se opgaven i dit onboarding-forløb')}</div>\n",
                 ]
@@ -151,7 +151,7 @@ def _render_task_blocks_for_ansvarlig(opgaver: List[Opgave]) -> str:
                 [
                     f"<div>- <strong>{opgave.title}</strong></div>\n",
                     f"<div>Medarbejder: {forloeb.name}</div>" if getattr(forloeb, "name", None) else "",
-                    f"<div>Starter: {_format_date(opgave.startdato)}</div>" if opgave.startdato else "",
+                    f"<div>Start: {_format_date(opgave.startdato)}</div>" if opgave.startdato else "",
                     f"<div>Deadline: {_format_date(opgave.slutdato)}</div>" if opgave.slutdato else "",
                     f"<div style=\"margin-top: 12px;\">{_button_link_html(url, 'Se opgaven i onboarding-forløbet')}</div>\n",
                 ]
