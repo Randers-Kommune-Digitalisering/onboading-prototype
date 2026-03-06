@@ -3,9 +3,7 @@
     import ProgressBar from './ProgressBar.vue'
 
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService.js'
-    import { deleteMail } from '@/services/mailService.js'
 
-    const cardRef = ref(null)
     const completedPercentage = ref(0)
 
     const returnFormattedDate = (date) => {
@@ -49,17 +47,12 @@
         isPreparation: {
             type: Boolean,
             default: false
-        },
-        mails: {
-            type: Array,
-            default: () => []
         }
     })
 
     const isTemplate = props.id == null
     const opgaver = ref(props.tasks || null)
     const hasForloebStarted = props.startDate && new Date(props.startDate) <= new Date()
-    const dynamicMails = ref(props.mails)
 
     onMounted(async () => {
         try {
@@ -102,7 +95,7 @@
         v-bind="!props.disableInteraction ? { to: { path: 'forloeb-overview', query: { id: id, tid: tid } } } : {}"
     >
 
-    <div :class="['card', 'course', {'dark': props.dark}]" ref="cardRef">
+    <div :class="['card', 'course', {'dark': props.dark}]">
         <div :class="['card-header', {'pointer': !props.disableInteraction}]" @click="expandCard">
 
             <div class="card-titles">

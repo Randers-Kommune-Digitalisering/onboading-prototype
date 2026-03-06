@@ -97,7 +97,6 @@ Randers Kommune",
                     subject: inputFields.value.subject,
                     content: inputFields.value.content
                 }
-                console.log('Form Data to be sent:', formData)
                 const response = await sendWelcomeMail(forloeb_id, formData)
                 if(response)
                     router.replace({ path: '/forloeb-overview', query: { id: forloeb_id } })
@@ -121,7 +120,7 @@ Randers Kommune",
 
 
     <div
-        v-if="focusedInput && !isAssistantSearchOpen"
+        v-if="focusedInput"
         class="float-right helper-text"
         @mousedown.prevent
         @click.prevent
