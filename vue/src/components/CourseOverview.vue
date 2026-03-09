@@ -67,6 +67,7 @@
     const sortBy = ref(router.currentRoute.value.query.sort || 'deadline')
     const start_message_index = ref(-1)
     const externalAccessDenied = ref(false)
+    const roleAccessDenied = ref(false)
 
     const fetchOpgaver = async () => {
         // External access flow
@@ -149,6 +150,7 @@
 
             // Internal access flow (logged in AD users)
             if (userInfo.value) {
+                console.log('Fetching course and tasks with user email:', userInfo.value.email)
                 const headers = { usermail: userInfo.value.email }
                 // Get forloeb
                                         // In ansvarligView, fetch no forløb unless id is provided (fetch opgaver only)
@@ -241,6 +243,8 @@
             // If external access, show specific message if 403 Forbidden (likely expired or invalid link)
             if (props.external && error?.response?.status === 403)
                 externalAccessDenied.value = true
+            else if (error?.response?.status === 403)
+                roleAccessDenied.value = true
 
             isForloebFetched.value = true
             isOpgaverFetched.value = true
@@ -299,7 +303,10 @@
     <p v-if="externalAccessDenied" class="indent-tiny notification">
         <span class="bold">OBS</span>: Linket er ugyldigt eller udløbet. <router-link :to="`/forloeb-overview?id=${props.id}&external=true`">Anmod om et nyt link</router-link>.
     </p>
-    <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView && !externalAccessDenied" class="indent-tiny notification">
+    <p v-if="roleAccessDenied" class="indent-tiny notification">
+        <span class="bold">OBS</span>: Du har ikke adgang til dette forløb.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.
+    </p>
+    <p v-if="forloeb == null && isForloebFetched && !props.ansvarligView && !externalAccessDenied && !roleAccessDenied" class="indent-tiny notification">
         <span class="bold">OBS</span>: Det ser ikke ud til, at du har et onboardingforløb tilknyttet.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.
     </p>
     <p v-if="forloeb != null && isForloebFetched && userInfo.isAdmin && isForloebOngoing && !forloeb.usermail.includes('@randers.dk')" class="indent-tiny notification yellow">
