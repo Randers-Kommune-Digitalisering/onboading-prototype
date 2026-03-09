@@ -8,7 +8,6 @@
         roles: [],
         email: '',
         isAdmin: false,
-        isAnsvarlig: false,
         isMedarbejder: false,
     })
 

@@ -18,7 +18,7 @@
 </script>
 
 <template>
-	<div v-if="userInfo && userInfo.email && userInfo.email != '' && userInfo.isAnsvarlig">
+	<div v-if="userInfo && userInfo.email && userInfo.email != ''">
 		<CourseOverview :ansvarligView="true" :expandItem="expandItem" />
 	</div>
 </template>

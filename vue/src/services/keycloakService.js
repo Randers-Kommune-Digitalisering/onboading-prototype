@@ -4,8 +4,8 @@ let CACHED_USER_INFO = null;
 let IN_FLIGHT_USER_INFO_PROMISE = null;
 
 const ROLE_ADMIN = 'Admin';
-const ROLE_ANSVARLIG = 'Ansvarlig';
 const ROLE_NY_MEDARBEJDER = 'Ny medarbejder';
+const ROLE_PUBLIC = 'Public';
 
 function toArray(value) {
     return Array.isArray(value) ? value : [];
@@ -13,24 +13,33 @@ function toArray(value) {
 
 function defaultPublicUserInfo() {
     return {
-        roles: ['Public'],
+        roles: [ROLE_PUBLIC],
         isAdmin: false,
-        isAnsvarlig: false,
         isMedarbejder: false,
     };
 }
 
 function normalizeUserInfo(rawUserInfo) {
-    const roles = toArray(rawUserInfo?.roles);
+    let roles = toArray(rawUserInfo?.roles);
+    if (roles.length === 0 && rawUserInfo) {
+        roles = [ROLE_NY_MEDARBEJDER];
+    }
+
     const isAdmin = roles.includes(ROLE_ADMIN);
-    const isAnsvarlig = roles.includes(ROLE_ANSVARLIG);
-    const isMedarbejder = roles.includes(ROLE_NY_MEDARBEJDER) || (!isAdmin && !isAnsvarlig);
+    const isPublic = roles.includes(ROLE_PUBLIC);
+
+    // Treat any authenticated, non-admin user as a medarbejder even if Keycloak
+    // doesn't explicitly assign the role.
+    if (rawUserInfo && !isAdmin && !isPublic && !roles.includes(ROLE_NY_MEDARBEJDER)) {
+        roles = [...roles, ROLE_NY_MEDARBEJDER];
+    }
+
+    const isMedarbejder = roles.includes(ROLE_NY_MEDARBEJDER) || (!isAdmin && !isPublic);
 
     return {
         ...(rawUserInfo ?? {}),
         roles,
         isAdmin,
-        isAnsvarlig,
         isMedarbejder,
     };
 }

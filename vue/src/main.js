@@ -55,7 +55,7 @@ const routes = [
         path: '/create-ressource',
         name: 'CreateRessource',
         component: CreateRessource,
-        meta: { roles: ['Admin', 'Ansvarlig'] }
+        meta: { roles: ['Admin', 'Ny medarbejder'] }
     },
     {
         path: '/create-forloebsskabelon',
@@ -79,13 +79,13 @@ const routes = [
         path: '/ansvarlig-overview',
         name: 'AnsvarligOverview',
         component: AnsvarligOverview,
-        meta: { roles: ['Admin', 'Ansvarlig'] }
+        meta: { roles: ['Admin', 'Ny medarbejder'] }
     },
     {
         path: '/help',
         name: 'Help',
         component: Help,
-        meta: { roles: ['Ansvarlig', 'Ny medarbejder'] }
+        meta: { roles: ['Ny medarbejder'] }
     },
     {
         path: '/admin-help',
@@ -103,19 +103,19 @@ const routes = [
         path: '/medarbejder-overview',
         name: 'MedarbejderOverview',
         component: MedarbejderOverview,
-        meta: { roles: ['Ny medarbejder', 'Ansvarlig'] }
+        meta: { roles: ['Ny medarbejder'] }
     },
     {
         path: '/forloeb-overview',
         name: 'ForløbOverview',
         component: ForløbOverview,
-        meta: { roles: ['Admin', 'Ansvarlig', 'Public'] }
+        meta: { roles: ['Admin', 'Ny medarbejder', 'Public'] }
     },
     {
         path: '/reload',
         name: 'Reload',
         component: Blank,
-        meta: { roles: ['Admin', 'Ansvarlig', 'Ny medarbejder'] }
+        meta: { roles: ['Admin', 'Ny medarbejder'] }
     },
     {
         path: '/login',
@@ -182,8 +182,6 @@ const returnRoleBasedUrl = async (_userInfo = null) => {
             return '/admin-overview'
         else if (userRoles.includes('Ny medarbejder'))
             return '/medarbejder-overview'
-        else if (userRoles.includes('Ansvarlig'))
-            return '/ansvarlig-overview'
         else
             return '/login'
         

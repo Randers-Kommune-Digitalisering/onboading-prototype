@@ -51,7 +51,6 @@
         roles: [],
         email: '',
         isAdmin: false,
-        isAnsvarlig: false,
         isMedarbejder: false,
     })
     const isForloebCompleted = ref(false)
@@ -79,7 +78,6 @@
                     roles: ['Public'],
                     email: externalInfoResponse?.data?.email || '',
                     isAdmin: false,
-                    isAnsvarlig: false,
                     isMedarbejder: false,
                 }
 
@@ -153,8 +151,8 @@
             if (userInfo.value) {
                 const headers = { usermail: userInfo.value.email }
                 // Get forloeb
-                                        // As ansvarlig fetch no forløb unless id is provided (fetch opgaver only)
-                const forloeb_response =  userInfo.value.isAnsvarlig && !props.id && props.ansvarligView ? null
+                                        // In ansvarligView, fetch no forløb unless id is provided (fetch opgaver only)
+                const forloeb_response =  props.ansvarligView && !props.id ? null
                                         // As medarbejder fetch forløb by email
                                         : userInfo.value.isMedarbejder && !props.id ? await getForloebByEmail({ headers })
                                         // If template fetch by skabelon id
@@ -176,8 +174,8 @@
                     forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
                 
                 // Get opgaver
-                                        // As ansvarlig fetch opgaver
-                const opgaver_response =  userInfo.value.isAnsvarlig && !props.id && props.ansvarligView ? await getOpgaverByAnsvarligEmail({ headers }) 
+                                        // In ansvarligView fetch opgaver
+                const opgaver_response =  props.ansvarligView && !props.id ? await getOpgaverByAnsvarligEmail({ headers }) 
                                         // If template fetch by skabelon id
                                         : props.isTemplate ? await getOpgaverByForloebsskabelonID(forloeb_id.value)
                                         // Otherwise fetch by forløb id and user email (for medarbejder users, admins and ansvarlig users)
@@ -404,7 +402,7 @@
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index" />
 
-        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
+        <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_ongoing"
                 :isFetchingTasks="!isOpgaverFetched"
                 :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
@@ -412,7 +410,7 @@
                 :expandFirstItem="false"
                 :expandItem="expandItem" />
 
-        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
+        <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_future"
                 :isFetchingTasks="!isOpgaverFetched"
                 title="Kommende opgaver"
@@ -423,7 +421,7 @@
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index" />
 
-        <TaskList v-if="(forloeb != null || userInfo.isAnsvarlig) && (!isTemplate && !isUnderPreparation)"
+        <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_completed"
                 :isFetchingTasks="!isOpgaverFetched"
                 title="Afsluttede opgaver"

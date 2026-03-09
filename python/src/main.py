@@ -27,7 +27,7 @@ def create_app():
     if DISABLE_KEYCLOAK:
         @app.route('/api/userinfo')
         def user_info():
-            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Admin', 'Ansvarlig']}
+            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Admin']}
             return user_info, 200
     else:
         app.secret_key = COOKIE_SECRET
@@ -78,7 +78,7 @@ def create_app():
         def user_info():
             if 'user' in session:
                 user_info = session['user']
-                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', ["Ny medarbejder", "Ansvarlig"])
+                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', [])
                 return user_info, 200
             else:
                 return jsonify({"error": "Not authenticated"}), 401

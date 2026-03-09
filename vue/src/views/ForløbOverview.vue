@@ -110,7 +110,7 @@
                             :accessKey="accessKey" />
         </div>
 
-        <CourseOverview v-else-if="userInfo != null && (userInfo.isAdmin || userInfo.isAnsvarlig)"
+        <CourseOverview v-else-if="userInfo != null && (userInfo.isAdmin || userInfo.isMedarbejder)"
                         :id="id"
                         :showDetails="true"
                         :isTemplate="isTemplate"
