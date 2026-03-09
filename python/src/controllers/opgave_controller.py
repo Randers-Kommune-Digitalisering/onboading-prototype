@@ -3,6 +3,7 @@ from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 from utils.config import MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG
+from utils.access_control import get_current_user_email, is_current_user_admin, user_can_access_forloeb
 from controllers.mail_controller import (
     plan_mail,
     create_mail_ansvarlig,
@@ -488,6 +489,10 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
 def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad naming
     session = db_client.get_session()
     try:
+        adminmail = get_current_user_email() or adminmail
+        if not adminmail:
+            return jsonify([])
+
         query = (
             session.query(Opgave)
             .options(
@@ -547,21 +552,20 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
 def get_opgave_by_forloeb_id(forlob_id):
     session = db_client.get_session()
     try:
-        usermail = request.headers.get('usermail')
+        if not is_current_user_admin():
+            user_email = get_current_user_email()
+            if not user_can_access_forloeb(session, forlob_id, user_email):
+                return jsonify({"error": "Forbidden"}), 403
 
-        query = (
+        opgave = (
             session.query(Opgave)
             .options(
                 selectinload(Opgave.ressource),
                 selectinload(Opgave.opgavegruppe),
             )
-            .join(Forløb)
-            .filter(Opgave.ForløbID == forlob_id)
+            .filter_by(ForløbID=forlob_id)
+            .all()
         )
-        if usermail:
-            query = query.filter(Forløb.usermail == usermail)
-
-        opgave = query.all()
 
         if not opgave:
             return jsonify([])

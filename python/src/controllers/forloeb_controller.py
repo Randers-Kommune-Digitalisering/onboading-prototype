@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from models import Forløb, Forløbsskabelon, Opgave, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
 from utils.config import MAIL_DESC_NEW_TASK_ANSVARLIG
+from utils.access_control import get_current_user_email, is_current_user_admin, user_can_access_forloeb
 from controllers.mail_controller import plan_mail, create_mail_ansvarlig
 import logging
 from sqlalchemy.orm import selectinload
@@ -207,6 +208,11 @@ def get_forloeb(forloeb_id: int):
         if not forloeb:
             return jsonify({"error": "Forløb not found"}), 404
 
+        if not is_current_user_admin():
+            user_email = get_current_user_email()
+            if not user_can_access_forloeb(session, forloeb_id, user_email, forloeb=forloeb):
+                return jsonify({"error": "Forbidden"}), 403
+
         opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbID=forloeb.ForløbID).all()
 
         result = {
@@ -290,6 +296,10 @@ def get_forloeb_with_opgaver():
 def get_forloeb_by_email(mail):
     session = db_client.get_session()
     try:
+        mail = get_current_user_email() or mail
+        if not mail:
+            return jsonify(None), 200
+
         forloeb = session.query(Forløb).filter(Forløb.usermail.ilike(mail.lower())).first()
         if not forloeb:
             return jsonify(None), 200

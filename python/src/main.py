@@ -5,7 +5,7 @@ from prometheus_client import generate_latest
 from authlib.integrations.flask_client import OAuth
 
 from utils.logging import set_logging_configuration
-from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK
+from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK, DISABLE_KEYCLOAK_ROLES, DISABLE_KEYCLOAK_USER_EMAIL, DISABLE_KEYCLOAK_USER_NAME
 from api_endpoints import api_endpoints
 from controllers.user_controller import azure_data_exists, get_and_save_azure_ad_data
 from utils.db_connection import create_db_client, add_missing_columns
@@ -17,6 +17,9 @@ def create_app():
     app = Flask(__name__, static_folder='dist')
     CORS(app, allow_headers=['Content-Type', 'usermail', 'X-External-Access-Key'])
 
+    # Flask sessions are used for Keycloak auth and (in dev) for DISABLE_KEYCLOAK.
+    app.secret_key = COOKIE_SECRET
+
     @app.after_request
     def add_security_headers(response):
         # Defense-in-depth: avoid sending URLs as referrers to other origins.
@@ -25,13 +28,37 @@ def create_app():
         return response
 
     if DISABLE_KEYCLOAK:
+        @app.before_request
+        def seed_fake_user_session():
+            # Dev-only: simulate Keycloak userinfo in a server-side session so
+            # authorization uses a stable identity (not spoofable headers).
+            if 'user' in session:
+                return None
+
+            email = (
+                DISABLE_KEYCLOAK_USER_EMAIL
+                or request.headers.get('usermail')
+                or 'test.robot@randers.dk'
+            )
+
+            raw_roles = DISABLE_KEYCLOAK_ROLES.strip()
+            roles = [r.strip() for r in raw_roles.split(',') if r.strip()]
+
+            session['user'] = {
+                'name': DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen',
+                'email': email,
+                'roles': roles,
+                'resource_access': {
+                    KEYCLOAK_CLIENT_ID: {
+                        'roles': roles,
+                    }
+                },
+            }
+
         @app.route('/api/userinfo')
         def user_info():
-            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Admin', 'Ansvarlig']}
-            return user_info, 200
+            return session.get('user', {}), 200
     else:
-        app.secret_key = COOKIE_SECRET
-
         oauth = OAuth(app)
 
         oauth.register(name='keycloak', client_id=KEYCLOAK_CLIENT_ID, client_secret=KEYCLOAK_CLIENT_SECRET, server_metadata_url=f'{KEYCLOAK_URL.rstrip("/")}/.well-known/openid-configuration', client_kwargs={'scope': 'openid profile email'})
@@ -78,7 +105,7 @@ def create_app():
         def user_info():
             if 'user' in session:
                 user_info = session['user']
-                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', ["Ny medarbejder", "Ansvarlig"])
+                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', [])
                 return user_info, 200
             else:
                 return jsonify({"error": "Not authenticated"}), 401

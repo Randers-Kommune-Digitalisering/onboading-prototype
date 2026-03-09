@@ -51,6 +51,10 @@ try:
 except ValueError:
     MAIL_SMTP_PORT = 587
 
+DISABLE_KEYCLOAK_ROLES = os.getenv('DISABLE_KEYCLOAK_ROLES', '').strip()
+DISABLE_KEYCLOAK_USER_EMAIL = os.getenv('DISABLE_KEYCLOAK_USER_EMAIL', '').strip()
+DISABLE_KEYCLOAK_USER_NAME = os.getenv('DISABLE_KEYCLOAK_USER_NAME', '').strip()
+
 # SFTP_HOST = os.environ['SFTP_HOST'].rstrip()
 # SFTP_USER = os.environ['SFTP_USER'].rstrip()
 # SFTP_PASS = os.environ['SFTP_PASS'].rstrip()
