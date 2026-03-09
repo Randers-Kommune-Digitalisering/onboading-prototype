@@ -45,6 +45,16 @@ Randers Kommune",
     const previewContent = computed(() => {
         if (!isPreviewing.value) return ""
         let content = inputFields.value.content
+        // Escape HTML to prevent injection
+        content = content.replace(/[&<>"']/g, function (m) {
+            return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+            })[m];
+        })
         content = content.replaceAll(/{navn}/g, "Test")
         content = content.replaceAll(/{efternavn}/g, "Testesen")
         content = content.replaceAll(/{link}/g, '<a href="#" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 10px;">Se dit onboarding-forløb</a>')
