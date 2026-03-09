@@ -8,15 +8,57 @@ from utils.transform_azure_data import transform_ad_email, transform_ad_dq_numbe
 from utils.config import AZURE_CLIENTID, AZURE_TENANTID, AZURE_CLIENTSECRET, AZURE_CSV_PATH, SD_CSV_PATH, SFTP_HOST, SFTP_USER, SFTP_PASS
 import logging
 import os
+from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
 
 
+def _is_file_stale(file_path: str, max_age: timedelta) -> bool:
+    if not file_path:
+        return True
+    try:
+        if not os.path.exists(file_path):
+            return True
+        mtime = datetime.fromtimestamp(os.path.getmtime(file_path), tz=timezone.utc)
+        return (datetime.now(timezone.utc) - mtime) > max_age
+    except OSError:
+        return True
+
+
+def ensure_azure_ad_data_fresh(max_age_hours: int = 24) -> bool:
+    """Ensure the Azure AD CSV exists and is not older than max_age_hours."""
+    absolute_path = AZURE_CSV_PATH
+    max_age = timedelta(hours=max_age_hours)
+
+    if _is_file_stale(absolute_path, max_age=max_age):
+        logger.info(
+            f"Azure AD CSV missing or older than {max_age_hours} hours at {absolute_path}. "
+            "Retrieving data from Azure AD..."
+        )
+        ok = bool(get_and_save_azure_ad_data())
+        if not ok:
+            return False
+    return True
+
+
+def warm_azure_ad_cache(max_age_hours: int = 24) -> bool:
+    """Fetch/refresh Azure AD data if needed and warm the transform cache."""
+    if not ensure_azure_ad_data_fresh(max_age_hours=max_age_hours):
+        return False
+
+    # Warm cache: reading/transformation is memoized in utils/transform_azure_data.py
+    try:
+        transform_ad_data(AZURE_CSV_PATH)
+        return True
+    except Exception as e:
+        logger.error(f"Error warming Azure AD cache: {e}")
+        return False
+
+
 def get_user_data():
     absolute_path = AZURE_CSV_PATH
-    if not os.path.exists(absolute_path):
-        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
-        get_and_save_azure_ad_data()
+    if not ensure_azure_ad_data_fresh(max_age_hours=24):
+        return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
     try:
         data = transform_ad_data(absolute_path)
@@ -33,9 +75,8 @@ def get_user_data():
 
 def get_email():
     absolute_path = AZURE_CSV_PATH
-    if not os.path.exists(absolute_path):
-        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
-        get_and_save_azure_ad_data()
+    if not ensure_azure_ad_data_fresh(max_age_hours=24):
+        return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
     try:
         emails = transform_ad_email(absolute_path)
@@ -52,9 +93,8 @@ def get_email():
 
 def get_dq_numbers():
     absolute_path = AZURE_CSV_PATH
-    if not os.path.exists(absolute_path):
-        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
-        get_and_save_azure_ad_data()
+    if not ensure_azure_ad_data_fresh(max_age_hours=24):
+        return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
     try:
         dq_numbers = transform_ad_dq_number(absolute_path)
@@ -71,9 +111,8 @@ def get_dq_numbers():
 
 def get_fullname():
     absolute_path = AZURE_CSV_PATH
-    if not os.path.exists(absolute_path):
-        logger.info(f"Local file {absolute_path} does not exist. Retrieving data from Azure AD...")
-        get_and_save_azure_ad_data()
+    if not ensure_azure_ad_data_fresh(max_age_hours=24):
+        return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
     try:
         logger.info(f"Absolute path to CSV file: {absolute_path}")
@@ -99,10 +138,27 @@ def azure_data_exists():
         return False
 
 
+def azure_data_is_fresh(max_age_hours: int = 24) -> bool:
+    absolute_path = AZURE_CSV_PATH
+    is_fresh = not _is_file_stale(absolute_path, max_age=timedelta(hours=max_age_hours))
+    if is_fresh:
+        logger.info(f"Local file {absolute_path} exists and is fresh (< {max_age_hours}h).")
+    else:
+        logger.info(f"Local file {absolute_path} is missing or stale (>= {max_age_hours}h).")
+    return is_fresh
+
+
 def get_and_save_azure_ad_data():
     logger.info("Retrieving data from Azure AD and save to CSV...")
 
     try:
+        if not (AZURE_CLIENTID and AZURE_CLIENTSECRET and AZURE_TENANTID):
+            logger.warning(
+                "Azure AD credentials are not configured (AZURE_CLIENTID/AZURE_CLIENTSECRET/AZURE_TENANTID). "
+                "Skipping Azure AD fetch."
+            )
+            return None
+
         azure_client = AzureClient(AZURE_CLIENTID, AZURE_CLIENTSECRET, AZURE_TENANTID, "https://graph.microsoft.com")
         users = azure_client.get_all_users()
 
