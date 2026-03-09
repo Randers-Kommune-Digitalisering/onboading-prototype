@@ -4,7 +4,7 @@ let CACHED_USER_INFO = null;
 let IN_FLIGHT_USER_INFO_PROMISE = null;
 
 const ROLE_ADMIN = 'Admin';
-const ROLE_NY_MEDARBEJDER = 'Ny medarbejder';
+const ROLE_MEDARBEJDER = 'Medarbejder';
 const ROLE_PUBLIC = 'Public';
 
 function toArray(value) {
@@ -22,7 +22,7 @@ function defaultPublicUserInfo() {
 function normalizeUserInfo(rawUserInfo) {
     let roles = toArray(rawUserInfo?.roles);
     if (roles.length === 0 && rawUserInfo) {
-        roles = [ROLE_NY_MEDARBEJDER];
+        roles = [ROLE_MEDARBEJDER];
     }
 
     const isAdmin = roles.includes(ROLE_ADMIN);
@@ -30,11 +30,11 @@ function normalizeUserInfo(rawUserInfo) {
 
     // Treat any authenticated, non-admin user as a medarbejder even if Keycloak
     // doesn't explicitly assign the role.
-    if (rawUserInfo && !isAdmin && !isPublic && !roles.includes(ROLE_NY_MEDARBEJDER)) {
-        roles = [...roles, ROLE_NY_MEDARBEJDER];
+    if (rawUserInfo && !isAdmin && !isPublic && !roles.includes(ROLE_MEDARBEJDER)) {
+        roles = [...roles, ROLE_MEDARBEJDER];
     }
 
-    const isMedarbejder = roles.includes(ROLE_NY_MEDARBEJDER) || (!isAdmin && !isPublic);
+    const isMedarbejder = roles.includes(ROLE_MEDARBEJDER) || (!isAdmin && !isPublic);
 
     return {
         ...(rawUserInfo ?? {}),

@@ -59,7 +59,7 @@
             // Filter menu items based on roles
             if (clientRoles.includes('Admin')) {
                 menuItems.value = adminMenuItems
-            } else if (clientRoles.includes('Ny medarbejder')) {
+            } else if (clientRoles.includes('Medarbejder')) {
                 menuItems.value = defaultMenuItems
             }
 
