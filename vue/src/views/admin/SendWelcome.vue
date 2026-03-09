@@ -2,7 +2,7 @@
     import { ref, onMounted, nextTick, computed } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
     import { getForloebById } from '@/services/forløbService.js'
-    import { sendWelcomeMail } from '../../services/mailService'
+    import { sendWelcomeMail } from '../../services/mailService.js'
 
     const route = useRoute()
     const router = useRouter()
