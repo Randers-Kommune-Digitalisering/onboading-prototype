@@ -15,6 +15,7 @@ from utils.config import (
 )
 from models import Mail, MailAttachment, Forløb, Opgave
 from utils.db_connection import get_db_client
+from utils.access_control import is_current_user_admin
 from sqlalchemy.orm import selectinload
 from sqlalchemy import or_, and_
 
@@ -726,6 +727,9 @@ def send_welcome_mail(forloeb_id: int, subject: str, custom_message: str) -> tup
 
     if not subject or not isinstance(subject, str):
         return jsonify({"message": "Subject must be a non-empty string."}), 400
+
+    if not is_current_user_admin():
+        return jsonify({"error": "Forbidden"}), 403
 
     session = db_client.get_session()
     try:
