@@ -207,6 +207,8 @@ def get_forloeb_endpoint(forloeb_id):
 
 @api_endpoints.route('/forloeb/<int:forloeb_id>/send-welcome', methods=['POST'])
 def send_mail_forloeb_endpoint(forloeb_id):
+    if not request.json or 'subject' not in request.json or 'content' not in request.json:
+        return {'error': 'Subject and content are required in the request body'}, 400
     return send_welcome_mail(forloeb_id, request.json.get('subject', ''), request.json.get('content', ''))
 
 

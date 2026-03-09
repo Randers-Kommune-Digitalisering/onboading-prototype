@@ -96,7 +96,7 @@
     >
 
     <div :class="['card', 'course', {'dark': props.dark}]">
-        <div :class="['card-header', {'pointer': !props.disableInteraction}]" @click="expandCard">
+        <div :class="['card-header', {'pointer': !props.disableInteraction}]">
 
             <div class="card-titles">
                 <p class="card-title">
