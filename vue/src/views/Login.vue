@@ -15,7 +15,7 @@
     onMounted(async () => {
         try {
             userInfo.value = await getUserInfo()
-            if (userInfo) {
+            if (userInfo.value?.email) {
                 const latestRoute = router.options.history.state.back || '/';
                 router.replace(latestRoute);
             }

@@ -14,6 +14,7 @@ export async function apiRequest({ method = 'get', url, data, config } = {}) {
   const normalizedMethod = normalizeMethod(method);
 
   try {
+    url = "/" + url.replace(/^\/+/, ''); // Ensure single leading slash
     const requestConfig = {
       method: normalizedMethod,
       url,
