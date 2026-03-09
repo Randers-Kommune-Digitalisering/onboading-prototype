@@ -32,7 +32,26 @@ def create_app():
         def seed_fake_user_session():
             # Dev-only: simulate Keycloak userinfo in a server-side session so
             # authorization uses a stable identity (not spoofable headers).
+            raw_roles = (DISABLE_KEYCLOAK_ROLES or '').strip()
+            roles = [r.strip() for r in raw_roles.split(',') if r.strip()]
+
             if 'user' in session:
+                # Keep a stable identity, but enforce roles from config so a
+                # stale session cookie doesn't accidentally drop privileges.
+                user = session.get('user') or {}
+                user.setdefault('name', DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen')
+                user.setdefault(
+                    'email',
+                    DISABLE_KEYCLOAK_USER_EMAIL
+                    or request.headers.get('usermail')
+                    or 'test.robot@randers.dk',
+                )
+                user['roles'] = roles
+                resource_access = user.get('resource_access') or {}
+                resource_access.setdefault(KEYCLOAK_CLIENT_ID, {})
+                resource_access[KEYCLOAK_CLIENT_ID]['roles'] = roles
+                user['resource_access'] = resource_access
+                session['user'] = user
                 return None
 
             email = (
@@ -40,9 +59,6 @@ def create_app():
                 or request.headers.get('usermail')
                 or 'test.robot@randers.dk'
             )
-
-            raw_roles = DISABLE_KEYCLOAK_ROLES.strip()
-            roles = [r.strip() for r in raw_roles.split(',') if r.strip()]
 
             session['user'] = {
                 'name': DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen',

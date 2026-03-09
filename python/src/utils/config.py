@@ -15,7 +15,6 @@ if 'pytest' in sys.modules:
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't', 'yes', 'y')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
-DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')
 
 DB_TYPE = os.getenv('DB_TYPE', None)  # environ["DB_TYPE"].strip()
 POSTGRES_USER = os.getenv('POSTGRES_USER', '').strip()  # environ["POSTGRES_USER"].strip()
@@ -51,7 +50,8 @@ try:
 except ValueError:
     MAIL_SMTP_PORT = 587
 
-DISABLE_KEYCLOAK_ROLES = os.getenv('DISABLE_KEYCLOAK_ROLES', '').strip()
+DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')
+DISABLE_KEYCLOAK_ROLES = os.getenv('DISABLE_KEYCLOAK_ROLES', 'Admin').strip()
 DISABLE_KEYCLOAK_USER_EMAIL = os.getenv('DISABLE_KEYCLOAK_USER_EMAIL', '').strip()
 DISABLE_KEYCLOAK_USER_NAME = os.getenv('DISABLE_KEYCLOAK_USER_NAME', '').strip()
 
