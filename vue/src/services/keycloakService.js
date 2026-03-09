@@ -19,6 +19,14 @@ function defaultPublicUserInfo() {
     };
 }
 
+function normalizeEmail(email) {
+    if (typeof email !== 'string') {
+        return email;
+    }
+
+    return email.trim().toLowerCase();
+}
+
 function normalizeUserInfo(rawUserInfo) {
     let roles = toArray(rawUserInfo?.roles);
     if (roles.length === 0 && rawUserInfo) {
@@ -38,6 +46,7 @@ function normalizeUserInfo(rawUserInfo) {
 
     return {
         ...(rawUserInfo ?? {}),
+        email: normalizeEmail(rawUserInfo?.email),
         roles,
         isAdmin,
         isMedarbejder,
@@ -47,7 +56,7 @@ function normalizeUserInfo(rawUserInfo) {
 export const getUserInfoFromBackend = () => {
     // Leading slash avoids route-relative requests like /forloeb-overview/api/userinfo
     return apiRequest({ method: 'get', url: '/api/userinfo' });
-};
+}
 
 export async function getUserInfo() {
     if (CACHED_USER_INFO) {
