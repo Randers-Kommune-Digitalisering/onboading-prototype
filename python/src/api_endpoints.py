@@ -12,7 +12,7 @@ from controllers.opgave_controller import (
     get_all_opgaver,
     get_opgave_by_forloebsskabelon_id_admin,
     get_opgave_by_forloeb_id_admin,
-    get_opgave_by_admin,
+    get_opgave_by_ansvarlig,
 )
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
@@ -129,7 +129,7 @@ def get_opgave_by_forloebsskabelon_id_admin_endpoint(forlobsskabelon_id):
 @api_endpoints.route('/opgave/admin', methods=['GET'])
 def get_all_opgaver_admin_endpoint():
     mail = request.headers.get('usermail')
-    return get_opgave_by_admin(mail)
+    return get_opgave_by_ansvarlig(mail)
 
 
 @api_endpoints.route('/opgave/<int:opgave_id>', methods=['GET'])

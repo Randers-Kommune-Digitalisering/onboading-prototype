@@ -486,11 +486,11 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         session.close()
 
 
-def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad naming
+def get_opgave_by_ansvarlig(usermail):
     session = db_client.get_session()
     try:
-        adminmail = get_current_user_email() or adminmail
-        if not adminmail:
+        usermail = get_current_user_email() or usermail
+        if not usermail:
             return jsonify([])
 
         query = (
@@ -500,7 +500,7 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.forløb),
             )
-            .filter(Opgave.ansvarligEmail.ilike(adminmail.lower()))
+            .filter(Opgave.ansvarligEmail.ilike(usermail.lower()))
         )
         opgave = query.all()
 
