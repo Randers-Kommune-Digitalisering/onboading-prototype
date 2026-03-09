@@ -418,7 +418,7 @@
                 </div>
 
                 <router-link class="button hollow"
-                             v-if="userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null"
+                             v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null)"
                              :to="`/forloeb-overview?id=${forloebId}`">
                                 Gå til forløb
                 </router-link>
