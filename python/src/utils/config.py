@@ -16,6 +16,9 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't', 'yes', 'y')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
 
+# Frontend base URL used for generating absolute deep links in emails
+ONBOARDING_BASE_URL = os.getenv('ONBOARDING_BASE_URL', 'http://onboarding.data.randers.dk').rstrip('/')
+
 DB_TYPE = os.getenv('DB_TYPE', None)  # environ["DB_TYPE"].strip()
 POSTGRES_USER = os.getenv('POSTGRES_USER', '').strip()  # environ["POSTGRES_USER"].strip()
 POSTGRES_PASS = os.getenv('POSTGRES_PASS', '').strip()  # environ["POSTGRES_PASS"].strip()

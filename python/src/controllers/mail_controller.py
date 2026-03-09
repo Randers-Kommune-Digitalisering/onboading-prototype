@@ -1,4 +1,4 @@
-from flask import jsonify, Response
+from flask import jsonify, Response, request, has_request_context
 import base64
 import logging
 from datetime import datetime, timedelta
@@ -12,6 +12,7 @@ from utils.config import (
     MAIL_SMTP_SERVER,
     MAIL_DESC_NEW_TASK_USER,
     MAIL_DESC_NEW_TASK_ANSVARLIG,
+    ONBOARDING_BASE_URL,
 )
 from models import Mail, MailAttachment, Forløb, Opgave
 from utils.db_connection import get_db_client
@@ -92,7 +93,11 @@ def _is_external_forloeb(forloeb: Forløb) -> bool:
 
 def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, force_internal: bool = False) -> str:
     # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
-    url = f"http://onboarding.data.randers.dk/forloeb-overview?id={forloeb.ForløbID}"
+    base_url = ONBOARDING_BASE_URL
+    if has_request_context():
+        base_url = request.url_root.rstrip('/')
+
+    url = f"{base_url}/forloeb-overview?id={forloeb.ForløbID}"
     if opgave_id is not None:
         url += f"&item={opgave_id}"
     if _is_external_forloeb(forloeb) and not force_internal:
