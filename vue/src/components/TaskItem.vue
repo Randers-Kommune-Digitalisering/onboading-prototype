@@ -390,7 +390,7 @@
 
             <div class="buttons">
                 <div class="button"
-                     v-if="isTemplate || userInfo?.isAdmin || userInfo?.email == ansvarligEmail"
+                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail)"
                      @click="gotoRessource()">
                         + Tilføj ressource
                 </div>
@@ -404,7 +404,7 @@
                 <div :class="['button', 'hollow', {'yellow': result}]"
                      v-if="!templateView && !isPreparation && 
                             (userInfo?.isAdmin ||
-                                (userInfo?.email == ansvarligEmail) ||
+                                (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
                                 (userInfo?.isMedarbejder && ansvarligEmail == '')
                             )"
                      @click="completeTask(!result)">
@@ -418,7 +418,7 @@
                 </div>
 
                 <router-link class="button hollow"
-                             v-if="userInfo?.email == ansvarligEmail && forloebId != null"
+                             v-if="userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null"
                              :to="`/forloeb-overview?id=${forloebId}`">
                                 Gå til forløb
                 </router-link>
