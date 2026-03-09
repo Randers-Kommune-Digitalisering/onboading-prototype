@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from models import Forløb, Opgave, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import send_mail, create_mail_external_access
+from controllers.mail_controller import send_mail, create_mail_external_access
 
 logger = logging.getLogger(__name__)
 

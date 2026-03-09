@@ -288,32 +288,6 @@
         }
     })
 
-    const downloadForloeb = async () => {
-        try {
-            // Wait for the server to generate the PDF
-            const response = await fetch(`api/forloeb-download?id=${forloeb_id.value}`)
-            if (!response.ok) {
-                throw new Error('Failed to download file')
-            }
-
-            // Ensure the response is a valid PDF
-            const blob = await response.blob();
-            if (blob.type !== 'application/pdf') {
-                throw new Error('Invalid PDF file')
-            }
-
-            // Create a download link and trigger the download
-            const downloadLink = document.createElement('a')
-            downloadLink.href = URL.createObjectURL(blob)
-            downloadLink.download = `${forloeb.value.name}.pdf`
-            document.body.appendChild(downloadLink)
-            downloadLink.click()
-            document.body.removeChild(downloadLink)
-        } catch (error) {
-            console.error('Error downloading file:', error)
-        }
-    }
-
     watch(() => sortBy.value, (newSortingValue) => {
         router.replace({
             query: {
@@ -348,7 +322,7 @@
                 :deadline="new Date(forloeb.enddate)"
                 :tasks="opgaver_all"
                 :isPreparation="isUnderPreparation"
-                :mails="forloeb.pending_emails" />
+    />
 
     <Placeholder v-if="!isOpgaverFetched && showDetails" :height="isTemplate || isUnderPreparation ? 4.5 : 7.2" :dark="true" />
     <ProgressBar v-if="forloeb != null  && !showDetails && !isUnderPreparation" :percentage="completedPercentage"></ProgressBar>
@@ -377,11 +351,11 @@
                         Redigér skabelon
         </router-link>
 
-        <div @click="downloadForloeb()"
+        <router-link :to="`/send-velkomst?id=${forloeb_id}`"
              class="button hollow dashed"
              v-if="!isTemplate && !isUnderPreparation">
-                Download PDF
-        </div>
+                Send velkomstmail
+        </router-link>
 
         <div @click="completeCourse()"
              class="button hollow red"

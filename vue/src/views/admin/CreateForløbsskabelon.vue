@@ -66,7 +66,12 @@
 <template>
 	<p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløbsskabelon' : 'Opret forløbsskabelon' }}</p>
 
-    <div v-if="focusedInput" class="float-right helper-text">
+    <div
+        v-if="focusedInput"
+        class="float-right helper-text"
+        @mousedown.prevent
+        @click.prevent
+    >
         <div class="header-small">{{ focusedInput.text }}</div>
         <div v-html="focusedInput.tooltip"></div>
     </div>
@@ -97,7 +102,7 @@
 		</div>
 
 		<div class="inputContainer submit">
-			<button class="button button-outline" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater forløbsskabelon' : '+ Opret forløbsskabelon' }}</button>
+			<button class="button" type="submit" :disabled="isSubmitting">{{ isEditing ? 'Opdater forløbsskabelon' : '+ Opret forløbsskabelon' }}</button>
 		</div>
 
 	</div>
