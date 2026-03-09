@@ -150,7 +150,7 @@
 
             // Internal access flow (logged in AD users)
             if (userInfo.value) {
-                console.log('Fetching course and tasks with user email:', userInfo.value.email)
+                roleAccessDenied.value = false
                 const headers = { usermail: userInfo.value.email }
                 // Get forloeb
                                         // In ansvarligView, fetch no forløb unless id is provided (fetch opgaver only)

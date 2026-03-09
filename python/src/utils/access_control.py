@@ -19,15 +19,16 @@ def get_current_user_email() -> Optional[str]:
     """Returns the authenticated user's email.
 
     - In production (Keycloak enabled), prefer the server-side session userinfo.
-    - In tests/dev, fall back to the `usermail` header.
+    - In tests/dev (no authenticated session user), fall back to the `usermail` header.
     """
 
     user: Any = flask_session.get("user")
     if isinstance(user, dict):
         email = user.get("email") or user.get("preferred_username")
         email = _norm_email(email)
-        if email:
-            return email
+        # Security: if we have an authenticated session user, never trust
+        # client-controlled headers as a fallback identity.
+        return email
 
     return _norm_email(request.headers.get("usermail"))
 
