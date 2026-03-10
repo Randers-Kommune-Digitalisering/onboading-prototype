@@ -1,14 +1,11 @@
 import base64
 from datetime import datetime
-from unittest.mock import MagicMock
-
-import requests
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from python.src.models import Base, Mail, MailAttachment
-from python.src.utils import mail_service
+from models import Base, Mail, MailAttachment
+from controllers import mail_controller as mail_service
 
 
 class _TestDbClient:
@@ -96,21 +93,37 @@ def test_get_planned_mails_normalizes_legacy_bytes_in_db(monkeypatch):
 
 
 def test_send_mail_transports_attachments_as_json_byte_array(monkeypatch):
-    captured = {}
+    captured = {"init": None, "send": None}
 
-    def _fake_post(url, headers=None, json=None):
-        captured["url"] = url
-        captured["headers"] = headers
-        captured["json"] = json
-        res = MagicMock()
-        res.status_code = 200
-        res.text = "OK"
-        res.raise_for_status.return_value = None
-        return res
+    class _FakeEmailSender:
+        def __init__(
+            self,
+            smtp_server=None,
+            smtp_port=None,
+            sender_email=None,
+            sender_password=None,
+            sender_name=None,
+            reply_to_email=None,
+            reply_to_name=None,
+        ):
+            captured["init"] = {
+                "smtp_server": smtp_server,
+                "smtp_port": smtp_port,
+                "sender_email": sender_email,
+                "sender_password": sender_password,
+                "sender_name": sender_name,
+                "reply_to_email": reply_to_email,
+                "reply_to_name": reply_to_name,
+            }
 
-    monkeypatch.setattr(mail_service, "MAIL_SERVICE_URL", "http://mailservice.test/send")
-    monkeypatch.setattr(mail_service, "MAIL_SERVICE_SENDER", "sender@example.com")
-    monkeypatch.setattr(requests, "post", _fake_post)
+        def send_email(self, **kwargs):
+            captured["send"] = kwargs
+
+    monkeypatch.setattr(mail_service, "MAIL_SMTP_SERVER", "smtp.test")
+    monkeypatch.setattr(mail_service, "MAIL_SMTP_PORT", 25)
+    monkeypatch.setattr(mail_service, "MAIL_SMTP_SENDER", "sender@example.com")
+    monkeypatch.setattr(mail_service, "MAIL_SMTP_PASSWORD", "secret")
+    monkeypatch.setattr(mail_service, "EmailSender", _FakeEmailSender)
 
     raw = b"ABC"
     b64 = base64.b64encode(raw).decode("ascii")
@@ -121,4 +134,12 @@ def test_send_mail_transports_attachments_as_json_byte_array(monkeypatch):
         attachments=[{"filename": "a.bin", "file_data": b64}],
     )
     assert ok is True
-    assert captured["json"]["attachments"] == [{"filename": "a.bin", "content": {"data": [65, 66, 67]}}]
+
+    assert captured["init"]["smtp_server"] == "smtp.test"
+    assert captured["init"]["smtp_port"] == 25
+    assert captured["init"]["sender_email"] == "sender@example.com"
+    assert captured["init"]["sender_password"] == "secret"
+    assert captured["send"]["recipients"] == "to@example.com"
+    assert captured["send"]["subject"] == "Subject"
+    assert captured["send"]["body"] == "Body"
+    assert captured["send"]["attachments"] == [("a.bin", raw)]

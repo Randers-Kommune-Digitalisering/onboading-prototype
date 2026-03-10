@@ -1,11 +1,12 @@
 import sys
 import logging
 import re
+import time
 
 from werkzeug import serving
 from prometheus_client import Gauge, Counter, Summary
 
-from utils.config import DEBUG
+from utils.config import DEBUG, POD_NAME
 
 # Prometheus metricts
 
@@ -27,6 +28,10 @@ def set_logging_configuration():
     log_level = logging.DEBUG if DEBUG else logging.INFO
     logging.basicConfig(stream=sys.stdout, level=log_level, format='[%(asctime)s] %(levelname)s - %(name)s - %(module)s:%(funcName)s - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
     disable_endpoint_logs(('/metrics', '/healthz'))
+
+    # Ensure readiness metric is present for Prometheus scraping.
+    is_ready_gauge.labels(error_type="None", job_name=POD_NAME).set(1)
+    last_updated_gauge.set(int(time.time() * 1000))
 
 
 def disable_endpoint_logs(disabled_endpoints):

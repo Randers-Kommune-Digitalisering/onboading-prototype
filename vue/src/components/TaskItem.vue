@@ -2,14 +2,22 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
+    import { getUserInfo } from '@/services/keycloakService.js'
+
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
-    import { deleteMail } from '@/services/mailService.js'
+    import { deleteMail, NEW_TASK_ANSVARLIG } from '@/services/mailService.js'
 
     const router = useRouter()
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
+    const userInfo = ref({
+        roles: [],
+        email: '',
+        isAdmin: false,
+        isMedarbejder: false,
+    })
 
     const expandCard = () => {
         cardRef.value.classList.toggle('expand-content')
@@ -71,10 +79,6 @@
     var props = defineProps({
         id: {
             type: Number,
-            required: true
-        },
-        userInfo: {
-            type: Object,
             required: true
         },
         forloebId: {
@@ -257,7 +261,8 @@
 
     /* Instantiate */
 
-    onMounted(() => {
+    onMounted(async () => {
+        userInfo.value = await getUserInfo()
         isFutureTask.value = new Date(props.startdate) > new Date()
         if (props.expandByDefault) {
             scrollTo()
@@ -297,7 +302,7 @@
                     <div class="tooltip">
                         <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
                             <div>
-                                <div class="nowrap">Notifikation</div>
+                                <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
                                 <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
                             </div>
                             <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
@@ -338,7 +343,7 @@
                 <div v-if="!templateView">
                     <div class="icon"><i class="fa-solid fa-user"></i></div>
                     
-                    <div class="text" v-if="forloebId != null && (userInfo.isAnsvarlig && userInfo.email == ansvarligEmail)">
+                    <div class="text" v-if="forloebId != null && userInfo.email == ansvarligEmail">
                         <div class="small faded">Medarbejder</div>
                         <div>{{ username ?? 'Ukendt medarbejder' }}</div>
                     </div>
@@ -385,7 +390,7 @@
 
             <div class="buttons">
                 <div class="button"
-                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail)"
+                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail)"
                      @click="gotoRessource()">
                         + Tilføj ressource
                 </div>
@@ -399,7 +404,7 @@
                 <div :class="['button', 'hollow', {'yellow': result}]"
                      v-if="!templateView && !isPreparation && 
                             (userInfo?.isAdmin ||
-                                (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail) ||
+                                (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
                                 (userInfo?.isMedarbejder && ansvarligEmail == '')
                             )"
                      @click="completeTask(!result)">
@@ -413,7 +418,7 @@
                 </div>
 
                 <router-link class="button hollow"
-                             v-if="userInfo?.email == ansvarligEmail && forloebId != null"
+                             v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null)"
                              :to="`/forloeb-overview?id=${forloebId}`">
                                 Gå til forløb
                 </router-link>

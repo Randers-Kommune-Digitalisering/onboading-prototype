@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from models import Ressource, Opgave, Opgaveskabelon
 from utils.db_connection import get_db_client
+from utils.access_control import get_current_user_email, is_current_user_admin
 
 db_client = get_db_client()
 
@@ -13,6 +14,9 @@ def create_ressource():
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
+        current_user_email = get_current_user_email()
+        is_admin = is_current_user_admin()
+
         new_ressource = Ressource(
             name=data['name'],
             url=data['url']
@@ -22,8 +26,17 @@ def create_ressource():
             opgave = session.query(Opgave).filter_by(OpgaveID=data['OpgaveID']).first()
             if not opgave:
                 return jsonify({"error": "Opgave not found"}), 404
+
+            if not is_admin:
+                ansvarlig_email = (getattr(opgave, 'ansvarligEmail', None) or '').strip().lower()
+                if not current_user_email or ansvarlig_email != current_user_email:
+                    return jsonify({"error": "Forbidden"}), 403
+
             new_ressource.OpgaveID = opgave.OpgaveID
         elif 'OpgaveskabelonID' in data:
+            if not is_admin:
+                return jsonify({"error": "Forbidden"}), 403
+
             opgaveskabelon = session.query(Opgaveskabelon).filter_by(OpgaveskabelonID=data['OpgaveskabelonID']).first()
             if not opgaveskabelon:
                 return jsonify({"error": "Opgaveskabelon not found"}), 404
@@ -48,6 +61,21 @@ def delete_ressource(ressource_id):
         if not ressource:
             return jsonify({"error": "Ressource not found"}), 404
 
+        if not is_current_user_admin():
+            current_user_email = get_current_user_email()
+            if ressource.OpgaveskabelonID is not None:
+                return jsonify({"error": "Forbidden"}), 403
+            if ressource.OpgaveID is None:
+                return jsonify({"error": "Forbidden"}), 403
+
+            opgave = session.query(Opgave).filter_by(OpgaveID=ressource.OpgaveID).first()
+            if not opgave:
+                return jsonify({"error": "Opgave not found"}), 404
+
+            ansvarlig_email = (getattr(opgave, 'ansvarligEmail', None) or '').strip().lower()
+            if not current_user_email or ansvarlig_email != current_user_email:
+                return jsonify({"error": "Forbidden"}), 403
+
         session.delete(ressource)
         session.commit()
         return jsonify({"message": "Ressource deleted successfully"}), 200
@@ -64,6 +92,21 @@ def update_ressource(ressource_id):
         ressource = session.query(Ressource).filter_by(RessourceID=ressource_id).first()
         if not ressource:
             return jsonify({"error": "Ressource not found"}), 404
+
+        if not is_current_user_admin():
+            current_user_email = get_current_user_email()
+            if ressource.OpgaveskabelonID is not None:
+                return jsonify({"error": "Forbidden"}), 403
+            if ressource.OpgaveID is None:
+                return jsonify({"error": "Forbidden"}), 403
+
+            opgave = session.query(Opgave).filter_by(OpgaveID=ressource.OpgaveID).first()
+            if not opgave:
+                return jsonify({"error": "Opgave not found"}), 404
+
+            ansvarlig_email = (getattr(opgave, 'ansvarligEmail', None) or '').strip().lower()
+            if not current_user_email or ansvarlig_email != current_user_email:
+                return jsonify({"error": "Forbidden"}), 403
 
         data = request.json
         ressource.name = data.get('name', ressource.name)
@@ -104,7 +147,7 @@ def get_ressources_by_opgaveid(opgave_id):
     try:
         ressources = session.query(Ressource).filter_by(OpgaveID=opgave_id).all()
         if not ressources:
-            return jsonify({"error": "No ressources found for the specified OpgaveID"}), 404
+            return jsonify([])
 
         ressource_data = [
             {
@@ -125,7 +168,7 @@ def get_ressources_by_opgaveskabelonid(opgaveskabelon_id):
     try:
         ressources = session.query(Ressource).filter_by(OpgaveskabelonID=opgaveskabelon_id).all()
         if not ressources:
-            return jsonify({"error": "No ressources found for the specified OpgaveskabelonID"}), 404
+            return jsonify([])
 
         ressource_data = [
             {

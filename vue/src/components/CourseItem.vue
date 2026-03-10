@@ -3,9 +3,7 @@
     import ProgressBar from './ProgressBar.vue'
 
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService.js'
-    import { deleteMail } from '@/services/mailService.js'
 
-    const cardRef = ref(null)
     const completedPercentage = ref(0)
 
     const returnFormattedDate = (date) => {
@@ -49,32 +47,12 @@
         isPreparation: {
             type: Boolean,
             default: false
-        },
-        mails: {
-            type: Array,
-            default: () => []
         }
     })
 
     const isTemplate = props.id == null
     const opgaver = ref(props.tasks || null)
     const hasForloebStarted = props.startDate && new Date(props.startDate) <= new Date()
-    const dynamicMails = ref(props.mails)
-
-    const deletePendingEmail = (id) => {
-        if(!confirm('Er du sikker på, at du vil slette denne mail?'))
-            return
-
-        deleteMail({ id: id }).then(response => {
-            dynamicMails.value = dynamicMails.value.filter(mail => mail.id !== id)
-            // const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
-            // router.replace({ path: '/reload' }).then(() => {
-            //     router.replace(currentPath)
-            // })
-        }).catch(error => {
-            console.error('Error deleting mail:', error)
-        })
-    }
 
     onMounted(async () => {
         try {
@@ -117,8 +95,8 @@
         v-bind="!props.disableInteraction ? { to: { path: 'forloeb-overview', query: { id: id, tid: tid } } } : {}"
     >
 
-    <div :class="['card', 'course', {'dark': props.dark}]" ref="cardRef">
-        <div :class="['card-header', {'pointer': !props.disableInteraction}]" @click="expandCard">
+    <div :class="['card', 'course', {'dark': props.dark}]">
+        <div :class="['card-header', {'pointer': !props.disableInteraction}]">
 
             <div class="card-titles">
                 <p class="card-title">
@@ -133,24 +111,6 @@
 
             <div class="card-details" v-if="!isTemplate && !isPreparation">
 
-                <div class="tooltipContainer" v-if="dynamicMails.length > 0">
-                    <div class="icon"><i class="fa-solid fa-envelope"></i></div>
-                    <div class="text">
-                        <div class="small faded">Mails</div>
-                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
-                    </div>
-                    
-                    <div class="tooltip">
-                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
-                            <div>
-                                <div class="nowrap">Velkomstmail</div>
-                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
-                            </div>
-                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
-                        </div>
-                    </div>
-                </div>
-                
                 <div>
                     <div class="icon"><i class="fa-regular fa-clock"></i></div>
                     <div class="text">
@@ -194,54 +154,3 @@
     </component>
 
 </template>
-<style scoped>
-    .tooltip {
-        background-color: var(--color-card-dark);
-        padding: 0.5rem 0.8rem;
-        border-radius: 0.4rem;
-
-        visibility: hidden;
-        opacity: 0;
-        position: absolute;
-        right: 1rem;
-
-        font-size: 0.75rem;
-        cursor: default;
-        text-align: right;
-
-        max-height: 4rem;
-        overflow-y: auto;
-        user-select: text;
-
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.4rem;
-    }
-    .tooltip > .mail {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        justify-content: end;
-        min-width: 12rem !important;
-    }
-    .mail-recipient {
-        max-width: 15rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.9em;
-        font-weight: 400;
-    }
-    .tooltip i {
-        margin-left: 0.5rem;
-        font-size: 1rem;
-    }
-    .tooltip i:hover {
-        color: var(--color-button-red);
-        cursor: pointer;
-    }
-    .tooltipContainer:hover > .tooltip {
-        visibility: visible;
-        opacity: 1;
-    }
-</style>

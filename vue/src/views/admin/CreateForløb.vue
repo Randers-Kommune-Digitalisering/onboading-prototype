@@ -218,7 +218,7 @@
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
         } catch (error) {
             if (error.response?.data?.error)
-                console.error('Error:', error.response.data.error)
+                console.error('Error:', error.response.data?.error)
             else
                 console.error('Error:', error)
         }
@@ -229,7 +229,12 @@
 <template>
     <p class="indent-tiny bold uppercase p-header-adjust">{{ isPreparation ? 'Opret forløbsforberedelse' : 'Opret forløb' }}</p>
 
-    <div v-if="focusedInput && !isUserMailSearchOpen && !isAdminSearchOpen" class="float-right helper-text">
+    <div
+        v-if="focusedInput && !isUserMailSearchOpen && !isAdminSearchOpen"
+        class="float-right helper-text"
+        @mousedown.prevent
+        @click.prevent
+    >
 		<div class="header-small">{{ focusedInput.text }}</div>
         <div v-html="focusedInput.tooltip"></div>
     </div>
@@ -284,7 +289,7 @@
         </div>
 
         <div class="inputContainer submit">
-            <button :class="['button', 'button-outline', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">+ Opret forløb</button>
+            <button :class="['button', { 'disabled': isSubmitting }, { 'hideOnMobile': isUserMailSearchOpen || isAdminSearchOpen }]" @click="clearAdminIfNotSelected();selectNoTemplateIfNotSelected()" type="submit" :disabled="isSubmitting">+ Opret forløb</button>
         </div>
 
     </div>

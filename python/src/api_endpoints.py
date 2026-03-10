@@ -12,8 +12,7 @@ from controllers.opgave_controller import (
     get_all_opgaver,
     get_opgave_by_forloebsskabelon_id_admin,
     get_opgave_by_forloeb_id_admin,
-    get_opgave_by_admin,
-    notify_expired_tasks
+    get_opgave_by_ansvarlig,
 )
 from controllers.forloebsskabelon_controller import (
     create_forloebsskabelon,
@@ -34,8 +33,7 @@ from controllers.forloeb_controller import (
     get_forloeb_by_admin,
     complete_forloeb,
     update_forloeb,
-    delete_forloeb,
-    download_forloeb
+    delete_forloeb
 )
 from controllers.user_controller import (
     get_admin_data,
@@ -61,12 +59,45 @@ from controllers.opgaveskabelon_controller import (
     delete_opgaveskabelon,
     get_opgaveskabelon
 )
-from utils.mail_service import purge_mails, send_all_mails, get_planned_mails, delete_planned_mail
+from controllers.external_access_controller import (
+    request_external_access,
+    get_external_userinfo,
+    get_forloeb_external,
+    get_opgaver_forloeb_external,
+)
+from controllers.mail_controller import (
+    send_welcome_mail,
+    send_planned_new_tasks_notifications,
+    notify_expired_tasks_aggregated,
+    purge_mails,
+    get_planned_mails,
+    delete_planned_mail,
+)
 
 logger = logging.getLogger(__name__)
 db_client = get_db_client()
 
 api_endpoints = Blueprint('api', __name__, url_prefix='/api')
+
+
+@api_endpoints.route('/external/request-access', methods=['POST'])
+def request_external_access_endpoint():
+    return request_external_access()
+
+
+@api_endpoints.route('/external/userinfo', methods=['GET'])
+def external_userinfo_endpoint():
+    return get_external_userinfo()
+
+
+@api_endpoints.route('/external/forloeb/<int:forloeb_id>', methods=['GET'])
+def external_forloeb_by_id_endpoint(forloeb_id):
+    return get_forloeb_external(forloeb_id)
+
+
+@api_endpoints.route('/external/opgave/forloeb/<int:forloeb_id>', methods=['GET'])
+def external_opgaver_by_forloeb_id_endpoint(forloeb_id):
+    return get_opgaver_forloeb_external(forloeb_id)
 
 
 @api_endpoints.route('/mitforloeb', methods=['GET'])
@@ -98,7 +129,7 @@ def get_opgave_by_forloebsskabelon_id_admin_endpoint(forlobsskabelon_id):
 @api_endpoints.route('/opgave/admin', methods=['GET'])
 def get_all_opgaver_admin_endpoint():
     mail = request.headers.get('usermail')
-    return get_opgave_by_admin(mail)
+    return get_opgave_by_ansvarlig(mail)
 
 
 @api_endpoints.route('/opgave/<int:opgave_id>', methods=['GET'])
@@ -154,11 +185,6 @@ def get_all_forloeb_endpoint():
     return get_all_forloeb()
 
 
-@api_endpoints.route('/forloeb-download', methods=['GET'])
-def download_forloeb_endpoint():
-    return download_forloeb()
-
-
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['DELETE'])
 def delete_forloeb_endpoint(forloeb_id):
     return delete_forloeb(forloeb_id)
@@ -177,6 +203,13 @@ def update_forloeb_endpoint(forloeb_id):
 @api_endpoints.route('/forloeb/<int:forloeb_id>', methods=['GET'])
 def get_forloeb_endpoint(forloeb_id):
     return get_forloeb(forloeb_id)
+
+
+@api_endpoints.route('/forloeb/<int:forloeb_id>/send-welcome', methods=['POST'])
+def send_mail_forloeb_endpoint(forloeb_id):
+    if not request.json or 'subject' not in request.json or 'content' not in request.json:
+        return {'error': 'Subject and content are required in the request body'}, 400
+    return send_welcome_mail(forloeb_id, request.json.get('subject', ''), request.json.get('content', ''))
 
 
 @api_endpoints.route('/forloeb/opgaver', methods=['GET'])
@@ -289,11 +322,6 @@ def get_fullname_endpoint():
     return get_fullname()
 
 
-# @api_endpoints.route('/users/azure', methods=['GET'])
-# def get_and_save_azure_ad_data_endpoint():
-#     return get_and_save_azure_ad_data()
-
-
 @api_endpoints.route('/users/admin', methods=['GET'])
 def get_all_admin_data_endpoint():
     return get_admin_data()
@@ -301,12 +329,12 @@ def get_all_admin_data_endpoint():
 
 @api_endpoints.route('/cron/notify-expired-tasks', methods=['POST'])
 def notify_expired_tasks_endpoint():
-    return notify_expired_tasks()
+    return notify_expired_tasks_aggregated()
 
 
 @api_endpoints.route('/cron/send-planned-mails', methods=['POST'])
 def send_planned_mails_endpoint():
-    return send_all_mails()
+    return send_planned_new_tasks_notifications()
 
 
 @api_endpoints.route('/cron/get-planned-mails', methods=['GET'])

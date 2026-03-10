@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from models import Opgaveskabelon
 from utils.db_connection import get_db_client
+from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 
@@ -33,7 +34,11 @@ def create_opgaveskabelon():
 def get_all_opgaveskabeloner():
     session = db_client.get_session()
     try:
-        opgaveskabeloner = session.query(Opgaveskabelon).all()
+        opgaveskabeloner = (
+            session.query(Opgaveskabelon)
+            .options(selectinload(Opgaveskabelon.ressource))
+            .all()
+        )
         opgaveskabeloner_data = [
             {
                 'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,

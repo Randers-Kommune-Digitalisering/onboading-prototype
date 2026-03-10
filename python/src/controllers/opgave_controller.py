@@ -2,8 +2,15 @@ from flask import request, jsonify
 from datetime import datetime
 from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
 from utils.db_connection import get_db_client
-from utils.mail_service import plan_mail, create_mail_ansvarlig, create_mail_expired_ansvarlig, create_mail_expired
+from utils.config import MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG
+from utils.access_control import get_current_user_email, is_current_user_admin, user_can_access_forloeb
+from controllers.mail_controller import (
+    plan_mail,
+    create_mail_ansvarlig,
+    create_mail_new_task_user
+)
 import logging
+from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 logger = logging.getLogger(__name__)
@@ -67,12 +74,35 @@ def create_opgave():
         session.add(new_opgave)
         session.commit()
 
-        # Send mail notification to the responsible person
-        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
-            subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
-            if not planned_mail:
-                logger.error("Failed to plan email")
+        # Send mail notifications to the user and responsible person (ansvarlig)
+        if new_opgave.startdato and new_opgave.slutdato:
+            if new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
+                subject, message = create_mail_ansvarlig(new_opgave)
+                planned_mail = plan_mail(
+                    new_opgave.ansvarligEmail,
+                    subject,
+                    message,
+                    opgave_id=new_opgave.OpgaveID,
+                    forloeb_id=new_opgave.ForløbID,
+                    description=MAIL_DESC_NEW_TASK_ANSVARLIG,
+                )
+                if not planned_mail:
+                    logger.error("Failed to plan email to ansvarlig")
+            # Plan mail to the forløb user only when forløbet is started.
+            forloeb = getattr(new_opgave, 'forløb', None)
+            if forloeb is not None and getattr(forloeb, 'isPreparation', True) is False:
+                if getattr(forloeb, 'usermail', None):
+                    user_subject, user_message = create_mail_new_task_user(forloeb, new_opgave)
+                    planned_user_mail = plan_mail(
+                        forloeb.usermail,
+                        user_subject,
+                        user_message,
+                        opgave_id=new_opgave.OpgaveID,
+                        forloeb_id=forloeb.ForløbID,
+                        description=MAIL_DESC_NEW_TASK_USER,
+                    )
+                    if not planned_user_mail:
+                        logger.error("Failed to plan email to user")
 
         return jsonify({"message": "Opgave created successfully", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -101,7 +131,14 @@ def create_opgavegruppe(name, forløb_id=None, forloeb_skabelon_id=None):
 def get_all_opgaver():
     session = db_client.get_session()
     try:
-        opgaver = session.query(Opgave).all()
+        opgaver = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .all()
+        )
         opgave_data = [
             {
                 'OpgaveID': opgave.OpgaveID,
@@ -200,12 +237,35 @@ def create_opgave_with_opgaveskabelon():
             session.add(new_ressource)
         session.commit()
 
-        # Send mail notification to the responsible person
-        if new_opgave.startdato and new_opgave.slutdato and new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
-            subject, message = create_mail_ansvarlig(new_opgave)
-            planned_mail = plan_mail(new_opgave.ansvarligEmail, subject, message, opgave_id=new_opgave.OpgaveID)
-            if not planned_mail:
-                logger.error("Failed to plan email")
+        # Send mail notifications to the user and responsible person (ansvarlig)
+        if new_opgave.startdato and new_opgave.slutdato:
+            if new_opgave.ansvarligEmail and new_opgave.ansvarligEmail != "":
+                subject, message = create_mail_ansvarlig(new_opgave)
+                planned_mail = plan_mail(
+                    new_opgave.ansvarligEmail,
+                    subject,
+                    message,
+                    opgave_id=new_opgave.OpgaveID,
+                    forloeb_id=new_opgave.ForløbID,
+                    description=MAIL_DESC_NEW_TASK_ANSVARLIG,
+                )
+                if not planned_mail:
+                    logger.error("Failed to plan email to ansvarlig")
+
+            forloeb = getattr(new_opgave, 'forløb', None)
+            if forloeb is not None and getattr(forloeb, 'isPreparation', True) is False:
+                if getattr(forloeb, 'usermail', None):
+                    user_subject, user_message = create_mail_new_task_user(forloeb, new_opgave)
+                    planned_user_mail = plan_mail(
+                        forloeb.usermail,
+                        user_subject,
+                        user_message,
+                        opgave_id=new_opgave.OpgaveID,
+                        forloeb_id=forloeb.ForløbID,
+                        description=MAIL_DESC_NEW_TASK_USER,
+                    )
+                    if not planned_user_mail:
+                        logger.error("Failed to plan email to user")
 
         return jsonify({"message": "Opgave created successfully with Opgaveskabelon", "OpgaveID": new_opgave.OpgaveID}), 201
     except Exception as e:
@@ -220,14 +280,22 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
     try:
         usermail = request.headers.get('usermail')
 
-        query = session.query(Opgave).join(Forløb).filter(Opgave.ForløbsskabelonID == forlobsskabelon_id)
+        query = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .join(Forløb)
+            .filter(Opgave.ForløbsskabelonID == forlobsskabelon_id)
+        )
         if usermail:
             query = query.filter(Forløb.usermail == usermail)
 
         opgave = query.all()
 
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbsskabelonID and usermail"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -310,9 +378,17 @@ def get_opgave(opgave_id):
 def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgave).filter_by(ForløbsskabelonID=forlobsskabelon_id).all()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .filter_by(ForløbsskabelonID=forlobsskabelon_id)
+            .all()
+        )
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbsskabelonID"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -353,9 +429,18 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
 def get_opgave_by_forloeb_id_admin(forlob_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgave).filter_by(ForløbID=forlob_id).all()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+                selectinload(Opgave.mails),
+            )
+            .filter_by(ForløbID=forlob_id)
+            .all()
+        )
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbID"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -388,7 +473,8 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                     {
                         'id': mail.MailID,
                         'recipient': mail.recipient,
-                        'subject': mail.subject
+                        'subject': mail.subject,
+                        'description': mail.description
                     } for mail in opgave.mails if not mail.isSent
                 ]
             } for opgave in opgave
@@ -400,22 +486,30 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         session.close()
 
 
-def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad naming
+def get_opgave_by_ansvarlig(usermail):
     session = db_client.get_session()
     try:
-        query = session.query(Opgave).filter(Opgave.ansvarligEmail.ilike(adminmail.lower()))
+        usermail = get_current_user_email() or usermail
+        if not usermail:
+            return jsonify([])
+
+        query = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+                selectinload(Opgave.forløb),
+            )
+            .filter(Opgave.ansvarligEmail.ilike(usermail.lower()))
+        )
         opgave = query.all()
 
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified usermail"}), 404
+            return jsonify([])
 
         opgave_data = []
         for opg in opgave:
-            forloeb_name = None
-            if opg.ForløbID:
-                forloeb = session.query(Forløb).filter_by(ForløbID=opg.ForløbID).first()
-                if forloeb:
-                    forloeb_name = forloeb.name
+            forloeb_name = opg.forløb.name if getattr(opg, 'forløb', None) else None
 
             opgave_data.append({
                 'OpgaveID': opg.OpgaveID,
@@ -458,16 +552,23 @@ def get_opgave_by_admin(adminmail):  # Admin = ansvarlig in this case, bad namin
 def get_opgave_by_forloeb_id(forlob_id):
     session = db_client.get_session()
     try:
-        usermail = request.headers.get('usermail')
+        if not is_current_user_admin():
+            user_email = get_current_user_email()
+            if not user_can_access_forloeb(session, forlob_id, user_email):
+                return jsonify({"error": "Forbidden"}), 403
 
-        query = session.query(Opgave).join(Forløb).filter(Opgave.ForløbID == forlob_id)
-        if usermail:
-            query = query.filter(Forløb.usermail == usermail)
-
-        opgave = query.all()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .filter_by(ForløbID=forlob_id)
+            .all()
+        )
 
         if not opgave:
-            return jsonify({"error": "No opgave found for the specified ForløbID and usermail"}), 404
+            return jsonify([])
 
         opgave_data = [
             {
@@ -552,7 +653,7 @@ def update_opgave(opgave_id):
         # Send mail notification to the responsible person
         if opgave.startdato and opgave.slutdato and is_new_ansvarlig and opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
             subject, message = create_mail_ansvarlig(opgave)
-            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
+            planned_mail = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID, forloeb_id=opgave.ForløbID, description=MAIL_DESC_NEW_TASK_ANSVARLIG)
             if not planned_mail:
                 logger.error("Failed to plan email")
 
@@ -583,36 +684,6 @@ def delete_opgave(opgave_id):
         return jsonify({"message": "Opgave deleted successfully"}), 200
     except Exception as e:
         session.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
-
-
-def notify_expired_tasks():
-    session = db_client.get_session()
-    try:
-        now = datetime.now()
-        opgaver = session.query(Opgave).filter(Opgave.slutdato < now, Opgave.result == False, Opgave.ForløbID != None).all()
-        logger.info(f"Found {len(opgaver)} expired tasks to notify.")
-
-        for opgave in opgaver:
-            forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
-            if not forloeb:
-                return jsonify({"error": "Forløb not found"}), 404
-
-            subject, message = create_mail_expired(forloeb, opgave)
-            status = plan_mail(forloeb.usermail, subject, message, opgave_id=opgave.OpgaveID)
-            if not status:
-                return jsonify({"error": "Failed to plan email"}), 500
-
-            if opgave.ansvarligEmail is not None and opgave.ansvarligEmail != "":
-                subject, message = create_mail_expired_ansvarlig(opgave)
-                status = plan_mail(opgave.ansvarligEmail, subject, message, opgave_id=opgave.OpgaveID)
-                if not status:
-                    return jsonify({"error": "Failed to plan email"}), 500
-
-        return jsonify({"message": "Expired tasks notifications planned successfully", "planned_count": len(opgaver)}), 200
-    except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()

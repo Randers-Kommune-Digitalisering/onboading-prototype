@@ -64,7 +64,11 @@
 </script>
 
 <template>
-	<div class="float-right helper-text">
+	<div
+		class="float-right helper-text"
+        @mousedown.prevent
+        @click.prevent
+	>
 		<div class="header-small">Forløbsskabeloner</div>
 		<div>
 			<span>Forløbsskabeloner er en skabelon til et helt forløb (med flere opgaver), som du kan genbruge til flere medarbejdere.</span>
@@ -98,7 +102,6 @@
 			  title=""
 			  :expandFirstItem="false"
 			  :templateView="true"
-			  :userInfo="{}"
 			  :expandItem="expandItem" />
 </template>
 

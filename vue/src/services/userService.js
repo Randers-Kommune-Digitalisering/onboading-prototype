@@ -1,23 +1,23 @@
-import axios from 'axios';
+import { apiRequest } from './apiRequest';
 
 const API_URL = 'api';
 
 export const getUsers = () => {
-    return axios.get(`${API_URL}/users`);
+    return apiRequest({ method: 'get', url: `${API_URL}/users` });
 };
 
 export const getEmail = () => {
-    return axios.get(`${API_URL}/users/email`);
+    return apiRequest({ method: 'get', url: `${API_URL}/users/email` });
 };
   
   export const getDQ = () => {
-    return axios.get(`${API_URL}/users/dq`);
+    return apiRequest({ method: 'get', url: `${API_URL}/users/dq` });
 };
 
 export const getAdminData = () => {
-    return axios.get(`${API_URL}/users/admin`);
+    return apiRequest({ method: 'get', url: `${API_URL}/users/admin` });
 };
 
 export const getAnvarligNames = () => {
-    return axios.get(`${API_URL}/users/fullname`);
-};  
+    return apiRequest({ method: 'get', url: `${API_URL}/users/fullname` });
+};

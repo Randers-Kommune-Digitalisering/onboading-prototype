@@ -22,8 +22,8 @@ import Help from '@/views/Help.vue'
 import ForløbOverview from '@/views/ForløbOverview.vue'
 import TemplateOverview from '@/views/admin/TemplateOverview.vue'
 import Blank from '@/views/Blank.vue'
-import DownloadForløb from '@/views/DownloadForløb.vue'
 import Login from '@/views/Login.vue'
+import SendWelcome from './views/admin/SendWelcome.vue'
 
 // Define routes
 const routes = [ 
@@ -55,12 +55,18 @@ const routes = [
         path: '/create-ressource',
         name: 'CreateRessource',
         component: CreateRessource,
-        meta: { roles: ['Admin', 'Ansvarlig'] }
+        meta: { roles: ['Admin', 'Medarbejder'] }
     },
     {
         path: '/create-forloebsskabelon',
         name: 'CreateForløbsskabelon',
         component: CreateForløbsskabelon,
+        meta: { roles: ['Admin'] }
+    },
+    {
+        path: '/send-velkomst',
+        name: 'SendVelkomst',
+        component: SendWelcome,
         meta: { roles: ['Admin'] }
     },
     {
@@ -73,13 +79,13 @@ const routes = [
         path: '/ansvarlig-overview',
         name: 'AnsvarligOverview',
         component: AnsvarligOverview,
-        meta: { roles: ['Admin', 'Ansvarlig'] }
+        meta: { roles: ['Admin', 'Medarbejder'] }
     },
     {
         path: '/help',
         name: 'Help',
         component: Help,
-        meta: { roles: ['Ansvarlig', 'Ny medarbejder'] }
+        meta: { roles: ['Medarbejder'] }
     },
     {
         path: '/admin-help',
@@ -97,30 +103,28 @@ const routes = [
         path: '/medarbejder-overview',
         name: 'MedarbejderOverview',
         component: MedarbejderOverview,
-        meta: { roles: ['Ny medarbejder', 'Ansvarlig'] }
+        meta: { roles: ['Medarbejder'] }
     },
     {
         path: '/forloeb-overview',
         name: 'ForløbOverview',
         component: ForløbOverview,
-        meta: { roles: ['Admin', 'Ansvarlig'] }
-    },
-    {
-        path: '/forloeb-download',
-        name: 'DownloadForloeb',
-        component: DownloadForløb,
-        meta: { roles: ['Admin', 'Ansvarlig'], hideNavbar: true }
+        meta: { roles: ['Admin', 'Medarbejder', 'Public'] }
     },
     {
         path: '/reload',
         name: 'Reload',
         component: Blank,
-        meta: { roles: ['Admin', 'Ansvarlig', 'Ny medarbejder'] }
+        meta: { roles: ['Admin', 'Medarbejder'] }
     },
     {
         path: '/login',
         name: 'Login',
         component: Login,
+        meta: { hideNavbar: true }
+    },
+    {
+        path: '/auth',
         meta: { hideNavbar: true }
     }
 ]
@@ -176,10 +180,8 @@ const returnRoleBasedUrl = async (_userInfo = null) => {
 
         if (userRoles.includes('Admin'))
             return '/admin-overview'
-        else if (userRoles.includes('Ny medarbejder'))
+        else if (userRoles.includes('Medarbejder'))
             return '/medarbejder-overview'
-        else if (userRoles.includes('Ansvarlig'))
-            return '/ansvarlig-overview'
         else
             return '/login'
         
