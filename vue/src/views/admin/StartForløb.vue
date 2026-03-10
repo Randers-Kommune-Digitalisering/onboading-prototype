@@ -94,7 +94,7 @@
         try {
             const forloebResponse = await getForloebById(forloeb_id)
             if(forloebResponse.data?.isPreparation === false || forloebResponse.data?.error) {
-                console.error('Error fetching forløb or forløb not in preparation:', forloebResponse.data.error)
+                console.error('Error fetching forløb or forløb not in preparation:', forloebResponse.data?.error)
                 router.replace('/admin-overview')
                 return
             }
@@ -126,7 +126,7 @@
             
         } catch (error) {
             if (error.response?.data?.error)
-                console.error('Error:', error.response.data.error)
+                console.error('Error:', error.response.data?.error)
             else 
                 console.error('Error:', error)
         }

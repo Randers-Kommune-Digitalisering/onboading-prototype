@@ -17,6 +17,12 @@
     const isExternal = computed(() => (route.query.external || '').toString().toLowerCase() === 'true')
     const accessKey = ref(null)
     const externalRequestSent = ref(false)
+    const refreshAccessKey = computed(() => (route.query.refresh || '').toString().toLowerCase() === 'true')
+
+    const queryWithoutRefresh = (query) => {
+        const { refresh, ...rest } = query || {}
+        return rest
+    }
 
     const parseAccessKeyFromHash = (hash) => {
         const raw = (hash || '').toString().replace(/^#/, '')
@@ -40,7 +46,12 @@
 
         const keyFromHash = parseAccessKeyFromHash(route.hash)
         const storageKey = id.value ? `externalAccessKey:${id.value}` : null
-        const keyFromStorage = storageKey ? sessionStorage.getItem(storageKey) : null
+        if (storageKey && refreshAccessKey.value && !keyFromHash)
+            sessionStorage.removeItem(storageKey)
+
+        const keyFromStorage = storageKey && !refreshAccessKey.value
+            ? sessionStorage.getItem(storageKey)
+            : null
 
         accessKey.value = keyFromHash || keyFromStorage || null
 
@@ -69,14 +80,24 @@
             return
         if (!id.value || Number.isNaN(id.value))
             return
+
+        if (refreshAccessKey.value) {
+            sessionStorage.removeItem(`externalAccessKey:${id.value}`)
+            accessKey.value = null
+            externalRequestSent.value = false
+        }
+
         if (accessKey.value)
             return
         if (externalRequestSent.value)
             return
 
-        externalRequestSent.value = true
         try {
             await requestExternalAccess(id.value)
+            externalRequestSent.value = true
+            if (refreshAccessKey.value)
+                router.replace({ query: queryWithoutRefresh(route.query), hash: route.hash })
+
         } catch (error) {
             console.error('Error requesting external access:', error)
         }

@@ -301,7 +301,7 @@
 </script>
 <template>
     <p v-if="externalAccessDenied" class="indent-tiny notification">
-        <span class="bold">OBS</span>: Linket er ugyldigt eller udløbet. <router-link :to="`/forloeb-overview?id=${props.id}&external=true`">Anmod om et nyt link</router-link>.
+        <span class="bold">OBS</span>: Linket er ugyldigt eller udløbet. <router-link :to="`/forloeb-overview?id=${props.id}&external=true&refresh=true`">Anmod om et nyt link</router-link>.
     </p>
     <p v-if="roleAccessDenied" class="indent-tiny notification">
         <span class="bold">OBS</span>: Du har ikke adgang til dette forløb.<br />Kontakt din leder eller administrator hvis du mener, at dette er en fejl.

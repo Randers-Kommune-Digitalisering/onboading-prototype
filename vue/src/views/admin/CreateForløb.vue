@@ -218,7 +218,7 @@
                 router.push({ path: '/forloeb-overview', query: { id: response.data.uid } })
         } catch (error) {
             if (error.response?.data?.error)
-                console.error('Error:', error.response.data.error)
+                console.error('Error:', error.response.data?.error)
             else
                 console.error('Error:', error)
         }

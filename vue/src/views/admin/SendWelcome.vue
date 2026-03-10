@@ -82,7 +82,7 @@ Randers Kommune",
         try {
             const forloebResponse = await getForloebById(forloeb_id)
             if(forloebResponse.data?.error || forloebResponse.data?.isPreparation === true || forloebResponse.data?.isTemplate === true) {
-                console.error('Error fetching forløb or forløb is template or in preparation:', forloebResponse.data.error)
+                console.error('Error fetching forløb or forløb is template or in preparation:', forloebResponse.data?.error)
                 router.replace('/admin-overview')
                 return
             }
@@ -113,7 +113,7 @@ Randers Kommune",
                 
             } catch (error) {
                 if (error.response?.data?.error)
-                    console.error('Error:', error.response.data.error)
+                    console.error('Error:', error.response.data?.error)
                 else 
                     console.error('Error:', error)
             }
