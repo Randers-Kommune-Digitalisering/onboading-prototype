@@ -15,6 +15,7 @@
 	const isUrlValid = ref(true)
 	const resourceType = ref('link') // 'link' | 'file'
 	const selectedFile = ref(null)
+	const fileTooLarge = ref(false)
 
 	const inputFields = ref({
         name: "",
@@ -73,6 +74,8 @@
 
 	const submitForm = async () =>
     {
+		fileTooLarge.value = false
+
 		if (resourceType.value === 'link') {
 			evaluateUrl(inputFields.value.url)
 			if (!isUrlValid.value)
@@ -123,6 +126,8 @@
 
         } catch (error) {
             console.error('Error:', error.response?.data?.error ?? error)
+			if (error.response?.status === 413)
+				fileTooLarge.value = true
         }
         isSubmitting.value = false
     }
@@ -158,6 +163,10 @@
 </script>
 
 <template>
+	<p v-if="fileTooLarge" class="indent-tiny notification red">
+		<span class="bold">Fejl</span>: Filen overstiger den tilladte størrelse på 20MB. Vælg en anden fil.
+	</p>
+
 	<p class="indent-tiny bold uppercase p-header-adjust">Tilføj ressource til opgaven</p>
 
 	<form @submit.prevent="submitForm">

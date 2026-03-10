@@ -5,6 +5,7 @@ from pathlib import Path
 
 from flask import request, jsonify, send_file
 from sqlalchemy.orm import selectinload
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
 from models import Ressource, RessourceFile, Opgave, Opgaveskabelon
 from utils.db_connection import get_db_client
@@ -322,6 +323,12 @@ def create_ressource_file():
             "size_bytes": len(raw),
         }), 201
 
+    except RequestEntityTooLarge:
+        session.rollback()
+        return jsonify({"error": "File too large"}), 413
+    except HTTPException:
+        # Let Flask handle HTTP errors (including app-level error handlers).
+        raise
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

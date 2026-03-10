@@ -3,6 +3,7 @@ from flask_cors import CORS
 from healthcheck import HealthCheck
 from prometheus_client import generate_latest
 from authlib.integrations.flask_client import OAuth
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from utils.logging import set_logging_configuration
 from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK, DISABLE_KEYCLOAK_ROLES, DISABLE_KEYCLOAK_USER_EMAIL, DISABLE_KEYCLOAK_USER_NAME
@@ -13,9 +14,20 @@ from utils.db_connection import create_db_client, add_missing_columns
 set_logging_configuration()
 
 
+_MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+
+
 def create_app():
     app = Flask(__name__, static_folder='dist')
     CORS(app, allow_headers=['Content-Type', 'usermail', 'X-External-Access-Key'])
+
+    # Reject oversized request bodies early (before buffering/parsing form-data).
+    # This primarily protects file upload endpoints.
+    app.config['MAX_CONTENT_LENGTH'] = _MAX_UPLOAD_BYTES
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_request_entity_too_large(_err):
+        return jsonify({"error": "File too large"}), 413
 
     # Flask sessions are used for Keycloak auth and (in dev) for DISABLE_KEYCLOAK.
     app.secret_key = COOKIE_SECRET
