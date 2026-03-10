@@ -406,8 +406,8 @@
                 :expandItem="expandItem"
                 :templateView="isTemplate"
                 :isPreparation="isUnderPreparation"
-            :external="props.external"
-            :accessKey="props.accessKey"
+                :external="props.external"
+                :accessKey="props.accessKey"
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index" />
 
@@ -417,9 +417,9 @@
                 :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
                 :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
-            :external="props.external"
-            :accessKey="props.accessKey" />
+                :expandItem="expandItem"
+                :external="props.external"
+                :accessKey="props.accessKey" />
 
         <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_future"
@@ -428,8 +428,8 @@
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
                 :expandItem="expandItem"
-            :external="props.external"
-            :accessKey="props.accessKey"
+                :external="props.external"
+                :accessKey="props.accessKey"
                 itemColor="777371"
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index" />
@@ -442,8 +442,8 @@
                 :expandFirstItem="false"
                 :expandItem="expandItem"
                 :dark="true"
-            :external="props.external"
-            :accessKey="props.accessKey"
+                :external="props.external"
+                :accessKey="props.accessKey"
                 itemColor="617a5d" />
     </div>
     <div v-else>
@@ -455,9 +455,9 @@
                 :expandFirstItem="false"
                 :expandItem="expandItem"
                 :templateView="isTemplate"
-            :isPreparation="isUnderPreparation"
-            :external="props.external"
-            :accessKey="props.accessKey" />
+                :isPreparation="isUnderPreparation"
+                :external="props.external"
+                :accessKey="props.accessKey" />
 
         
         <TaskList v-if="forloeb != null"
@@ -468,9 +468,9 @@
                 :expandFirstItem="false"
                 :expandItem="expandItem"
                 :templateView="isTemplate"
-            :isPreparation="isUnderPreparation"
-            :external="props.external"
-            :accessKey="props.accessKey" />
+                :isPreparation="isUnderPreparation"
+                :external="props.external"
+                :accessKey="props.accessKey" />
     </div>
 
 </template>
