@@ -3,13 +3,13 @@ import hmac
 import logging
 import secrets
 from datetime import datetime, timedelta, timezone
-from io import BytesIO
 from urllib.parse import urlencode
 
-from flask import jsonify, request, send_file
+from flask import jsonify, request
 from sqlalchemy.orm import selectinload
 
 from models import Forløb, Opgave, OpgaveGruppe, Ressource, RessourceFile
+from controllers.ressource_controller import _download_response
 from utils.db_connection import get_db_client
 from utils.ressource_serialization import serialize_ressource
 from controllers.mail_controller import send_mail, create_mail_external_access
@@ -253,11 +253,6 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         session.close()
 
 
-def _safe_filename(value: str) -> str:
-    value = (value or "").strip()
-    return value or "download"
-
-
 def download_ressource_file_external(ressource_id: int):
     """GET /api/external/ressource/<id>/download
 
@@ -291,17 +286,6 @@ def download_ressource_file_external(ressource_id: int):
         if not file_row:
             return jsonify({"error": "File not found"}), 404
 
-        bio = BytesIO(file_row.data or b"")
-        bio.seek(0)
-        resp = send_file(
-            bio,
-            mimetype=file_row.content_type or "application/octet-stream",
-            as_attachment=True,
-            download_name=_safe_filename(file_row.filename),
-            max_age=0,
-        )
-        resp.headers['Cache-Control'] = 'no-store'
-        resp.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
-        return resp
+        return _download_response(file_row)
     finally:
         session.close()
