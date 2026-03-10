@@ -199,6 +199,7 @@
 
 <style scoped>
 	.buttonContainer.merged {
+		display: flex;
 		gap: 0 !important;
 	}
 	.buttonContainer.merged .button:first-child {
