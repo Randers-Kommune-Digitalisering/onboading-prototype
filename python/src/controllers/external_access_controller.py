@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from models import Forløb, Opgave, OpgaveGruppe, Ressource, RessourceFile
 from utils.db_connection import get_db_client
+from utils.ressource_serialization import serialize_ressource
 from controllers.mail_controller import send_mail, create_mail_external_access
 
 logger = logging.getLogger(__name__)
@@ -215,7 +216,7 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         opgaver = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbID=forloeb_id)
@@ -228,19 +229,7 @@ def get_opgaver_forloeb_external(forloeb_id: int):
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url,
-                        'isFile': bool(getattr(ressource, 'isFile', False)),
-                        **({
-                            'filename': ressource.file.filename,
-                            'content_type': ressource.file.content_type,
-                            'size_bytes': ressource.file.size_bytes,
-                        } if bool(getattr(ressource, 'isFile', False)) and getattr(ressource, 'file', None) is not None else {}),
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name,

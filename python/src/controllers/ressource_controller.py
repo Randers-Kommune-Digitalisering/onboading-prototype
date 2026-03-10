@@ -4,6 +4,7 @@ from io import BytesIO
 from pathlib import Path
 
 from flask import request, jsonify, send_file
+from sqlalchemy.orm import selectinload
 
 from models import Ressource, RessourceFile, Opgave, Opgaveskabelon
 from utils.db_connection import get_db_client
@@ -12,6 +13,7 @@ from utils.access_control import (
     is_current_user_admin,
     user_can_access_forloeb,
 )
+from utils.ressource_serialization import serialize_ressource
 
 db_client = get_db_client()
 
@@ -176,25 +178,20 @@ def update_ressource(ressource_id):
 def get_ressource(ressource_id):
     session = db_client.get_session()
     try:
-        ressource = session.query(Ressource).filter_by(RessourceID=ressource_id).first()
+        ressource = (
+            session.query(Ressource)
+            .options(selectinload(Ressource.file))
+            .filter_by(RessourceID=ressource_id)
+            .first()
+        )
         if not ressource:
             return jsonify({"error": "Ressource not found"}), 404
 
-        result = {
+        result = serialize_ressource(ressource)
+        result.update({
             "OpgaveID": ressource.OpgaveID,
             "OpgaveskabelonID": ressource.OpgaveskabelonID,
-            "RessourceID": ressource.RessourceID,
-            "name": ressource.name,
-            "url": ressource.url,
-            "isFile": bool(getattr(ressource, 'isFile', False)),
-        }
-
-        if result["isFile"] and getattr(ressource, 'file', None) is not None:
-            result.update({
-                "filename": ressource.file.filename,
-                "content_type": ressource.file.content_type,
-                "size_bytes": ressource.file.size_bytes,
-            })
+        })
 
         return jsonify(result), 200
     except Exception as e:
@@ -206,26 +203,16 @@ def get_ressource(ressource_id):
 def get_ressources_by_opgaveid(opgave_id):
     session = db_client.get_session()
     try:
-        ressources = session.query(Ressource).filter_by(OpgaveID=opgave_id).all()
+        ressources = (
+            session.query(Ressource)
+            .options(selectinload(Ressource.file))
+            .filter_by(OpgaveID=opgave_id)
+            .all()
+        )
         if not ressources:
             return jsonify([])
 
-        ressource_data = []
-        for ressource in ressources:
-            item = {
-                'RessourceID': ressource.RessourceID,
-                'name': ressource.name,
-                'url': ressource.url,
-                'isFile': bool(getattr(ressource, 'isFile', False)),
-            }
-            if item['isFile'] and getattr(ressource, 'file', None) is not None:
-                item.update({
-                    'filename': ressource.file.filename,
-                    'content_type': ressource.file.content_type,
-                    'size_bytes': ressource.file.size_bytes,
-                })
-            ressource_data.append(item)
-        return jsonify(ressource_data)
+        return jsonify([serialize_ressource(ressource) for ressource in ressources])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -235,26 +222,16 @@ def get_ressources_by_opgaveid(opgave_id):
 def get_ressources_by_opgaveskabelonid(opgaveskabelon_id):
     session = db_client.get_session()
     try:
-        ressources = session.query(Ressource).filter_by(OpgaveskabelonID=opgaveskabelon_id).all()
+        ressources = (
+            session.query(Ressource)
+            .options(selectinload(Ressource.file))
+            .filter_by(OpgaveskabelonID=opgaveskabelon_id)
+            .all()
+        )
         if not ressources:
             return jsonify([])
 
-        ressource_data = []
-        for ressource in ressources:
-            item = {
-                'RessourceID': ressource.RessourceID,
-                'name': ressource.name,
-                'url': ressource.url,
-                'isFile': bool(getattr(ressource, 'isFile', False)),
-            }
-            if item['isFile'] and getattr(ressource, 'file', None) is not None:
-                item.update({
-                    'filename': ressource.file.filename,
-                    'content_type': ressource.file.content_type,
-                    'size_bytes': ressource.file.size_bytes,
-                })
-            ressource_data.append(item)
-        return jsonify(ressource_data)
+        return jsonify([serialize_ressource(ressource) for ressource in ressources])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

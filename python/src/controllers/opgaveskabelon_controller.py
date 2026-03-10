@@ -1,6 +1,7 @@
 from flask import request, jsonify
-from models import Opgaveskabelon
+from models import Opgaveskabelon, Ressource
 from utils.db_connection import get_db_client
+from utils.ressource_serialization import serialize_ressource
 from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
@@ -36,7 +37,7 @@ def get_all_opgaveskabeloner():
     try:
         opgaveskabeloner = (
             session.query(Opgaveskabelon)
-            .options(selectinload(Opgaveskabelon.ressource))
+            .options(selectinload(Opgaveskabelon.ressource).selectinload(Ressource.file))
             .all()
         )
         opgaveskabeloner_data = [
@@ -46,19 +47,7 @@ def get_all_opgaveskabeloner():
                 'beskrivelse': opgaveskabelon.beskrivelse,
                 'relativ_slutdag': opgaveskabelon.relativ_slutdag,
                 'note': opgaveskabelon.note if opgaveskabelon.note else "",
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url,
-                        'isFile': bool(getattr(ressource, 'isFile', False)),
-                        **({
-                            'filename': ressource.file.filename,
-                            'content_type': ressource.file.content_type,
-                            'size_bytes': ressource.file.size_bytes,
-                        } if bool(getattr(ressource, 'isFile', False)) and getattr(ressource, 'file', None) is not None else {}),
-                    } for ressource in opgaveskabelon.ressource
-                ]
+                'resourcer': [serialize_ressource(ressource) for ressource in opgaveskabelon.ressource]
             } for opgaveskabelon in opgaveskabeloner
         ]
         return jsonify(opgaveskabeloner_data), 200

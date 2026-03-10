@@ -4,6 +4,7 @@ from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource,
 from utils.db_connection import get_db_client
 from utils.config import MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG
 from utils.access_control import get_current_user_email, is_current_user_admin, user_can_access_forloeb
+from utils.ressource_serialization import serialize_ressource as _serialize_ressource
 from controllers.mail_controller import (
     plan_mail,
     create_mail_ansvarlig,
@@ -14,24 +15,6 @@ from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 logger = logging.getLogger(__name__)
-
-
-def _serialize_ressource(ressource: Ressource) -> dict:
-    item = {
-        'RessourceID': ressource.RessourceID,
-        'name': ressource.name,
-        'url': ressource.url,
-        'isFile': bool(getattr(ressource, 'isFile', False)),
-    }
-
-    if item['isFile'] and getattr(ressource, 'file', None) is not None:
-        item.update({
-            'filename': ressource.file.filename,
-            'content_type': ressource.file.content_type,
-            'size_bytes': ressource.file.size_bytes,
-        })
-
-    return item
 
 
 def create_opgave():
@@ -152,7 +135,7 @@ def get_all_opgaver():
         opgaver = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
             )
             .all()
@@ -321,7 +304,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
         query = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
             )
             .join(Forløb)
@@ -407,7 +390,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbsskabelonID=forlobsskabelon_id)
@@ -452,7 +435,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.mails),
             )
@@ -510,7 +493,7 @@ def get_opgave_by_ansvarlig(usermail):
         query = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.forløb),
             )
@@ -568,7 +551,7 @@ def get_opgave_by_forloeb_id(forlob_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbID=forlob_id)
