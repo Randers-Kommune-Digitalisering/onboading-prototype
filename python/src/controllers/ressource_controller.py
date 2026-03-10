@@ -19,7 +19,7 @@ from utils.ressource_serialization import serialize_ressource
 db_client = get_db_client()
 
 
-_MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+from utils.config import MAX_UPLOAD_BYTES
 _ALLOWED_EXTENSIONS = {
     ".pdf",
     ".doc",
@@ -242,7 +242,7 @@ def get_ressources_by_opgaveskabelonid(opgaveskabelon_id):
 def create_ressource_file():
     session = db_client.get_session()
     try:
-        if request.content_length and request.content_length > _MAX_UPLOAD_BYTES:
+        if request.content_length and request.content_length > MAX_UPLOAD_BYTES:
             return jsonify({"error": "File too large"}), 413
 
         name = (request.form.get('name') or '').strip()
@@ -258,7 +258,7 @@ def create_ressource_file():
             return jsonify({"error": "Unsupported file type"}), 400
 
         raw = file.read() or b''
-        if len(raw) > _MAX_UPLOAD_BYTES:
+        if len(raw) > MAX_UPLOAD_BYTES:
             return jsonify({"error": "File too large"}), 413
 
         current_user_email = get_current_user_email()

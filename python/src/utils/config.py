@@ -65,3 +65,5 @@ DISABLE_KEYCLOAK_USER_NAME = os.getenv('DISABLE_KEYCLOAK_USER_NAME', '').strip()
 # AZURE_TENANTID = os.environ['AZURE_TENANTID'].rstrip()
 # AZURE_CLIENTSECRET = os.environ['AZURE_CLIENTSECRET'].rstrip()
 # CSV_PATH = os.environ['CSV_PATH'].rstrip()
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB

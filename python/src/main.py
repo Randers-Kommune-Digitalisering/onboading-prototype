@@ -14,7 +14,7 @@ from utils.db_connection import create_db_client, add_missing_columns
 set_logging_configuration()
 
 
-_MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+from utils.config import MAX_UPLOAD_BYTES
 
 
 def create_app():
@@ -23,7 +23,7 @@ def create_app():
 
     # Reject oversized request bodies early (before buffering/parsing form-data).
     # This primarily protects file upload endpoints.
-    app.config['MAX_CONTENT_LENGTH'] = _MAX_UPLOAD_BYTES
+    app.config['MAX_CONTENT_LENGTH'] = MAX_UPLOAD_BYTES
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_request_entity_too_large(_err):
