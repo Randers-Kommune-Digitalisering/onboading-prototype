@@ -253,6 +253,11 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         session.close()
 
 
+def _safe_filename(value: str) -> str:
+    value = (value or "").strip()
+    return value or "download"
+
+
 def download_ressource_file_external(ressource_id: int):
     """GET /api/external/ressource/<id>/download
 
@@ -292,7 +297,7 @@ def download_ressource_file_external(ressource_id: int):
             bio,
             mimetype=file_row.content_type or "application/octet-stream",
             as_attachment=True,
-            download_name=file_row.filename,
+            download_name=_safe_filename(file_row.filename),
             max_age=0,
         )
         resp.headers['Cache-Control'] = 'no-store'
