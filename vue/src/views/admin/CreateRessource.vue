@@ -165,7 +165,7 @@
 
 		<div class="inputContainer inline">
 			<span class="text">Ressourcetype:</span>
-			<div class="buttonContainer merged" style="display:flex; gap:0.5rem;">
+			<div class="buttonContainer merged">
 				<div :class="['button', resourceType === 'link' ? '' : 'hollow']" @click="setResourceType('link')">Link</div>
 				<div :class="['button', resourceType === 'file' ? '' : 'hollow']" @click="setResourceType('file')">Fil</div>
 			</div>
