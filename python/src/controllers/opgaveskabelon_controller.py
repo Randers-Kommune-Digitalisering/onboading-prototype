@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from models import Opgaveskabelon, Ressource
+from models import Opgaveskabelon, Ressource, RessourceFile
 from utils.db_connection import get_db_client
 from utils.ressource_serialization import serialize_ressource
 from sqlalchemy.orm import selectinload
@@ -37,7 +37,7 @@ def get_all_opgaveskabeloner():
     try:
         opgaveskabeloner = (
             session.query(Opgaveskabelon)
-            .options(selectinload(Opgaveskabelon.ressource).selectinload(Ressource.file))
+            .options(selectinload(Opgaveskabelon.ressource).selectinload(Ressource.file).defer(RessourceFile.data))
             .all()
         )
         opgaveskabeloner_data = [

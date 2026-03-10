@@ -216,7 +216,7 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         opgaver = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbID=forloeb_id)

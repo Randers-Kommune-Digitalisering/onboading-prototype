@@ -135,7 +135,7 @@ def get_all_opgaver():
         opgaver = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .all()
@@ -304,7 +304,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
         query = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .join(Forløb)
@@ -390,7 +390,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbsskabelonID=forlobsskabelon_id)
@@ -435,7 +435,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.mails),
             )
@@ -493,7 +493,7 @@ def get_opgave_by_ansvarlig(usermail):
         query = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.forløb),
             )
@@ -551,7 +551,7 @@ def get_opgave_by_forloeb_id(forlob_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource).selectinload(Ressource.file),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbID=forlob_id)

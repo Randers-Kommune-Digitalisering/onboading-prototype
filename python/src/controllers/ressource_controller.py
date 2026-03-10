@@ -181,7 +181,7 @@ def get_ressource(ressource_id):
     try:
         ressource = (
             session.query(Ressource)
-            .options(selectinload(Ressource.file))
+            .options(selectinload(Ressource.file).defer(RessourceFile.data))
             .filter_by(RessourceID=ressource_id)
             .first()
         )
@@ -206,7 +206,7 @@ def get_ressources_by_opgaveid(opgave_id):
     try:
         ressources = (
             session.query(Ressource)
-            .options(selectinload(Ressource.file))
+            .options(selectinload(Ressource.file).defer(RessourceFile.data))
             .filter_by(OpgaveID=opgave_id)
             .all()
         )
@@ -225,7 +225,7 @@ def get_ressources_by_opgaveskabelonid(opgaveskabelon_id):
     try:
         ressources = (
             session.query(Ressource)
-            .options(selectinload(Ressource.file))
+            .options(selectinload(Ressource.file).defer(RessourceFile.data))
             .filter_by(OpgaveskabelonID=opgaveskabelon_id)
             .all()
         )
