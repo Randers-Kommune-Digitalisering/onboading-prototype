@@ -50,7 +50,13 @@ def get_all_opgaveskabeloner():
                     {
                         'RessourceID': ressource.RessourceID,
                         'name': ressource.name,
-                        'url': ressource.url
+                        'url': ressource.url,
+                        'isFile': bool(getattr(ressource, 'isFile', False)),
+                        **({
+                            'filename': ressource.file.filename,
+                            'content_type': ressource.file.content_type,
+                            'size_bytes': ressource.file.size_bytes,
+                        } if bool(getattr(ressource, 'isFile', False)) and getattr(ressource, 'file', None) is not None else {}),
                     } for ressource in opgaveskabelon.ressource
                 ]
             } for opgaveskabelon in opgaveskabeloner

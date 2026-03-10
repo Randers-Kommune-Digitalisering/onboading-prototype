@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -75,10 +75,35 @@ class Ressource(Base):
     RessourceID = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
+    # When true, this resource is backed by an uploaded file (see RessourceFile).
+    # Keep `url` as a non-nullable column for backwards compatibility with the
+    # current lightweight DB migration approach (add-missing-columns only).
+    isFile = Column(Boolean, default=False)
     OpgaveID = Column(Integer, ForeignKey('Opgave.OpgaveID', ondelete='CASCADE'))
     opgave = relationship('Opgave', back_populates='ressource')
     OpgaveskabelonID = Column(Integer, ForeignKey('Opgaveskabelon.OpgaveskabelonID', ondelete='CASCADE'))
     opgaveskabelon = relationship('Opgaveskabelon', back_populates='ressource')
+    file = relationship(
+        'RessourceFile',
+        back_populates='ressource',
+        uselist=False,
+        cascade='all, delete-orphan',
+    )
+
+
+class RessourceFile(Base):
+    __tablename__ = 'RessourceFile'
+    # One-to-one with Ressource; use RessourceID as both PK and FK.
+    RessourceID = Column(
+        Integer,
+        ForeignKey('Ressource.RessourceID', ondelete='CASCADE'),
+        primary_key=True,
+    )
+    filename = Column(String, nullable=False)
+    content_type = Column(String, nullable=True)
+    size_bytes = Column(Integer, nullable=False)
+    data = Column(LargeBinary, nullable=False)
+    ressource = relationship('Ressource', back_populates='file')
 
 
 class OpgaveGruppe(Base):

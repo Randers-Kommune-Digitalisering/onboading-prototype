@@ -552,7 +552,7 @@ p > a:hover {
     font-family: 'Open Sans', sans-serif;
 }
 
-    .card-content > .ressources > span {
+    .card-content > .ressources > span, .card-content > .ressources > a {
         padding-right: 0.8rem;
         border-right: 0.2rem solid var(--color-background);
     }
@@ -863,7 +863,7 @@ button[type="submit"] {
     pointer-events: none;
 }
 
-input[type=text], input[type=date], input[type=datetime-local], select, textarea {
+input[type=text], input[type=date], input[type=datetime-local], input[type=file], select, textarea {
     background-color: var(--color-input-bg);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
@@ -933,6 +933,7 @@ input[type=text]:focus + .floating-label,
 input[type=text]:not(:placeholder-shown) + .floating-label,
 input[type=date] + .floating-label, /* :valid for date, if selection is required */
 input[type=datetime-local] + .floating-label,
+input[type=file] + .floating-label,
 select:valid + .floating-label,
 textarea:focus + .floating-label,
 textarea:not(:placeholder-shown) + .floating-label {

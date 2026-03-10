@@ -64,6 +64,14 @@
         {
             type: Boolean,
             default: false
+        },
+        external: {
+            type: Boolean,
+            default: false,
+        },
+        accessKey: {
+            type: String,
+            default: null,
         }
     })
 
@@ -109,7 +117,9 @@
                     :result="task.result"
                     :ressources="task.resourcer"
                     :mails="task.pending_emails"
-                    :isPreparation="isPreparation" />
+					:isPreparation="isPreparation"
+					:external="external"
+					:accessKey="accessKey" />
             </template>
         </div><!-- /card-list -->
         <div v-else>

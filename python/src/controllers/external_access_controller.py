@@ -3,12 +3,13 @@ import hmac
 import logging
 import secrets
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from urllib.parse import urlencode
 
-from flask import jsonify, request
+from flask import jsonify, request, send_file
 from sqlalchemy.orm import selectinload
 
-from models import Forløb, Opgave, OpgaveGruppe
+from models import Forløb, Opgave, OpgaveGruppe, Ressource, RessourceFile
 from utils.db_connection import get_db_client
 from controllers.mail_controller import send_mail, create_mail_external_access
 
@@ -231,7 +232,13 @@ def get_opgaver_forloeb_external(forloeb_id: int):
                     {
                         'RessourceID': ressource.RessourceID,
                         'name': ressource.name,
-                        'url': ressource.url
+                        'url': ressource.url,
+                        'isFile': bool(getattr(ressource, 'isFile', False)),
+                        **({
+                            'filename': ressource.file.filename,
+                            'content_type': ressource.file.content_type,
+                            'size_bytes': ressource.file.size_bytes,
+                        } if bool(getattr(ressource, 'isFile', False)) and getattr(ressource, 'file', None) is not None else {}),
                     } for ressource in opgave.ressource
                 ],
                 'gruppe': {
@@ -253,5 +260,54 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         response = jsonify(result)
         response.headers['Cache-Control'] = 'no-store'
         return response, 200
+    finally:
+        session.close()
+
+
+def download_ressource_file_external(ressource_id: int):
+    """GET /api/external/ressource/<id>/download
+
+    The access key is expected in the `X-External-Access-Key` header.
+    """
+
+    access_key = _get_access_key_from_request('')
+
+    session = db_client.get_session()
+    try:
+        ressource = session.query(Ressource).filter_by(RessourceID=ressource_id).first()
+        if not ressource:
+            return jsonify({"error": "Ressource not found"}), 404
+
+        if not getattr(ressource, 'isFile', False):
+            return jsonify({"error": "Ressource is not a file"}), 404
+
+        # External access only supports forløb tasks (not templates).
+        if ressource.OpgaveID is None:
+            return jsonify({"error": "Forbidden"}), 403
+
+        opgave = session.query(Opgave).filter_by(OpgaveID=ressource.OpgaveID).first()
+        if not opgave or getattr(opgave, 'ForløbID', None) is None:
+            return jsonify({"error": "Forbidden"}), 403
+
+        forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
+        if not forloeb or not _is_valid_access_key(forloeb, access_key):
+            return jsonify({"error": "Invalid access"}), 403
+
+        file_row = session.query(RessourceFile).filter_by(RessourceID=ressource.RessourceID).first()
+        if not file_row:
+            return jsonify({"error": "File not found"}), 404
+
+        bio = BytesIO(file_row.data or b"")
+        bio.seek(0)
+        resp = send_file(
+            bio,
+            mimetype=file_row.content_type or "application/octet-stream",
+            as_attachment=True,
+            download_name=file_row.filename,
+            max_age=0,
+        )
+        resp.headers['Cache-Control'] = 'no-store'
+        resp.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return resp
     finally:
         session.close()
