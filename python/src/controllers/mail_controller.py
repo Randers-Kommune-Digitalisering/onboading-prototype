@@ -120,7 +120,7 @@ def _format_date(dt: datetime | None) -> str:
     if not dt:
         return ""
     try:
-        return dt.strftime("%d/%m %Y")
+        return dt.strftime("%d/%m-%Y")
     except Exception:
         return str(dt)
 
@@ -592,75 +592,6 @@ def create_mail_new_task_user(forloeb: Forløb, opgave: Opgave) -> tuple[str, st
         "Kære {navn},\n\n"
         "Der er blevet tilføjet en ny opgave til dit onboarding-forløb.\n\n"
         "{tasks}\n"
-        "Med venlig hilsen,\n"
-        "Randers Kommune"
-    )
-    body = compose_mail_content(template, context)
-    return subject, body
-
-
-def create_mail_forloeb_start(forloeb: Forløb, custom_message: str | None = None) -> tuple[str, str]:
-    default_message = "Velkommen til Randers Kommune! Dit onboardingforløb er nu klar."
-    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
-    link = _button_link_html(_forloeb_overview_url(forloeb), "Se dit onboarding-forløb")
-
-    context = {
-        "navn": first_name,
-        "custom": (custom_message or default_message),
-        "link": link,
-        "startdato": _format_date(getattr(forloeb, "startdate", None)),
-    }
-    subject = "Dit onboardingforløb er startet"
-    template = (
-        "Kære {navn},\n\n"
-        "{custom}\n\n"
-        "{link}\n\n"
-        "Forløbet starter den {startdato}.\n\n"
-        "Med venlig hilsen,\n"
-        "Randers Kommune"
-    )
-    body = compose_mail_content(template, context)
-    return subject, body
-
-
-def create_mail_expired(forloeb: Forløb, opgave: Opgave) -> tuple[str, str]:
-    first_name, _last_name = _split_name(getattr(forloeb, "name", ""))
-    link = _button_link_html(_forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID), "Se opgaven i dit onboarding-forløb")
-
-    context = {
-        "navn": first_name,
-        "opgave": getattr(opgave, "title", ""),
-        "slutdato": _format_date(getattr(opgave, "slutdato", None)),
-        "link": link,
-    }
-    subject = "Deadline overskredet for opgave i onboardingforløb"
-    template = (
-        "Kære {navn},\n\n"
-        "Du har en opgave i dit onboardingforløb, hvor deadline er overskredet:\n"
-        "{opgave}\n\n"
-        "Deadline var den {slutdato}.\n\n"
-        "{link}\n\n"
-        "Med venlig hilsen,\n"
-        "Randers Kommune"
-    )
-    body = compose_mail_content(template, context)
-    return subject, body
-
-
-def create_mail_expired_ansvarlig(opgave: Opgave) -> tuple[str, str]:
-    context = {
-        "ansvarlig": getattr(opgave, "ansvarlig", ""),
-        "opgave": getattr(opgave, "title", ""),
-        "slutdato": _format_date(getattr(opgave, "slutdato", None)),
-        "link": _button_link_html("http://onboarding.data.randers.dk/ansvarlig-overview", "Se opgaven under 'Mine ansvar'"),
-    }
-    subject = "Deadline overskredet for opgave i onboardingforløb"
-    template = (
-        "Kære {ansvarlig},\n\n"
-        "Du er ansvarlig for en opgave hvor deadline er overskredet:\n"
-        "{opgave}\n\n"
-        "Deadline var den {slutdato}.\n\n"
-        "{link}\n\n"
         "Med venlig hilsen,\n"
         "Randers Kommune"
     )

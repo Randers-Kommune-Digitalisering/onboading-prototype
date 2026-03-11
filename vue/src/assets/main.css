@@ -649,16 +649,18 @@ p > a:hover {
 
 /* Buttons + Inputs */
 
-button[type="submit"] {    
+/* button[type="submit"] {    
     font-family: "Open Sans", sans-serif;
     border: 0rem;
     font-size: 1em;
     font-weight: 500;
     border: 0.1rem solid var(--color-button);
     user-select: none;
-}
+} */
 
 .button {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 400;
     text-decoration: none;
     padding: 0.6rem 1rem;
     border-radius: 1.5rem;
