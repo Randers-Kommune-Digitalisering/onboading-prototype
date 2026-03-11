@@ -175,8 +175,8 @@
 		<div class="inputContainer inline">
 			<span class="text">Ressourcetype:</span>
 			<div class="buttonContainer merged">
-				<div :class="['button', resourceType === 'link' ? '' : 'hollow']" @click="setResourceType('link')">Link</div>
-				<div :class="['button', resourceType === 'file' ? '' : 'hollow']" @click="setResourceType('file')">Fil</div>
+				<div :class="['button', resourceType === 'link' ? '' : 'hollow', { 'disabled': isEditing }]" @click="setResourceType('link')">Link</div>
+				<div :class="['button', resourceType === 'file' ? '' : 'hollow', { 'disabled': isEditing }]" @click="setResourceType('file')">Fil</div>
 			</div>
 		</div>
 
@@ -190,11 +190,11 @@
 			<label for="url" class="floating-label">Link til ressource</label>
 		</div>
 
-		<div class="inputContainer" v-else>
-			<input v-if="!isEditing" type="file" id="file" name="file" placeholder=" "
+		<div class="inputContainer" v-else-if="!isEditing">
+			<input type="file" id="file" name="file" placeholder=" "
 				accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
 				@change="onFileSelected" required>
-			<label v-if="!isEditing" for="file" class="floating-label">Upload fil</label>
+			<label for="file" class="floating-label">Upload fil</label>
 		</div>
 
 		<div class="inputContainer submit">

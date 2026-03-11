@@ -196,6 +196,7 @@ a, .link {
 a.disabled, .button.disabled, .link.disabled {
     cursor: default;
     pointer-events: none;
+    opacity: 0.8;
 }
 
 p > a {
@@ -649,15 +650,6 @@ p > a:hover {
 
 /* Buttons + Inputs */
 
-/* button[type="submit"] {    
-    font-family: "Open Sans", sans-serif;
-    border: 0rem;
-    font-size: 1em;
-    font-weight: 500;
-    border: 0.1rem solid var(--color-button);
-    user-select: none;
-} */
-
 .button {
     font-family: "Open Sans", sans-serif;
     font-weight: 400;
@@ -671,16 +663,51 @@ p > a:hover {
     user-select: none;
 }
 
+/* Button loading overlay (CSS-only) using a pseudo-element overlay */
+.button.loading {
+    position: relative;
+    pointer-events: none;
+
+    /* Hide plain text nodes while keeping layout */
+    color: transparent;
+}
+
+/* Hide child elements (icons/spans) while keeping layout */
+.button.loading > * {
+    visibility: hidden;
+}
+
+/* Spinner overlay (separate keyframes to preserve centering translate + rotate) */
+.button.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0turn);
+
+    width: 1.25rem;
+    aspect-ratio: 1;
+    display: grid;
+    border: 0.2rem solid #0000;
+    border-radius: 50%;
+    border-right-color: var(--color-button-text);
+    animation: button-spinner 1s infinite linear;
+}
+
+@keyframes button-spinner {
+    100% { transform: translate(-50%, -50%) rotate(1turn); }
+}
+
     .button:hover {
         background-color: var(--color-button-hover);
         border: 0.1rem solid var(--color-button-hover);
     }
-    .button.disabled, .button.hollow {
+    .button.hollow {
         border: 0.1rem solid var(--color-button);
         color: var(--color-button);
         background-color: var(--color-button-disabled);
     }
-        .button.disabled.dark, .button.hollow.dark {
+        .button.hollow.dark {
             background-color: var(--color-card-faded);
         }
     .button.hollow:hover {

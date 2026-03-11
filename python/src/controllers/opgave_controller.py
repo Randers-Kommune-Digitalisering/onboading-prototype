@@ -350,7 +350,15 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
 def get_opgave(opgave_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgave).filter_by(OpgaveID=opgave_id).first()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .filter_by(OpgaveID=opgave_id)
+            .first()
+        )
         if not opgave:
             return jsonify({"error": "Opgave not found"}), 404
 

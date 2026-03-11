@@ -42,7 +42,7 @@ def _is_allowed_filename(filename: str) -> bool:
     return suffix in _ALLOWED_EXTENSIONS
 
 
-def _download_response(file_row: RessourceFile):
+def download_response(file_row: RessourceFile):
     data = file_row.data or b""
     bio = BytesIO(data)
     bio.seek(0)
@@ -374,7 +374,7 @@ def download_ressource_file(ressource_id: int):
         if not file_row:
             return jsonify({"error": "File not found"}), 404
 
-        return _download_response(file_row)
+        return download_response(file_row)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
