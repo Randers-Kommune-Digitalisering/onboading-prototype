@@ -6,15 +6,12 @@ from authlib.integrations.flask_client import OAuth
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from utils.logging import set_logging_configuration
-from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK, DISABLE_KEYCLOAK_ROLES, DISABLE_KEYCLOAK_USER_EMAIL, DISABLE_KEYCLOAK_USER_NAME
+from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK, DISABLE_KEYCLOAK_ROLES, DISABLE_KEYCLOAK_USER_EMAIL, DISABLE_KEYCLOAK_USER_NAME, MAX_UPLOAD_BYTES
 from api_endpoints import api_endpoints
 from controllers.user_controller import warm_azure_ad_cache
 from utils.db_connection import create_db_client, add_missing_columns
 
 set_logging_configuration()
-
-
-from utils.config import MAX_UPLOAD_BYTES
 
 
 def create_app():

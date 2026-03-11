@@ -15,11 +15,11 @@ from utils.access_control import (
     user_can_access_forloeb,
 )
 from utils.ressource_serialization import serialize_ressource
+from utils.config import MAX_UPLOAD_BYTES
 
 db_client = get_db_client()
 
 
-from utils.config import MAX_UPLOAD_BYTES
 _ALLOWED_EXTENSIONS = {
     ".pdf",
     ".doc",
