@@ -53,7 +53,7 @@ def create_app():
                     'email',
                     DISABLE_KEYCLOAK_USER_EMAIL
                     or request.headers.get('usermail')
-                    or 'test.robot@randers.dk',
+                    or 'st@randers.dk',
                 )
                 user['roles'] = roles
                 resource_access = user.get('resource_access') or {}
@@ -66,7 +66,7 @@ def create_app():
             email = (
                 DISABLE_KEYCLOAK_USER_EMAIL
                 or request.headers.get('usermail')
-                or 'test.robot@randers.dk'
+                or 'st@randers.dk'
             )
 
             session['user'] = {

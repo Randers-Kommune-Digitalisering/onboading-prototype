@@ -13,9 +13,9 @@ from controllers.ressource_controller import download_response
 from utils.db_connection import get_db_client
 from utils.ressource_serialization import serialize_ressource
 from controllers.mail_controller import send_mail, create_mail_external_access
+from utils.client_url import get_client_base_url
 
 logger = logging.getLogger(__name__)
-
 db_client = get_db_client()
 
 
@@ -104,7 +104,7 @@ def request_external_access():
         forloeb.external_access_expires_at = expires_at.replace(tzinfo=None)
         session.commit()
 
-        base_url = request.url_root.rstrip('/')
+        base_url = get_client_base_url()
         # Put accessKey in the URL fragment to avoid it being sent in Referer headers
         # and being captured in query-string logs. The SPA reads the fragment.
         query = urlencode({"id": forloeb_id_int, "external": "true"})

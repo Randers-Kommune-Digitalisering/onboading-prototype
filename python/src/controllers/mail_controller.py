@@ -1,4 +1,4 @@
-from flask import jsonify, Response, request, has_request_context
+from flask import jsonify, Response
 import base64
 import logging
 from datetime import datetime, timedelta
@@ -14,6 +14,7 @@ from utils.config import (
     MAIL_DESC_NEW_TASK_ANSVARLIG,
     ONBOARDING_BASE_URL,
 )
+from utils.client_url import get_client_base_url
 from models import Mail, MailAttachment, Forløb, Opgave
 from utils.db_connection import get_db_client
 from utils.access_control import is_current_user_admin
@@ -93,9 +94,8 @@ def _is_external_forloeb(forloeb: Forløb) -> bool:
 
 def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, force_internal: bool = False) -> str:
     # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
-    base_url = ONBOARDING_BASE_URL
-    if has_request_context():
-        base_url = request.url_root.rstrip('/')
+    base_url = get_client_base_url(ONBOARDING_BASE_URL)
+    logger.info(f"Constructing Forløb overview URL with base '{base_url}' for ForløbID {forloeb.ForløbID} and OpgaveID {opgave_id}")
 
     url = f"{base_url}/forloeb-overview?id={forloeb.ForløbID}"
     if opgave_id is not None:
