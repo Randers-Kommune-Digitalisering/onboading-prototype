@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
+import re
 
 from flask import request, jsonify, send_file
 from sqlalchemy.orm import selectinload
@@ -34,6 +35,22 @@ _ALLOWED_EXTENSIONS = {
 
 def _safe_filename(value: str) -> str:
     value = (value or "").strip()
+    # Defensive: do not allow header injection via CR/LF.
+    value = value.replace("\r", "").replace("\n", "")
+    # Defensive: strip path segments (both POSIX and Windows separators).
+    value = value.replace("\\", "/")
+    value = value.split("/")[-1]
+    # Remove surrounding quotes that can confuse Content-Disposition parsing.
+    value = value.strip(" \t\"'\u201c\u201d\u2018\u2019")
+    # Replace remaining unsafe characters with underscores.
+    # Allow: unicode word chars, space, dot, dash, underscore, parentheses.
+    value = re.sub(r"[^\w.\- ()]", "_", value, flags=re.UNICODE)
+    # Avoid edge cases like empty / dot-only filenames.
+    value = value.strip(" .")
+    value = re.sub(r"\s+", " ", value)
+    # Keep filenames to a reasonable length for client compatibility.
+    if len(value) > 200:
+        value = value[:200].rstrip(" .")
     return value or "download"
 
 

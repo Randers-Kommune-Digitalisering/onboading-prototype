@@ -297,7 +297,14 @@
 
         const filenameStar = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
         if (filenameStar && filenameStar[1])
-            return decodeURIComponent(filenameStar[1].replace(/"/g, ''))
+        {
+            const raw = filenameStar[1].replace(/"/g, '')
+            try {
+                return decodeURIComponent(raw)
+            } catch {
+                return raw
+            }
+        }
 
         const filename = contentDisposition.match(/filename="?([^";]+)"?/i)
         if (filename && filename[1])

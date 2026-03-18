@@ -56,13 +56,12 @@ Randers Kommune",
             "'": '&#39;'
             })[m];
         })
-        console.log("Forløb value: ", forloeb.value)
         content = content.replaceAll(/{navn}/g, forloeb.value?.name?.split(' ')[0] || "Fornavn")
         content = content.replaceAll(/{efternavn}/g, forloeb.value?.name?.split(' ').slice(1).join(' ') || "Efternavn")
         content = content.replaceAll(/{link}/g, '<a href="#" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 10px;">Se dit onboarding-forløb</a>')
         // Format dates as DD/MM-YYYY
         const formatDate = (dateStr) => {
-            if (!dateStr) return "startdato";
+            if (!dateStr) return null;
             const date = new Date(dateStr);
             if (isNaN(date)) return dateStr;
             const day = String(date.getDate()).padStart(2, '0');
