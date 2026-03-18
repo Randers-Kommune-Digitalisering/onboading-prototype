@@ -92,16 +92,23 @@ def _is_external_forloeb(forloeb: Forløb) -> bool:
         return False
 
 
-def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, force_internal: bool = False) -> str:
+def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, is_forloeb_user: bool = False, force_internal: bool = False) -> str:
     # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
     base_url = get_client_base_url(ONBOARDING_BASE_URL)
     logger.info(f"Constructing Forløb overview URL with base '{base_url}' for ForløbID {forloeb.ForløbID} and OpgaveID {opgave_id}")
 
-    url = f"{base_url}/forloeb-overview?id={forloeb.ForløbID}"
+    def _append_query_param(url: str, key: str, value: str) -> str:
+        separator = "&" if "?" in url else "?"
+        return f"{url}{separator}{key}={value}"
+
+    url = f"{base_url}/forloeb-overview?id={forloeb.ForløbID}" \
+          if is_forloeb_user else \
+          f"{base_url}/mit-forloeb"
+
     if opgave_id is not None:
-        url += f"&item={opgave_id}"
+        url = _append_query_param(url, "item", str(opgave_id))
     if _is_external_forloeb(forloeb) and not force_internal:
-        url += "&external=true"
+        url = _append_query_param(url, "external", "true")
     return url
 
 
@@ -128,7 +135,7 @@ def _format_date(dt: datetime | None) -> str:
 def _render_task_blocks_for_forloeb(forloeb: Forløb, opgaver: List[Opgave]) -> str:
     blocks: List[str] = []
     for opgave in opgaver:
-        url = _forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID)
+        url = _forloeb_overview_url(forloeb, opgave_id=opgave.OpgaveID, is_forloeb_user=True)
         blocks.append(
             "".join(
                 [
