@@ -159,13 +159,16 @@
         // Get item to edit
         try {
             const forloebResponse = await getForloebById(forloeb_id)
-            selectedAdmin.value = adminList.value.find(admin => admin.mail === forloebResponse.data.admin)
+            let adminObj = adminList.value.find(admin => admin.mail === forloebResponse.data.admin)
+            if (!adminObj)
+                adminObj = { name: forloebResponse.data.admin, mail: forloebResponse.data.admin }
+            selectedAdmin.value = adminObj
             const formattedData = {
                 ...forloebResponse.data,
                 startdate: forloebResponse.data.startdate ? forloebResponse.data.startdate.split('T')[0] : '',
                 enddate: forloebResponse.data.enddate ? forloebResponse.data.enddate.split('T')[0] : ''
             }
-            formattedData.admin = selectedAdmin.value.name
+            formattedData.admin = adminObj.name
             isPreparation.value = forloebResponse.data.isPreparation
             Object.assign(inputFields.value, formattedData)
         } catch (error) {
