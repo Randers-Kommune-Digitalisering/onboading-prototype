@@ -7,6 +7,7 @@
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
     import { deleteMail, NEW_TASK_ANSVARLIG } from '@/services/mailService.js'
+    import { downloadRessourceFile } from '@/services/ressourceService.js'
 
     const router = useRouter()
 
@@ -170,6 +171,14 @@
         {
             type: Boolean,
             default: false
+        },
+        external: {
+            type: Boolean,
+            default: false
+        },
+        accessKey: {
+            type: String,
+            default: null
         }
     })
 
@@ -257,6 +266,78 @@
         }).catch(error => {
             console.error('Error deleting mail:', error)
         })
+    }
+
+
+    const extractFileType = (content_type) => {
+        if (!content_type || typeof content_type !== 'string')
+            return null
+
+        switch (content_type) {
+            case 'application/pdf':
+                return 'pdf'
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            case 'application/msword':
+                return 'word'
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            case 'application/vnd.ms-excel':
+                return 'excel'
+            case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+            case 'application/vnd.ms-powerpoint':
+                return 'powerpoint'
+            default:
+                return null
+        }
+    }
+
+
+    const extractFilename = (contentDisposition) => {
+        if (!contentDisposition || typeof contentDisposition !== 'string')
+            return null
+
+        const filenameStar = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+        if (filenameStar && filenameStar[1])
+        {
+            const raw = filenameStar[1].replace(/"/g, '')
+            try {
+                return decodeURIComponent(raw)
+            } catch {
+                return raw
+            }
+        }
+
+        const filename = contentDisposition.match(/filename="?([^";]+)"?/i)
+        if (filename && filename[1])
+            return filename[1]
+
+        return null
+    }
+
+    const downloadRessource = async (ressource) => {
+        try {
+            const response = await downloadRessourceFile(ressource.RessourceID, {
+                external: props.external,
+                accessKey: props.accessKey,
+            })
+
+            const contentType = response?.headers?.['content-type'] || ressource?.content_type || 'application/octet-stream'
+            const blob = new Blob([response.data], { type: contentType })
+            const blobUrl = window.URL.createObjectURL(blob)
+
+            const contentDisposition = response?.headers?.['content-disposition']
+            const filename = extractFilename(contentDisposition) || ressource?.filename || ressource?.name || 'download'
+
+            const a = document.createElement('a')
+            a.href = blobUrl
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000)
+        } catch (error) {
+            console.error('Error downloading ressource:', error)
+        }
     }
 
     /* Instantiate */
@@ -368,22 +449,35 @@
             <div class="ressources" v-if="props.ressources.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
 
-                <a v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail"
-                   v-for="ressource in ressources"
-                   :href="ressource.url"
-                   target="_blank"
-                   class="link tooltip-hover">
-                        <i class="fa-solid fa-up-right-from-square"></i>
-                        {{ ressource.name }}
-                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
-                </a>
-                <span v-else v-for="ressource in ressources"
-                      @click="gotoRessource(ressource.RessourceID)"
-                      class="link tooltip-hover">
+                <template v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail">
+                    <template v-for="ressource in ressources" :key="ressource.RessourceID">
+                        <a v-if="!ressource.isFile"
+                            :href="ressource.url"
+                            target="_blank"
+                            class="link tooltip-hover">
+                            <i class="fa-solid fa-up-right-from-square"></i>
+                            {{ ressource.name }}
+                            <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
+                        </a>
+                        <span v-else
+                            @click="downloadRessource(ressource)"
+                            class="link tooltip-hover">
+                            <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
+                            {{ ressource.name }}
+                            <span v-if="ressource != null" class="tooltip-display">{{ ressource.filename || ressource.url }}</span>
+                        </span>
+                    </template>
+                </template>
+                <template v-else>
+                    <span v-for="ressource in ressources"
+                        :key="ressource.RessourceID"
+                        @click="gotoRessource(ressource.RessourceID)"
+                        class="link tooltip-hover">
                         <i class="fa-solid fa-pen-to-square"></i>
                         {{ ressource.name }}
-                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
-                </span>
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.isFile ? (ressource.filename || ressource.url) : ressource.url }}</span>
+                    </span>
+                </template>
             </div>
 
             <p v-if="note != null && note != ''" class="notes" v-html="renderNoteHTML(note)"></p>

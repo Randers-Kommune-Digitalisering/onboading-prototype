@@ -1,9 +1,10 @@
 from flask import request, jsonify
 from datetime import datetime
-from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, OpgaveGruppe
+from models import Opgave, Forløb, Forløbsskabelon, Opgaveskabelon, Ressource, RessourceFile, OpgaveGruppe
 from utils.db_connection import get_db_client
 from utils.config import MAIL_DESC_NEW_TASK_USER, MAIL_DESC_NEW_TASK_ANSVARLIG
 from utils.access_control import get_current_user_email, is_current_user_admin, user_can_access_forloeb
+from utils.ressource_serialization import serialize_ressource as _serialize_ressource
 from controllers.mail_controller import (
     plan_mail,
     create_mail_ansvarlig,
@@ -134,7 +135,7 @@ def get_all_opgaver():
         opgaver = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .all()
@@ -144,13 +145,7 @@ def get_all_opgaver():
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'letter': opgave.opgavegruppe.letter,
@@ -229,12 +224,38 @@ def create_opgave_with_opgaveskabelon():
         session.commit()
 
         for ressource in opgaveskabelon.ressource:
-            new_ressource = Ressource(
-                name=ressource.name,
-                url=ressource.url,
-                OpgaveID=new_opgave.OpgaveID
-            )
-            session.add(new_ressource)
+            if bool(getattr(ressource, 'isFile', False)):
+                src_file = getattr(ressource, 'file', None)
+                if src_file is None:
+                    src_file = session.query(RessourceFile).filter_by(RessourceID=ressource.RessourceID).first()
+                if src_file is None:
+                    continue
+
+                new_ressource = Ressource(
+                    name=ressource.name,
+                    url='',
+                    isFile=True,
+                    OpgaveID=new_opgave.OpgaveID,
+                )
+                session.add(new_ressource)
+                session.flush()
+
+                new_ressource.url = f"/api/ressource/{new_ressource.RessourceID}/download"
+                new_ressource.file = RessourceFile(
+                    RessourceID=new_ressource.RessourceID,
+                    filename=src_file.filename,
+                    content_type=src_file.content_type,
+                    size_bytes=src_file.size_bytes,
+                    data=src_file.data,
+                )
+            else:
+                new_ressource = Ressource(
+                    name=ressource.name,
+                    url=ressource.url,
+                    isFile=False,
+                    OpgaveID=new_opgave.OpgaveID,
+                )
+                session.add(new_ressource)
         session.commit()
 
         # Send mail notifications to the user and responsible person (ansvarlig)
@@ -283,7 +304,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
         query = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .join(Forløb)
@@ -302,13 +323,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name,
@@ -335,7 +350,15 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
 def get_opgave(opgave_id):
     session = db_client.get_session()
     try:
-        opgave = session.query(Opgave).filter_by(OpgaveID=opgave_id).first()
+        opgave = (
+            session.query(Opgave)
+            .options(
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
+                selectinload(Opgave.opgavegruppe),
+            )
+            .filter_by(OpgaveID=opgave_id)
+            .first()
+        )
         if not opgave:
             return jsonify({"error": "Opgave not found"}), 404
 
@@ -344,13 +367,7 @@ def get_opgave(opgave_id):
             'title': opgave.title,
             'beskrivelse': opgave.beskrivelse,
             'note': opgave.note,
-            'resourcer': [
-                {
-                    'RessourceID': ressource.RessourceID,
-                    'name': ressource.name,
-                    'url': ressource.url
-                } for ressource in opgave.ressource
-            ],
+            'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
             'gruppe': {
                 'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                 'name': opgave.opgavegruppe.name,
@@ -381,7 +398,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbsskabelonID=forlobsskabelon_id)
@@ -396,13 +413,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
                 'note': opgave.note,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name,
@@ -432,7 +443,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.mails),
             )
@@ -448,13 +459,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
                 'note': opgave.note,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name,
@@ -496,7 +501,7 @@ def get_opgave_by_ansvarlig(usermail):
         query = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
                 selectinload(Opgave.forløb),
             )
@@ -519,13 +524,7 @@ def get_opgave_by_ansvarlig(usermail):
                 'title': opg.title,
                 'beskrivelse': opg.beskrivelse,
                 'note': opg.note,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opg.ressource
-                ],
+                'resourcer': [_serialize_ressource(ressource) for ressource in opg.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opg.opgavegruppe.OpgaveGruppeID,
                     'name': opg.opgavegruppe.name,
@@ -560,7 +559,7 @@ def get_opgave_by_forloeb_id(forlob_id):
         opgave = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbID=forlob_id)
@@ -575,13 +574,7 @@ def get_opgave_by_forloeb_id(forlob_id):
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name,

@@ -8,12 +8,14 @@ from urllib.parse import urlencode
 from flask import jsonify, request
 from sqlalchemy.orm import selectinload
 
-from models import Forløb, Opgave, OpgaveGruppe
+from models import Forløb, Opgave, OpgaveGruppe, Ressource, RessourceFile
+from controllers.ressource_controller import download_response
 from utils.db_connection import get_db_client
+from utils.ressource_serialization import serialize_ressource
 from controllers.mail_controller import send_mail, create_mail_external_access
+from utils.client_url import get_client_base_url
 
 logger = logging.getLogger(__name__)
-
 db_client = get_db_client()
 
 
@@ -102,7 +104,7 @@ def request_external_access():
         forloeb.external_access_expires_at = expires_at.replace(tzinfo=None)
         session.commit()
 
-        base_url = request.url_root.rstrip('/')
+        base_url = get_client_base_url()
         # Put accessKey in the URL fragment to avoid it being sent in Referer headers
         # and being captured in query-string logs. The SPA reads the fragment.
         query = urlencode({"id": forloeb_id_int, "external": "true"})
@@ -214,7 +216,7 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         opgaver = (
             session.query(Opgave)
             .options(
-                selectinload(Opgave.ressource),
+                selectinload(Opgave.ressource).selectinload(Ressource.file).defer(RessourceFile.data),
                 selectinload(Opgave.opgavegruppe),
             )
             .filter_by(ForløbID=forloeb_id)
@@ -227,13 +229,7 @@ def get_opgaver_forloeb_external(forloeb_id: int):
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
                 'beskrivelse': opgave.beskrivelse,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgave.ressource
-                ],
+                'resourcer': [serialize_ressource(ressource) for ressource in opgave.ressource],
                 'gruppe': {
                     'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
                     'name': opgave.opgavegruppe.name,
@@ -253,5 +249,43 @@ def get_opgaver_forloeb_external(forloeb_id: int):
         response = jsonify(result)
         response.headers['Cache-Control'] = 'no-store'
         return response, 200
+    finally:
+        session.close()
+
+
+def download_ressource_file_external(ressource_id: int):
+    """GET /api/external/ressource/<id>/download
+
+    The access key is expected in the `X-External-Access-Key` header.
+    """
+
+    access_key = _get_access_key_from_request('')
+
+    session = db_client.get_session()
+    try:
+        ressource = session.query(Ressource).filter_by(RessourceID=ressource_id).first()
+        if not ressource:
+            return jsonify({"error": "Ressource not found"}), 404
+
+        if not getattr(ressource, 'isFile', False):
+            return jsonify({"error": "Ressource is not a file"}), 404
+
+        # External access only supports forløb tasks (not templates).
+        if ressource.OpgaveID is None:
+            return jsonify({"error": "Forbidden"}), 403
+
+        opgave = session.query(Opgave).filter_by(OpgaveID=ressource.OpgaveID).first()
+        if not opgave or getattr(opgave, 'ForløbID', None) is None:
+            return jsonify({"error": "Forbidden"}), 403
+
+        forloeb = session.query(Forløb).filter_by(ForløbID=opgave.ForløbID).first()
+        if not forloeb or not _is_valid_access_key(forloeb, access_key):
+            return jsonify({"error": "Invalid access"}), 403
+
+        file_row = session.query(RessourceFile).filter_by(RessourceID=ressource.RessourceID).first()
+        if not file_row:
+            return jsonify({"error": "File not found"}), 404
+
+        return download_response(file_row)
     finally:
         session.close()

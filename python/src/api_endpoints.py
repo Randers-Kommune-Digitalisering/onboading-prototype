@@ -45,11 +45,13 @@ from controllers.user_controller import (
 )
 from controllers.ressource_controller import (
     create_ressource,
+    create_ressource_file,
     get_ressources_by_opgaveid,
     delete_ressource,
     update_ressource,
     get_ressources_by_opgaveskabelonid,
-    get_ressource
+    get_ressource,
+    download_ressource_file,
 
 )
 from controllers.opgaveskabelon_controller import (
@@ -64,6 +66,7 @@ from controllers.external_access_controller import (
     get_external_userinfo,
     get_forloeb_external,
     get_opgaver_forloeb_external,
+    download_ressource_file_external,
 )
 from controllers.mail_controller import (
     send_welcome_mail,
@@ -98,6 +101,11 @@ def external_forloeb_by_id_endpoint(forloeb_id):
 @api_endpoints.route('/external/opgave/forloeb/<int:forloeb_id>', methods=['GET'])
 def external_opgaver_by_forloeb_id_endpoint(forloeb_id):
     return get_opgaver_forloeb_external(forloeb_id)
+
+
+@api_endpoints.route('/external/ressource/<int:ressource_id>/download', methods=['GET'])
+def external_ressource_download_endpoint(ressource_id):
+    return download_ressource_file_external(ressource_id)
 
 
 @api_endpoints.route('/mitforloeb', methods=['GET'])
@@ -257,6 +265,11 @@ def create_ressource_endpoint():
     return create_ressource()
 
 
+@api_endpoints.route('/ressource/file', methods=['POST'])
+def create_ressource_file_endpoint():
+    return create_ressource_file()
+
+
 @api_endpoints.route('/ressource/opgave/<int:opgave_id>', methods=['GET'])
 def get_ressources_by_opgaveid_endpoint(opgave_id):
     return get_ressources_by_opgaveid(opgave_id)
@@ -270,6 +283,11 @@ def delete_ressource_endpoint(ressource_id):
 @api_endpoints.route('/ressource/<int:ressource_id>', methods=['PUT'])
 def update_ressource_endpoint(ressource_id):
     return update_ressource(ressource_id)
+
+
+@api_endpoints.route('/ressource/<int:ressource_id>/download', methods=['GET'])
+def download_ressource_file_endpoint(ressource_id):
+    return download_ressource_file(ressource_id)
 
 
 @api_endpoints.route('/ressource/opgaveskabelon/<int:opgaveskabelon_id>', methods=['GET'])

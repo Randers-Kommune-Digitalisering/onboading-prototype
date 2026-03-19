@@ -12,6 +12,7 @@
     const focusedInput = ref(null)
 
     const forloeb_id = parseInt(route.query.id, 10)
+    const forloeb = ref(null)
 
     const textareaContent = ref(null)
     const inputFields = ref({
@@ -55,11 +56,21 @@ Randers Kommune",
             "'": '&#39;'
             })[m];
         })
-        content = content.replaceAll(/{navn}/g, "Test")
-        content = content.replaceAll(/{efternavn}/g, "Testesen")
+        content = content.replaceAll(/{navn}/g, forloeb.value?.name?.split(' ')[0] || "Fornavn")
+        content = content.replaceAll(/{efternavn}/g, forloeb.value?.name?.split(' ').slice(1).join(' ') || "Efternavn")
         content = content.replaceAll(/{link}/g, '<a href="#" style="text-decoration: none; background-color: rgb(56, 65, 84); border: 10px solid  rgb(56, 65, 84); color: rgb(237, 229, 220) !important; cursor: pointer; user-select: none; display: inline-block; margin-bottom: 10px;">Se dit onboarding-forløb</a>')
-        content = content.replaceAll(/{startdato}/g, "01-01-2024")
-        content = content.replaceAll(/{slutdato}/g, "31-12-2024")
+        // Format dates as DD/MM-YYYY
+        const formatDate = (dateStr) => {
+            if (!dateStr) return null;
+            const date = new Date(dateStr);
+            if (isNaN(date)) return dateStr;
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}-${year}`;
+        };
+        content = content.replaceAll(/{startdato}/g, formatDate(forloeb.value?.startdate) || "startdato");
+        content = content.replaceAll(/{slutdato}/g, formatDate(forloeb.value?.enddate) || "slutdato");
         content = content.replaceAll(/\n/g, "<br>")
         return content
     })
@@ -87,6 +98,7 @@ Randers Kommune",
                 return
             }
             Object.assign(inputFields.value, forloebResponse.data)
+            forloeb.value = forloebResponse.data
         } catch (error) {
             console.error('Error fetching forløb:', error)
         }
@@ -146,7 +158,6 @@ Randers Kommune",
             <input type="text" id="mail" name="mail" placeholder=" " v-model="inputFields.usermail" disabled>
             <label for="mail" class="floating-label">Medarbejder mailadresse</label>
         </div>
-
         
          <div class="inputContainer">
             <input type="text" id="subject" name="subject" placeholder=" " v-model="inputFields.subject" @focus="focusedInput = inputFieldDescriptions.subject" @blur="focusedInput = null" required :disabled="isPreviewing">
