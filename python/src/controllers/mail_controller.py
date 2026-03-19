@@ -95,7 +95,6 @@ def _is_external_forloeb(forloeb: Forløb) -> bool:
 def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, is_forloeb_user: bool = False, force_internal: bool = False) -> str:
     # Per requirement: frontend deep-link expects `id` for ForløbID and `item` for task.
     base_url = get_client_base_url(ONBOARDING_BASE_URL)
-    logger.info(f"Constructing Forløb overview URL with base '{base_url}' for ForløbID {forloeb.ForløbID} and OpgaveID {opgave_id}")
 
     def _append_query_param(url: str, key: str, value: str) -> str:
         separator = "&" if "?" in url else "?"

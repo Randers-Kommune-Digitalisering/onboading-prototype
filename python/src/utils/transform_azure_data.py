@@ -66,9 +66,8 @@ def _get_cached_result(file_path: str, name: str, compute):
 def transform_ad_data(file_path):
     try:
         def compute():
-            logger.info('Transforming AD data')
             filtered_df = _get_filtered_ad_df(file_path)
-            return [
+            result = [
                 {
                     "name": row['displayName'],
                     "email": row['mail'],
@@ -76,6 +75,8 @@ def transform_ad_data(file_path):
                 }
                 for _, row in filtered_df.iterrows()
             ]
+            logger.info(f"Rebuilt AD data count: {len(result)}")
+            return result
 
         return _get_cached_result(file_path, 'data', compute)
     except Exception as e:
@@ -86,10 +87,9 @@ def transform_ad_data(file_path):
 def transform_ad_email(file_path):
     try:
         def compute():
-            logger.info('Transforming AD email')
             filtered_df = _get_filtered_ad_df(file_path)
             emails = [email for email in filtered_df['mail'].tolist() if email]
-            logger.info(f"Transformed AD email count: {len(emails)}")
+            logger.info(f"Rebuilt AD email count: {len(emails)}")
             return emails
 
         return _get_cached_result(file_path, 'email', compute)
@@ -101,10 +101,9 @@ def transform_ad_email(file_path):
 def transform_ad_dq_number(file_path):
     try:
         def compute():
-            logger.info('Transforming AD DQ number')
             filtered_df = _get_filtered_ad_df(file_path)
             dq_numbers = [dq for dq in filtered_df['onPremisesSamAccountName'].tolist() if dq]
-            logger.info(f"Transformed AD DQ number count: {len(dq_numbers)}")
+            logger.info(f"Rebuilt AD DQ number count: {len(dq_numbers)}")
             return dq_numbers
 
         return _get_cached_result(file_path, 'dq_numbers', compute)
@@ -116,7 +115,6 @@ def transform_ad_dq_number(file_path):
 def transform_ad_fullname(file_path):
     try:
         def compute():
-            logger.info('Transforming AD full name')
             filtered_df = _get_filtered_ad_df(file_path)
             remove_values = ['Vikar', 'Distrikt Bakkegården', 'Afløser', 'Langå', 'Mobil', 'Vorup Plejecenter']
 
@@ -124,7 +122,7 @@ def transform_ad_fullname(file_path):
                 filtered_df = filtered_df[~filtered_df['displayName'].str.contains(value, case=False, na=False)]
 
             fullnames = [name for name in filtered_df['displayName'].tolist() if name]
-            logger.info(f"Transformed AD full name count: {len(fullnames)}")
+            logger.info(f"Rebuilt AD full name count: {len(fullnames)}")
             return fullnames
 
         return _get_cached_result(file_path, 'fullnames', compute)

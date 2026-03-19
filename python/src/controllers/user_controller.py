@@ -57,6 +57,7 @@ def _rebuild_azure_cache() -> bool:
         return False
 
     try:
+        logger.info("Rebuilding Azure AD cache from CSV...")
         payloads = {
             "data": transform_ad_data(abs_path),
             "emails": transform_ad_email(abs_path),
@@ -194,18 +195,15 @@ def get_and_save_azure_ad_data():
         if not users:
             logger.error("Error retrieving data from Azure AD")
             return None
-            # return jsonify({"error": "Error retrieving data from Azure AD"}), 500
 
         df = pd.DataFrame(users)
         csv_filename = AZURE_CSV_PATH
         df_to_csv(df, csv_filename.split(".")[0])
         logger.info(f"Data saved to {csv_filename}")
         return True
-        # return jsonify({"message": f"Data saved to {csv_filename}"}), 200
     except Exception as e:
         logger.error(f"Error processing data: {e}")
         return None
-        # return jsonify({"error": "Error processing data"}), 500
 
 
 def get_admin_data():
