@@ -101,9 +101,9 @@ def _forloeb_overview_url(forloeb: Forløb, opgave_id: int | None = None, is_for
         separator = "&" if "?" in url else "?"
         return f"{url}{separator}{key}={value}"
 
-    url = f"{base_url}/forloeb-overview?id={forloeb.ForløbID}" \
+    url = f"{base_url}/mit-forloeb" \
           if is_forloeb_user else \
-          f"{base_url}/mit-forloeb"
+          f"{base_url}/forloeb-overview?id={forloeb.ForløbID}"
 
     if opgave_id is not None:
         url = _append_query_param(url, "item", str(opgave_id))
