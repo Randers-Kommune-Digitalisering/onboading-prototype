@@ -26,3 +26,4 @@ https://github.com/Randers-Kommune-Digitalisering/kithosting-randers-kommune-app
   podSecurityContext:
 
   i henhold til issue #215 skal det lige vurderes om det skal skiftes til database s3 eller ligenne
+ 
