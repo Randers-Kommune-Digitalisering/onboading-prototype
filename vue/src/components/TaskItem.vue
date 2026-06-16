@@ -426,94 +426,92 @@
         <div class="card-color-seperator" :style="`background-color: #`+ color +`;`">
         </div>
 
-        <div class="card-content">
-            <div class="card-details">
-                <div v-if="(templateView && !isTemplate) || isPreparation">
-                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
-                    <div class="text">
-                        <div class="small faded">Startdag</div>
-                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : Math.abs(relativeStartdate) + ' ' + returnDagOrDage(Math.abs(relativeStartdate)) + (relativeStartdate > 0 ? ' efter opstart' : ' før opstart') }}</div>
-                    </div>
-                </div>
+        <div class="card-details">
 
-                <div>
-                    <div class="icon"><i class="fa-solid fa-clock"></i></div>
-                    <div class="text">
-                        <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? ('Starter' + (returnDaysFromNow(startdate) > 1 ? ' om ' : '')) : 'Deadline' }}</div>
-                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnDaysFromNowString(isFutureTask ? startdate : deadline) }}</div>
-                    </div>
+            <div v-if="(templateView && !isTemplate) || isPreparation">
+                <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="text">
+                    <div class="small faded">Startdag</div>
+                    <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : Math.abs(relativeStartdate) + ' ' + returnDagOrDage(Math.abs(relativeStartdate)) + (relativeStartdate > 0 ? ' efter opstart' : ' før opstart') }}</div>
                 </div>
-
-                <div v-if="!templateView">
-                    <div class="icon"><i class="fa-solid fa-user"></i></div>
-                    
-                    <div class="text" v-if="forloebId != null && userInfo.email == ansvarligEmail">
-                        <div class="small faded">Medarbejder</div>
-                        <div>{{ username ?? 'Ukendt medarbejder' }}</div>
-                    </div>
-                    <div class="text" v-else>
-                        <div class="small faded">Ansvarlig</div>
-                        <div>{{ ansvarlig ? returnFirstAndLastName(ansvarlig) : 'Ingen ansvarlig' }}</div>
-                    </div>
-                </div>
-
-                <div v-if="!templateView && !isPreparation">
-                    <div class="icon"><i class="fa-solid fa-calendar"></i></div>
-                    <div class="text">
-                        <div class="small faded">Booking</div>
-                        <div>{{booking && returnFormattedDate(booking) != null ? returnFormattedDate(booking) : 'Ingen kalenderbooking'}}</div>
-                    </div>
-                </div>
-
             </div>
 
-
-            <div v-if="note != null && note != ''" class="notes">
-                <div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>
-                    <i class='fa-solid fa-note-sticky' style='padding-right: 0.5rem'></i>
-                    Note til ansvarlig:
+            <div>
+                <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="text">
+                    <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? ('Starter' + (returnDaysFromNow(startdate) > 1 ? ' om ' : '')) : 'Deadline' }}</div>
+                    <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnDaysFromNowString(isFutureTask ? startdate : deadline) }}</div>
                 </div>
+            </div>
+
+            <div v-if="!templateView">
+                <div class="icon"><i class="fa-solid fa-user"></i></div>
                 
-                {{ note }}
+                <div class="text" v-if="forloebId != null && userInfo.email == ansvarligEmail">
+                    <div class="small faded">Medarbejder</div>
+                    <div>{{ username ?? 'Ukendt medarbejder' }}</div>
+                </div>
+                <div class="text" v-else>
+                    <div class="small faded">Ansvarlig</div>
+                    <div>{{ ansvarlig ? returnFirstAndLastName(ansvarlig) : 'Ingen' }}</div>
+                </div>
             </div>
 
-            <div class="buttons">
-                <div class="button"
-                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail)"
-                     @click="gotoRessource()">
-                        + Tilføj ressource
+            <div v-if="!templateView && !isPreparation">
+                <div class="icon"><i class="fa-solid fa-calendar"></i></div>
+                <div class="text">
+                    <div class="small faded">Booking</div>
+                    <div>{{booking && returnFormattedDate(booking) != null ? returnFormattedDate(booking) : 'Ingen'}}</div>
                 </div>
+            </div>
 
-                <div class="button hollow"
-                     v-if="isTemplate || userInfo?.isAdmin"
-                     @click="gotoTask()">
-                        Redigér
-                </div>
+        </div><!-- /card-details -->
 
-                <div :class="['button', 'hollow', {'yellow': result}]"
-                     v-if="!templateView && !isPreparation && 
-                            (userInfo?.isAdmin ||
-                                (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
-                                (userInfo?.isMedarbejder && ansvarligEmail == '')
-                            )"
-                     @click="completeTask(!result)">
-                        Markér {{ result ? 'ej ' :'' }} gennemført
-                </div>
+        <div v-if="note != null && note != ''" class="notes">
+            <div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>
+                <i class='fa-solid fa-note-sticky' style='padding-right: 0.5rem'></i>
+                Note til ansvarlig:
+            </div>
+            
+            {{ note }}
+        </div>
 
-                <div class="button hollow red"
-                     v-if="isTemplate || userInfo?.isAdmin"
-                     @click="deleteTask()">
-                        Slet
-                </div>
+        <div class="buttons">
+            <div class="button"
+                    v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail)"
+                    @click="gotoRessource()">
+                    + Tilføj ressource
+            </div>
 
-                <router-link class="button hollow"
-                             v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null)"
-                             :to="`/forloeb-overview?id=${forloebId}`">
-                                Gå til forløb
-                </router-link>
-            </div><!-- /buttons -->
+            <div class="button hollow"
+                    v-if="isTemplate || userInfo?.isAdmin"
+                    @click="gotoTask()">
+                    Redigér
+            </div>
 
-        </div><!-- /card-content -->
+            <div :class="['button', 'hollow', {'yellow': result}]"
+                    v-if="!templateView && !isPreparation && 
+                        (userInfo?.isAdmin ||
+                            (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
+                            (userInfo?.isMedarbejder && ansvarligEmail == '')
+                        )"
+                    @click="completeTask(!result)">
+                    Markér {{ result ? 'ej ' :'' }} gennemført
+            </div>
+
+            <div class="button hollow red"
+                    v-if="isTemplate || userInfo?.isAdmin"
+                    @click="deleteTask()">
+                    Slet
+            </div>
+
+            <router-link class="button hollow"
+                            v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null)"
+                            :to="`/forloeb-overview?id=${forloebId}`">
+                            Gå til forløb
+            </router-link>
+        </div><!-- /buttons -->
+
     </div><!-- /card -->
 
 </template>
@@ -523,7 +521,6 @@
         background-color: rgb(247, 248, 210);
         padding: 0.5rem 0.8rem;
         border-radius: 0.4rem;
-        margin-top: 1rem;
         white-space: pre-line;
     }
     .tooltipContainer {
