@@ -38,10 +38,10 @@
     align-items: center;
     flex-direction: column;
     height: 100vh;
-    background-color: var(--background-color);
+    background-color: var(--color-background);
 }
 p {
-    color: var(--text-color);
+    color: var(--color-text);
     font-size: 1.2em;
     font-weight: 500;
     margin: 0;
