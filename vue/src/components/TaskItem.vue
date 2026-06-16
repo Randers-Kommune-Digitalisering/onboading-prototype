@@ -347,26 +347,28 @@
 
 <template>
     <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
-        <div class="card-header pointer no-select" @click="e => { if (!e.target.closest('.tooltip')) expandCard() }">
-            <div class="card-icon">
-                <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
-                    <div>{{ group?.letter }}</div>
-                    <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
+        <div class="card-header no-select" @click="e => { if (!e.target.closest('.tooltip')) expandCard() }">
+
+            <div style="width:100%">
+
+                <div class="card-icon">
+                    <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
+                        <div>{{ group?.letter }}</div>
+                        <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
+                    </div>
                 </div>
+
+                <span class="card-inline-title">
+                    {{ title }}
+                </span>
+                <span class="card-description">{{ description }}</span>
+
             </div>
 
-            <div class="no-overflow">
-                <p class="card-title">
-                    {{ title }}
-                </p>
-                <p class="card-subtitle">
-                    {{ header }}
-                </p>
-            </div>
 
             <div class="card-separator"></div>
 
-            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
+            <!-- <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
                 <div class="tooltipContainer">
                     <div class="icon"><i class="fa-solid fa-envelope"></i></div>
                     <div class="text">
@@ -384,16 +386,43 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- <div class="card-image" :style="`background-image: url('`+ image +`');`">
-                &nbsp;
             </div> -->
         </div>
 
-        <!-- <div class="card-large-image" :style="`background-image: url('`+ image +`');`">
-            &nbsp;
-        </div> -->
+        <div class="ressources" v-if="props.ressources.length > 0">
+            <template v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail">
+                <div v-for="ressource in ressources" :key="ressource.RessourceID">
+                    <a v-if="!ressource.isFile"
+                        :href="ressource.url"
+                        target="_blank"
+                        class="ressource tooltip-hover">
+                        <i class="fa-solid fa-up-right-from-square"></i>
+                        {{ ressource.name }}asd
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
+                    </a>
+                    <span v-else
+                        @click="downloadRessource(ressource)"
+                        class="ressource tooltip-hover">
+                        <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
+                        {{ ressource.name }}asd
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.filename || ressource.url }}</span>
+                    </span>
+                </div>
+            </template>
+            <template v-else>
+                <div v-for="ressource in ressources"
+                    :key="ressource.RessourceID"
+                    @click="gotoRessource(ressource.RessourceID)"
+                    class="ressource tooltip-hover">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    {{ ressource.name }}
+                    <div class="file-name">{{ ressource.filename || ressource.url }}</div>
+
+                    <!-- <span v-if="ressource != null" class="tooltip-display">{{ ressource.isFile ? (ressource.filename || ressource.url) : ressource.url }}</span> -->
+                </div>
+            </template>
+        </div>
+
         <div class="card-color-seperator" :style="`background-color: #`+ color +`;`">
         </div>
 
@@ -438,41 +467,6 @@
 
             </div>
 
-            <p v-html="description.replace(/\n/g, '<br>')"></p>
-
-            <div class="ressources" v-if="props.ressources.length > 0">
-                <span class="faded uppercase">Ressourcer</span>
-
-                <template v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail">
-                    <template v-for="ressource in ressources" :key="ressource.RessourceID">
-                        <a v-if="!ressource.isFile"
-                            :href="ressource.url"
-                            target="_blank"
-                            class="link tooltip-hover">
-                            <i class="fa-solid fa-up-right-from-square"></i>
-                            {{ ressource.name }}
-                            <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
-                        </a>
-                        <span v-else
-                            @click="downloadRessource(ressource)"
-                            class="link tooltip-hover">
-                            <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
-                            {{ ressource.name }}
-                            <span v-if="ressource != null" class="tooltip-display">{{ ressource.filename || ressource.url }}</span>
-                        </span>
-                    </template>
-                </template>
-                <template v-else>
-                    <span v-for="ressource in ressources"
-                        :key="ressource.RessourceID"
-                        @click="gotoRessource(ressource.RessourceID)"
-                        class="link tooltip-hover">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        {{ ressource.name }}
-                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.isFile ? (ressource.filename || ressource.url) : ressource.url }}</span>
-                    </span>
-                </template>
-            </div>
 
             <div v-if="note != null && note != ''" class="notes">
                 <div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>
