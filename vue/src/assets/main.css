@@ -537,7 +537,7 @@ p > a:hover {
         opacity: 0;
     }
 
-.card-content > p, .card-content > .ressources {
+.card-content > p, .card-content > .ressources, .card-content .notes {
     margin-left: 1.2rem;
     margin-right: 1.2rem;
     margin-top: 0.8rem;
