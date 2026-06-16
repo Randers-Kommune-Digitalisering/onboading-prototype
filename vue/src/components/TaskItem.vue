@@ -474,14 +474,14 @@
                 </template>
             </div>
 
-            <p v-if="note != null && note != ''" class="notes">
+            <div v-if="note != null && note != ''" class="notes">
                 <div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>
                     <i class='fa-solid fa-note-sticky' style='padding-right: 0.5rem'></i>
                     Note til ansvarlig:
                 </div>
                 
                 {{ note }}
-            </p>
+            </div>
 
             <div class="buttons">
                 <div class="button"
