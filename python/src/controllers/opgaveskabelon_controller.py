@@ -1,6 +1,8 @@
 from flask import request, jsonify
-from models import Opgaveskabelon
+from models import Opgaveskabelon, Ressource, RessourceFile
 from utils.db_connection import get_db_client
+from utils.ressource_serialization import serialize_ressource
+from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 
@@ -17,6 +19,7 @@ def create_opgaveskabelon():
         new_opgaveskabelon = Opgaveskabelon(
             title=data['title'],
             beskrivelse=data['beskrivelse'],
+            note=data['note'],
             relativ_slutdag=data['relativ_slutdag'],
         )
         session.add(new_opgaveskabelon)
@@ -32,20 +35,19 @@ def create_opgaveskabelon():
 def get_all_opgaveskabeloner():
     session = db_client.get_session()
     try:
-        opgaveskabeloner = session.query(Opgaveskabelon).all()
+        opgaveskabeloner = (
+            session.query(Opgaveskabelon)
+            .options(selectinload(Opgaveskabelon.ressource).selectinload(Ressource.file).defer(RessourceFile.data))
+            .all()
+        )
         opgaveskabeloner_data = [
             {
                 'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
                 'title': opgaveskabelon.title,
                 'beskrivelse': opgaveskabelon.beskrivelse,
                 'relativ_slutdag': opgaveskabelon.relativ_slutdag,
-                'resourcer': [
-                    {
-                        'RessourceID': ressource.RessourceID,
-                        'name': ressource.name,
-                        'url': ressource.url
-                    } for ressource in opgaveskabelon.ressource
-                ]
+                'note': opgaveskabelon.note if opgaveskabelon.note else "",
+                'resourcer': [serialize_ressource(ressource) for ressource in opgaveskabelon.ressource]
             } for opgaveskabelon in opgaveskabeloner
         ]
         return jsonify(opgaveskabeloner_data), 200
@@ -66,6 +68,7 @@ def get_opgaveskabelon(opgaveskabelon_id):
             'OpgaveskabelonID': opgaveskabelon.OpgaveskabelonID,
             'title': opgaveskabelon.title,
             'beskrivelse': opgaveskabelon.beskrivelse,
+            'note': opgaveskabelon.note if opgaveskabelon.note else "",
             'relativ_slutdag': opgaveskabelon.relativ_slutdag
         }
         return jsonify(opgaveskabelon_data), 200
@@ -90,6 +93,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
 
         opgaveskabelon.title = data['title']
         opgaveskabelon.beskrivelse = data['beskrivelse']
+        opgaveskabelon.note = data['note']
         opgaveskabelon.relativ_slutdag = data['relativ_slutdag']
 
         session.commit()

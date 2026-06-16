@@ -1,14 +1,11 @@
 <script setup>
-    import { ref, onMounted, watch } from 'vue'
-    import { useRoute } from 'vue-router'
-
+    import { ref, onMounted } from 'vue'
     import { getUserInfo } from '@/services/keycloakService.js'
 
     const adminMenuItems = [
         {
             "title": "Overblik",
             "url": "/admin-overview",
-            "alias": ['/forloeb-overview'],
             "icon": "fa-solid fa-list-check"
         },
         {
@@ -62,32 +59,13 @@
             // Filter menu items based on roles
             if (clientRoles.includes('Admin')) {
                 menuItems.value = adminMenuItems
-            } else if (clientRoles.includes('Ny medarbejder') || clientRoles.includes('Ansvarlig')) {
+            } else if (clientRoles.includes('Medarbejder')) {
                 menuItems.value = defaultMenuItems
             }
 
-            // Set selected = true for landing page (URL)
-            const landingPageIndex = menuItems.value.findIndex(x => x.url == new URL(location.href).pathname)
-            if (landingPageIndex !== -1)
-                menuItems.value[landingPageIndex].selected = true
         }).catch(error => {
             console.error('Error fetching user info:', error);
         });
-    })
-
-    function select(item) {
-        menuItems.value.forEach(x => x.selected = false)
-        item.selected = true
-    }
-
-    const route = useRoute()
-
-    watch(() => route.path, (newPath) => {
-        const matchFound = menuItems.value.some(item => item.url === newPath) || menuItems.value.some(item => item.alias?.includes(newPath))
-        if (!matchFound) return
-        menuItems.value.forEach(item => {
-            item.selected = item.url === newPath || item.alias?.includes(newPath)
-        })
     })
 </script>
 
@@ -95,7 +73,7 @@
 
     <div class="navbar">
 
-        <router-link v-for="item in menuItems" :key="item.title" class="item" :class="{ selected: item.selected }" :to="item.url" @click="select(item)">
+        <router-link v-for="item in menuItems" :key="item.title" class="item" :to="item.url">
             <i :class="item.icon + ' fa-xl'"></i>
             <span>{{ item.title }}</span>
         </router-link>

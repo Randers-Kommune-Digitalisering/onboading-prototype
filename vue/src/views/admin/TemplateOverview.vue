@@ -64,6 +64,23 @@
 </script>
 
 <template>
+	<div
+		class="float-right helper-text"
+        @mousedown.prevent
+        @click.prevent
+	>
+		<div class="header-small">Forløbsskabeloner</div>
+		<div>
+			<span>Forløbsskabeloner er en skabelon til et helt forløb (med flere opgaver), som du kan genbruge til flere medarbejdere.</span>
+			<span>Når du opretter et nyt forløb, kan du vælge at basere den på en forløbsskabelon. Dette vil kopiere opgaverne ind i det nye forløb – inkl. deres planlagte start- og sluttidspunkter.</span>
+		</div>
+		<br />
+		<div class="header-small">Opgaveskabeloner</div>
+		<div>
+			<span>Opgaveskabeloner er en skabelon til en enkelt opgave, som kan genbruges på tværs af flere forløb og forløbsskabeloner.</span>
+			<span>Når du opretter en ny opgave (i et eksisterende forløb eller på en forløbsskabelon), kan du vælge at tage udgangspunkt i en opgaveskabelon. Dette vil kopiere oplysningerne fra skabelonen til den nye opgave.</span>
+		</div>
+	</div>
 	<div class="navItems">
 		<div @click="selectTemplateType(TemplateType.Forloebsskabelon)" :class="['navItem', {'selected': selectedType==TemplateType.Forloebsskabelon}]">
 			<i class="fa-regular fa-calendar fa-xl"></i>
@@ -85,7 +102,6 @@
 			  title=""
 			  :expandFirstItem="false"
 			  :templateView="true"
-			  :userInfo="{}"
 			  :expandItem="expandItem" />
 </template>
 
@@ -101,7 +117,7 @@
 	background-color: var(--color-card-faded);
 }
 .navItems .navItem.selected {
-	background: linear-gradient(to bottom, rgb(199, 190, 179), var(--color-background));
+	background: linear-gradient(to bottom, var(--color-card-faded), var(--color-background));
 	background-color: var(--color-background);
 	pointer-events: none;
 	border-top: 0.25rem solid var(--color-card-dark);
@@ -113,11 +129,5 @@
 }
 .navItems .navItem:not(.selected) {
 	margin-bottom: 0.4rem;
-}
-
-@media only screen and (min-width: 768px) {
-    .navItems {
-        max-width: 38rem;
-    }
 }
 </style>

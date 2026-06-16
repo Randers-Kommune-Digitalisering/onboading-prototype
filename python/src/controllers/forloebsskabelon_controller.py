@@ -1,6 +1,7 @@
 from flask import request, jsonify
-from models import Forløbsskabelon, Opgave
+from models import Forløbsskabelon, Opgave, OpgaveGruppe
 from utils.db_connection import get_db_client
+from sqlalchemy.orm import selectinload
 
 db_client = get_db_client()
 
@@ -29,12 +30,23 @@ def create_forloebsskabelon():
 def get_all_forloebsskabeloner():
     session = db_client.get_session()
     try:
-        forloebsskabeloner = session.query(Forløbsskabelon).all()
+        forloebsskabeloner = (
+            session.query(Forløbsskabelon)
+            .options(selectinload(Forløbsskabelon.opgave_grupper))
+            .all()
+        )
         forloebsskabeloner_data = [
             {
                 'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
                 'name': forloebsskabelon.name,
-                'varighed': forloebsskabelon.varighed
+                'varighed': forloebsskabelon.varighed,
+                'opgave_grupper': [
+                    {
+                        'OpgaveGruppeID': opgave_gruppe.OpgaveGruppeID,
+                        'name': opgave_gruppe.name,
+                        'letter': opgave_gruppe.letter
+                    } for opgave_gruppe in forloebsskabelon.opgave_grupper
+                ]
             } for forloebsskabelon in forloebsskabeloner
         ]
         return jsonify(forloebsskabeloner_data)
@@ -51,10 +63,19 @@ def get_forloebsskabelon_by_id(forloebsskabelon_id):
         if not forloebsskabelon:
             return jsonify({"error": "Forløbsskabelon not found"}), 404
 
+        opgave_grupper = session.query(OpgaveGruppe).filter_by(ForløbsskabelonID=forloebsskabelon.ForløbsskabelonID).all()
+
         forloebsskabelon_data = {
             'ForløbsskabelonID': forloebsskabelon.ForløbsskabelonID,
             'name': forloebsskabelon.name,
-            'varighed': forloebsskabelon.varighed
+            'varighed': forloebsskabelon.varighed,
+            'opgave_grupper': [
+                {
+                    'OpgaveGruppeID': opgave_gruppe.OpgaveGruppeID,
+                    'name': opgave_gruppe.name,
+                    'letter': opgave_gruppe.letter
+                } for opgave_gruppe in opgave_grupper
+            ]
         }
         return jsonify(forloebsskabelon_data)
     except Exception as e:

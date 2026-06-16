@@ -1,15 +1,23 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 
 # loads .env file, will not overide already set enviroment variables (will do nothing when testing, building and deploying)
 load_dotenv()
 
+# Test defaults: keep pytest runs deterministic regardless of local .env.
+if 'pytest' in sys.modules:
+    os.environ['DEBUG'] = 'False'
+    os.environ.setdefault('POD_NAME', 'test-pod')
 
-DEBUG = os.getenv('DEBUG', 'True')
+
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't', 'yes', 'y')
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
-DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')
+
+# Frontend base URL used for generating absolute deep links in emails
+ONBOARDING_BASE_URL = os.getenv('ONBOARDING_BASE_URL', 'http://onboarding.data.randers.dk').rstrip('/')
 
 DB_TYPE = os.getenv('DB_TYPE', None)  # environ["DB_TYPE"].strip()
 POSTGRES_USER = os.getenv('POSTGRES_USER', '').strip()  # environ["POSTGRES_USER"].strip()
@@ -32,8 +40,23 @@ KEYCLOAK_CLIENT_ID = os.environ["KEYCLOAK_CLIENT_ID"].strip()
 KEYCLOAK_CLIENT_SECRET = os.environ["KEYCLOAK_CLIENT_SECRET"].strip()
 COOKIE_SECRET = os.environ["COOKIE_SECRET"].strip()
 
-MAIL_SERVICE_URL = os.environ["MAIL_SERVICE_URL"].strip()
-MAIL_SERVICE_SENDER = os.environ["MAIL_SERVICE_SENDER"].strip()
+# Mail description constants used to categorize planned emails in DB
+MAIL_DESC_NEW_TASK_USER = "NEW_TASK_USER"
+MAIL_DESC_NEW_TASK_ANSVARLIG = "NEW_TASK_ANSVARLIG"
+
+# SMTP settings for rk-digi EmailSender
+MAIL_SMTP_SERVER = os.getenv("MAIL_SMTP_SERVER", os.getenv("SMTP_SERVER", "")).strip()
+MAIL_SMTP_SENDER = os.getenv("MAIL_SMTP_SENDER", "").strip()
+MAIL_SMTP_PASSWORD = os.getenv("MAIL_SMTP_PASSWORD", "").strip()
+try:
+    MAIL_SMTP_PORT = int(os.getenv("MAIL_SMTP_PORT", os.getenv("SMTP_PORT", "587")))
+except ValueError:
+    MAIL_SMTP_PORT = 587
+
+DISABLE_KEYCLOAK = os.getenv('DISABLE_KEYCLOAK', 'False').lower() in ('true', '1', 't')
+DISABLE_KEYCLOAK_ROLES = os.getenv('DISABLE_KEYCLOAK_ROLES', 'Admin').strip()
+DISABLE_KEYCLOAK_USER_EMAIL = os.getenv('DISABLE_KEYCLOAK_USER_EMAIL', '').strip()
+DISABLE_KEYCLOAK_USER_NAME = os.getenv('DISABLE_KEYCLOAK_USER_NAME', '').strip()
 
 # SFTP_HOST = os.environ['SFTP_HOST'].rstrip()
 # SFTP_USER = os.environ['SFTP_USER'].rstrip()
@@ -42,3 +65,5 @@ MAIL_SERVICE_SENDER = os.environ["MAIL_SERVICE_SENDER"].strip()
 # AZURE_TENANTID = os.environ['AZURE_TENANTID'].rstrip()
 # AZURE_CLIENTSECRET = os.environ['AZURE_CLIENTSECRET'].rstrip()
 # CSV_PATH = os.environ['CSV_PATH'].rstrip()
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB

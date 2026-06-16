@@ -2,30 +2,48 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
 
+    import { getUserInfo } from '@/services/keycloakService.js'
+
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
+    import { deleteMail, NEW_TASK_ANSVARLIG } from '@/services/mailService.js'
+    import { downloadRessourceFile } from '@/services/ressourceService.js'
 
     const router = useRouter()
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
+    const userInfo = ref({
+        roles: [],
+        email: '',
+        isAdmin: false,
+        isMedarbejder: false,
+    })
 
     const expandCard = () => {
         cardRef.value.classList.toggle('expand-content')
     }
 
-    const returnTimeLeft = (deadline) => {
+    const returnDaysFromNow = (date) => {
+        const target = new Date(date)
+        if (target.toString() === 'Invalid Date') return null
+
         const now = new Date()
-        const diff = deadline - now
-        const absDiff = Math.abs(diff)
-        const days = Math.floor(absDiff / (1000 * 60 * 60 * 24))
-        const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60))
-        const daysText = days > 0 ? days + ' dag' + (days > 1 ? 'e' : '') : ''
-        const hoursText = hours > 0 ? hours + ' time' + (hours > 1 ? 'r' : '') : ''
-        const minutesText = minutes > 0 ? minutes + ' minut' + (minutes > 1 ? 'ter' : '') : ''
-        const timeLeft = `${days > 0 ? daysText : ''} ${hours > 0 ? hoursText : ''} ${minutes > 0 && hours === 0 ? (minutesText) : ''}`
-        return diff < 0 ? `${timeLeft} siden` : timeLeft
+        const toUtcMidnightMs = (d) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
+        return Math.round((toUtcMidnightMs(target) - toUtcMidnightMs(now)) / (1000 * 60 * 60 * 24))
+    }
+
+    const returnDaysFromNowString = (deadline) => {
+        const diffDays = returnDaysFromNow(deadline)
+        if (diffDays == null) return ''
+
+        if (diffDays === 0) return 'I dag'
+        if (diffDays === 1) return 'I morgen'
+        if (diffDays === -1) return 'I går'
+
+        const absDays = Math.abs(diffDays)
+        const daysText = absDays + ' dag' + (absDays > 1 ? 'e' : '')
+        return diffDays < 0 ? `${daysText} siden` : daysText
     }
 
     const returnFormattedDate = (date) => {
@@ -64,10 +82,6 @@
             type: Number,
             required: true
         },
-        userInfo: {
-            type: Object,
-            required: true
-        },
         forloebId: {
             type: Number,
             default: null
@@ -87,6 +101,13 @@
         description: {
             type: String,
             default: ''
+        },
+        note: {
+            type: String,
+            default: ''
+        },
+        group: {
+            type: Object
         },
         relativeStartdate: {
             type: Number
@@ -117,6 +138,10 @@
             type: String,
             default: '000'
         },
+        border: {
+            type: String,
+            default: null
+        },
         expandByDefault: {
             type: Boolean,
             default: false
@@ -136,9 +161,28 @@
         ressources:
         {
             type: Array,
-            default: []
+            default: () => []
+        },
+        mails: {
+            type: Array,
+            default: () => []
+        },
+        isPreparation:
+        {
+            type: Boolean,
+            default: false
+        },
+        external: {
+            type: Boolean,
+            default: false
+        },
+        accessKey: {
+            type: String,
+            default: null
         }
     })
+
+    const dynamicMails = ref(props.mails)
 
     /* Task operations */
 
@@ -197,17 +241,103 @@
     const gotoTask = () => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
-        // if (props.isTemplate) 
-        //     updateQuery.template = true
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate } })
+            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate, prep: props.isPreparation } })
         })
+    }
+
+    const deletePendingEmail = (id) => {
+        if(!confirm('Er du sikker på, at du vil slette denne mail?'))
+            return
+
+        deleteMail({ id: id }).then(response => {
+            dynamicMails.value = dynamicMails.value.filter(mail => mail.id !== id)
+            // const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
+            // router.replace({ path: '/reload' }).then(() => {
+            //     router.replace(currentPath)
+            // })
+        }).catch(error => {
+            console.error('Error deleting mail:', error)
+        })
+    }
+
+
+    const extractFileType = (content_type) => {
+        if (!content_type || typeof content_type !== 'string')
+            return null
+
+        switch (content_type) {
+            case 'application/pdf':
+                return 'pdf'
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            case 'application/msword':
+                return 'word'
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            case 'application/vnd.ms-excel':
+                return 'excel'
+            case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+            case 'application/vnd.ms-powerpoint':
+                return 'powerpoint'
+            default:
+                return null
+        }
+    }
+
+
+    const extractFilename = (contentDisposition) => {
+        if (!contentDisposition || typeof contentDisposition !== 'string')
+            return null
+
+        const filenameStar = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+        if (filenameStar && filenameStar[1])
+        {
+            const raw = filenameStar[1].replace(/"/g, '')
+            try {
+                return decodeURIComponent(raw)
+            } catch {
+                return raw
+            }
+        }
+
+        const filename = contentDisposition.match(/filename="?([^";]+)"?/i)
+        if (filename && filename[1])
+            return filename[1]
+
+        return null
+    }
+
+    const downloadRessource = async (ressource) => {
+        try {
+            const response = await downloadRessourceFile(ressource.RessourceID, {
+                external: props.external,
+                accessKey: props.accessKey,
+            })
+
+            const contentType = response?.headers?.['content-type'] || ressource?.content_type || 'application/octet-stream'
+            const blob = new Blob([response.data], { type: contentType })
+            const blobUrl = window.URL.createObjectURL(blob)
+
+            const contentDisposition = response?.headers?.['content-disposition']
+            const filename = extractFilename(contentDisposition) || ressource?.filename || ressource?.name || 'download'
+
+            const a = document.createElement('a')
+            a.href = blobUrl
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000)
+        } catch (error) {
+            console.error('Error downloading ressource:', error)
+        }
     }
 
     /* Instantiate */
 
-    onMounted(() => {
+    onMounted(async () => {
+        userInfo.value = await getUserInfo()
         isFutureTask.value = new Date(props.startdate) > new Date()
         if (props.expandByDefault) {
             scrollTo()
@@ -216,11 +346,12 @@
 </script>
 
 <template>
-    <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" ref="cardRef">
-        <div class="card-header pointer no-select" @click="expandCard">
+    <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
+        <div class="card-header pointer no-select" @click="e => { if (!e.target.closest('.tooltip')) expandCard() }">
             <div class="card-icon">
-                <div :style="`background-color: #`+ color +`;`">
-                    <div>{{ title.slice(0,1).toLocaleLowerCase() }}</div>
+                <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
+                    <div>{{ group?.letter }}</div>
+                    <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
                 </div>
             </div>
 
@@ -235,6 +366,26 @@
 
             <div class="card-separator"></div>
 
+            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
+                <div class="tooltipContainer">
+                    <div class="icon"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="text">
+                        <div class="small faded">Mails</div>
+                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
+                    </div>
+                    
+                    <div class="tooltip">
+                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
+                            <div>
+                                <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
+                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
+                            </div>
+                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- <div class="card-image" :style="`background-image: url('`+ image +`');`">
                 &nbsp;
             </div> -->
@@ -248,26 +399,26 @@
 
         <div class="card-content">
             <div class="card-details">
-                <div v-if="templateView && !isTemplate">
+                <div v-if="(templateView && !isTemplate) || isPreparation">
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
                         <div class="small faded">Startdag</div>
-                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : relativeStartdate + ' ' + returnDagOrDage(relativeStartdate) + ' efter opstart' }}</div>
+                        <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : Math.abs(relativeStartdate) + ' ' + returnDagOrDage(Math.abs(relativeStartdate)) + (relativeStartdate > 0 ? ' efter opstart' : ' før opstart') }}</div>
                     </div>
                 </div>
 
                 <div>
                     <div class="icon"><i class="fa-solid fa-clock"></i></div>
                     <div class="text">
-                        <div class="small faded">{{ templateView ? 'Varighed' : isFutureTask ? 'Starter om' : 'Deadline' }}</div>
-                        <div>{{ templateView ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnTimeLeft(isFutureTask ? startdate : deadline) }}</div>
+                        <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? ('Starter' + (returnDaysFromNow(startdate) > 1 ? ' om ' : '')) : 'Deadline' }}</div>
+                        <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnDaysFromNowString(isFutureTask ? startdate : deadline) }}</div>
                     </div>
                 </div>
 
                 <div v-if="!templateView">
                     <div class="icon"><i class="fa-solid fa-user"></i></div>
                     
-                    <div class="text" v-if="forloebId != null && (userInfo.isAnsvarlig && userInfo.email == ansvarligEmail)">
+                    <div class="text" v-if="forloebId != null && userInfo.email == ansvarligEmail">
                         <div class="small faded">Medarbejder</div>
                         <div>{{ username ?? 'Ukendt medarbejder' }}</div>
                     </div>
@@ -277,7 +428,7 @@
                     </div>
                 </div>
 
-                <div v-if="!templateView">
+                <div v-if="!templateView && !isPreparation">
                     <div class="icon"><i class="fa-solid fa-calendar"></i></div>
                     <div class="text">
                         <div class="small faded">Booking</div>
@@ -292,27 +443,49 @@
             <div class="ressources" v-if="props.ressources.length > 0">
                 <span class="faded uppercase">Ressourcer</span>
 
-                <a v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail"
-                   v-for="ressource in ressources"
-                   :href="ressource.url"
-                   target="_blank"
-                   class="link">
-                        <i class="fa-solid fa-up-right-from-square"></i>
-                        {{ ressource.name }}
-                </a>
-                <span v-else v-for="ressource in ressources"
-                      @click="gotoRessource(ressource.RessourceID)" 
-                      class="link">
+                <template v-if="!userInfo?.isAdmin && userInfo?.email != ansvarligEmail">
+                    <template v-for="ressource in ressources" :key="ressource.RessourceID">
+                        <a v-if="!ressource.isFile"
+                            :href="ressource.url"
+                            target="_blank"
+                            class="link tooltip-hover">
+                            <i class="fa-solid fa-up-right-from-square"></i>
+                            {{ ressource.name }}
+                            <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
+                        </a>
+                        <span v-else
+                            @click="downloadRessource(ressource)"
+                            class="link tooltip-hover">
+                            <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
+                            {{ ressource.name }}
+                            <span v-if="ressource != null" class="tooltip-display">{{ ressource.filename || ressource.url }}</span>
+                        </span>
+                    </template>
+                </template>
+                <template v-else>
+                    <span v-for="ressource in ressources"
+                        :key="ressource.RessourceID"
+                        @click="gotoRessource(ressource.RessourceID)"
+                        class="link tooltip-hover">
                         <i class="fa-solid fa-pen-to-square"></i>
                         {{ ressource.name }}
-                </span>
-
+                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.isFile ? (ressource.filename || ressource.url) : ressource.url }}</span>
+                    </span>
+                </template>
             </div>
 
-            <div class="buttons">
+            <p v-if="note != null && note != ''" class="notes">
+                <div style='font-size: 0.8em; color: var(--color-card-text);letter-spacing: 0.025rem;padding-bottom: 0.5rem'>
+                    <i class='fa-solid fa-note-sticky' style='padding-right: 0.5rem'></i>
+                    Note til ansvarlig:
+                </div>
+                
+                {{ note }}
+            </p>
 
+            <div class="buttons">
                 <div class="button"
-                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail)"
+                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail)"
                      @click="gotoRessource()">
                         + Tilføj ressource
                 </div>
@@ -321,12 +494,12 @@
                      v-if="isTemplate || userInfo?.isAdmin"
                      @click="gotoTask()">
                         Redigér
-            </div>
+                </div>
 
-                <div :class="['button', 'hollow', {'red': result}]"
-                     v-if="!templateView && 
+                <div :class="['button', 'hollow', {'yellow': result}]"
+                     v-if="!templateView && !isPreparation && 
                             (userInfo?.isAdmin ||
-                                (userInfo?.isAnsvarlig && userInfo?.email == ansvarligEmail) ||
+                                (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
                                 (userInfo?.isMedarbejder && ansvarligEmail == '')
                             )"
                      @click="completeTask(!result)">
@@ -340,13 +513,73 @@
                 </div>
 
                 <router-link class="button hollow"
-                             v-if="userInfo?.email == ansvarligEmail && forloebId != null"
+                             v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null)"
                              :to="`/forloeb-overview?id=${forloebId}`">
                                 Gå til forløb
                 </router-link>
-            
-            </div>
+            </div><!-- /buttons -->
+
         </div><!-- /card-content -->
     </div><!-- /card -->
 
 </template>
+
+<style scoped>
+    .notes {
+        background-color: rgb(247, 248, 210);
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.4rem;
+        margin-top: 1rem;
+        white-space: pre-line;
+    }
+    .tooltipContainer {
+        position: relative;
+    }
+    .tooltip {
+        background-color: var(--color-card-dark);
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.4rem;
+
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        right: -0.75rem;
+
+        font-size: 0.75rem;
+        cursor: default;
+        text-align: right;
+
+        max-height: 4rem;
+        overflow-y: auto;
+        user-select: text;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.4rem;
+    }
+    .tooltip > .mail {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .mail-recipient {
+        max-width: 15rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9em;
+        font-weight: 400;
+    }
+    .tooltip i {
+        margin-left: 0.5rem;
+        font-size: 1rem;
+    }
+    .tooltip i:hover {
+        color: var(--color-button-red);
+        cursor: pointer;
+    }
+    .tooltipContainer:hover > .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>

@@ -1,14 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
-:root {
+body.onboarding-theme-sand {
     --color-background: rgb(203, 194, 184);
     --color-text: rgb(65, 63, 62);
+    --color-text-faded: rgb(119, 115, 113);
     --color-logo: rgb(48, 46, 45);
     --color-logo-subtext: rgb(164, 158, 154);
     --color-logo-subtext-hover: rgb(130, 124, 120); /* Also used for disabled floating-button */
     --color-navbar: rgb(237, 229, 220);
+    --color-navbar-text: rgb(65, 63, 62);
     --color-navbar-item-selected: rgb(221, 213, 204);
-    --color-navbar-item-hover: rgb(119, 115, 113);
+    --color-navbar-item-hover: rgb(245, 238, 231);
     --color-card: rgb(237, 229, 220);
     --color-card-dark: rgb(215, 207, 197);
     --color-card-faded: rgb(221, 213, 204);
@@ -22,9 +24,55 @@
     --color-button-yellow: #bca002;
     --color-button-yellow-hover: #a58b02;
     --color-button-disabled: rgb(237, 229, 220, 0);
+    --color-floating-button: rgb(119, 115, 113);
+    --color-floating-button-hover: rgb(92, 89, 88);
+    --color-floating-button-disabled: rgb(130, 124, 120);
     --color-input-bg: rgb(241, 237, 232);
     --color-input-focus-bg: rgb(248, 246, 244);
     --color-input-disabled-bg: rgb(230, 224, 216);
+    --color-input-invalid-bg: rgb(255, 204, 204);
+    --color-progression-bar: rgb(180, 173, 165);
+    --color-progression: #4b8049;
+    --color-achievement-box: rgb(221, 213, 204);
+    --color-achievement-item: rgb(221, 213, 204);
+    --color-achievement-item-text: rgb(221, 213, 204);
+}
+
+body.onboarding-theme-randers {
+    --color-background: rgb(253, 248, 242);
+    --color-text: rgb(65, 63, 62);
+    --color-text-faded: rgb(119, 115, 113);
+    --color-logo: rgb(30, 35, 47);;
+    --color-logo-subtext: rgb(100, 104, 114);
+    --color-logo-subtext-hover: rgb(130, 124, 120); /* Also used for disabled floating-button */
+    --color-navbar: rgb(56, 65, 84);
+    --color-navbar-text: rgb(240, 240, 232);
+    --color-navbar-item-selected: rgb(45, 52, 68);
+    --color-navbar-item-hover: rgb(74, 82, 100);
+    /* --color-card: rgb(230, 230, 228); // BLUEISH TEST
+    --color-card-dark: rgb(240, 240, 236);
+    --color-card-faded: rgb(240, 240, 236);
+    --color-card-text: rgb(92, 89, 88); Also used for floating-button hover */
+    --color-card: rgb(230, 224, 218);
+    --color-card-dark: rgb(215, 207, 197);
+    --color-card-faded: rgb(241, 237, 232);
+    --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
+    --color-button-text: rgb(237, 229, 220);
+    --color-button-text: rgb(255, 255, 241);
+    --color-button: rgb(56, 65, 84);
+    --color-button-hover: rgb(74, 82, 100);
+    --color-button-hover-dark: rgb(89, 99, 119);
+    --color-button-red: #be3b3b;
+    --color-button-red-hover: #d15858;
+    --color-button-yellow: #a58b02;
+    --color-button-yellow-hover: #bca002;
+    --color-button-disabled: rgb(237, 229, 220, 0);
+    --color-floating-button: rgb(124, 121, 120);
+    --color-floating-button-hover: rgb(144, 139, 137);
+    --color-floating-button-disabled: rgb(207, 200, 195);
+    --color-input-bg: rgb(237, 233, 229);
+    --color-input-focus-bg: rgb(241, 237, 232);
+    --color-input-disabled-bg: rgb(245, 241, 238);
     --color-input-invalid-bg: rgb(255, 204, 204);
     --color-progression-bar: rgb(180, 173, 165);
     --color-progression: #4b8049;
@@ -41,7 +89,7 @@
 html, body, #app, main
 {
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
     margin:0;
 }
 
@@ -54,6 +102,10 @@ body {
     font-style: normal;
     font-size: 0.9rem;
     color: var(--color-text);
+}
+
+p {
+    max-width: 100%;
 }
 
 #logo {
@@ -83,8 +135,11 @@ body {
     }
 }
 
-@media only screen and (max-width: 560px) {
-    #logo, .logo-subtext {
+@media only screen and (max-width: 600px) {
+    .mobile-only:has(#logo) {
+        display: none;
+    }
+    .navbar .divider {
         display: none;
     }
 }
@@ -99,27 +154,49 @@ body {
     width: 100%;
     height: 4.5rem;
     padding-top: 0.3vh;
-    padding-left: 2rem;
+    padding-left: 0.3rem;
     padding-right: 0.3rem;
     padding-bottom: 0.3vh;
 
     display:flex;
     flex-direction: row;
     justify-content: flex-start;
-    align-items: stretch;
     gap: 0.5rem;
 
     z-index: 100;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    /* Flat style scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-navbar-item-hover) var(--color-navbar);
+
+    &::-webkit-scrollbar {
+        height: 8px;
+        background: var(--color-navbar);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-navbar-item-hover);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-navbar-item-selected);
+    }
 }
 
 a, .link {
     text-decoration: none;
     color: var(--color-text);
 }
+.navbar a, .link {
+    color: var(--color-navbar-text);
+}
 
 a.disabled, .button.disabled, .link.disabled {
     cursor: default;
     pointer-events: none;
+    opacity: 0.8;
 }
 
 p > a {
@@ -142,7 +219,7 @@ p > a:hover {
         padding-right: 0.3rem;
 
         flex-direction: column;
-        justify-content: flex-start;
+        align-items: stretch;
     }
 }
 
@@ -161,16 +238,21 @@ p > a:hover {
         transition: cubic-bezier(0.075, 0.82, 0.165, 1);
 
         white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .navbar .item {
+        width: 5rem;
     }
     
     @media only screen and (min-width: 768px) {
         .navbar .item {
             padding-left: 0rem;
             padding-right: 0rem;
+            width: auto;
         }
     }
 
-    .navbar .item.selected, .navItem.selected {
+    .navbar .item.router-link-active, .navItem.router-link-active {
         background-color: var(--color-navbar-item-selected);
     }
 
@@ -184,10 +266,9 @@ p > a:hover {
         padding-top: 1.5rem;
     }
 
-    .navbar .item:hover:not(.selected), .navItem:hover:not(.selected) {
+    .navbar .item:hover:not(.router-link-active), .navItem:hover:not(.router-link-active) {
+        background-color: var(--color-navbar-item-hover);
         cursor: pointer;
-        /*background-color: rgb(221, 213, 204);*/
-        color: var(--color-navbar-item-hover);
     }
 
 
@@ -198,6 +279,15 @@ p > a:hover {
     padding-right: 1.5vw;
     padding-top: 5rem;
     padding-bottom: 1.5vh;
+    min-height: 100dvh;
+
+    overflow-x: hidden;
+    
+    /* display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%; */
 }
 
 @media only screen and (min-width: 768px) {
@@ -213,6 +303,8 @@ p > a:hover {
     display: flex;
     align-items: stretch;
     flex-direction: column;
+	position: relative;
+    width: 100%;
 }
 
 .divider {
@@ -224,8 +316,15 @@ p > a:hover {
     .content > .flex {
         flex-direction: row;
         align-items: flex-start;
+        max-width: calc(68rem - 18rem - 1.5rem);
     }
 }
+@media only screen and (min-width: 768px) and (max-width: 1240px) {
+    .content > .flex:has(.float-right), .flex:has(.float-right-gutter) {
+        max-width: calc(100% - 18rem - 1.5rem);
+    }
+}
+
 
 
 /* Card */
@@ -237,6 +336,7 @@ p > a:hover {
 }
 
 .card {
+    position: relative;
     background-color: var(--color-card);
 
     max-height: calc(auto);
@@ -268,12 +368,6 @@ p > a:hover {
         color: var(--color-button-text);
     }
 
-@media only screen and (min-width: 768px) {
-    .card, .notification, .textbox {
-        max-width: 38rem;
-    }
-}
-
 .card.dark {
     background-color: var(--color-card-faded);
 }
@@ -302,12 +396,15 @@ p > a:hover {
 .card-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     height: 4.5rem;
+    gap: 1rem;
+    width: 100%;
+    position: relative;
+    padding: 0rem 1.2rem;
 }
 
 .card-header:first-child {
-    margin-left: 1.2rem;
+    flex-grow: 1;
 }
 
 .card-icon {
@@ -335,16 +432,30 @@ p > a:hover {
 
     margin-top:0;
     margin-bottom: 0;
+
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    max-height: 2.8em;
+}
+.card-title > span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;      /* Number of lines to show */
+    -moz-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    -moz-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    word-break: break-word;  
 }
 .card-title ~ .card-subtitle {
     margin-top: 0.4rem;
 }
 .card-subtitle {
     font-size:0.85em;
-    color: var(--color-navbar-item-hover);
+    color: var(--color-text-faded);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -442,13 +553,12 @@ p > a:hover {
     font-family: 'Open Sans', sans-serif;
 }
 
-    .card-content > .ressources > span {
+    .card-content > .ressources > span, .card-content > .ressources > a {
         padding-right: 0.8rem;
         border-right: 0.2rem solid var(--color-background);
     }
 
     .card-content > .ressources > .link {
-        border-radius: 0.2rem;
         color: var(--color-button);
         cursor: pointer;
     }
@@ -466,15 +576,22 @@ p > a:hover {
 
 .card-titles {
     flex-grow: 1;
-    max-width: calc(100% - 14rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 100%;
+}
+.card-titles * {
+    white-space: normal;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card-header .card-details {
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    margin: 1.5rem;
+    white-space: nowrap;
 }
 
 .card-content .card-details {
@@ -499,29 +616,43 @@ p > a:hover {
     gap: 0.5rem;
 }
 
-@media only screen and (min-width: 768px) {
-    .buttons {
-        max-width: 38rem;
-    }
-}
-
 .card-content .buttons {
     justify-content: flex-end;
     margin-top: 2rem;
 }
 
+/* Tags */
+
+.tag {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--color-button-text);
+    background-color: var(--color-button-yellow);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.2rem;
+    user-select: none;
+    overflow: visible;
+    text-overflow: clip;
+    width: fit-content;
+    height: fit-content;
+}
+.tag.blue {
+    background-color: var(--color-button);
+}
+.tag.green {
+    background-color: var(--color-progression);
+}
+.tag.gray {
+    background-color: var(--color-card-dark);
+    color: var(--color-text-faded);
+}
+
 
 /* Buttons + Inputs */
 
-button[type="submit"] {    
-    font-family: "Open Sans", sans-serif;
-    border: 0rem;
-    font-size: 1em;
-    font-weight: 500;
-    border: 0.1rem solid var(--color-button);
-}
-
 .button {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 400;
     text-decoration: none;
     padding: 0.6rem 1rem;
     border-radius: 1.5rem;
@@ -529,18 +660,54 @@ button[type="submit"] {
     color:var(--color-button-text);
     cursor: pointer;
     border: 0.1rem solid var(--color-button);
+    user-select: none;
+}
+
+/* Button loading overlay (CSS-only) using a pseudo-element overlay */
+.button.loading {
+    position: relative;
+    pointer-events: none;
+
+    /* Hide plain text nodes while keeping layout */
+    color: transparent;
+}
+
+/* Hide child elements (icons/spans) while keeping layout */
+.button.loading > * {
+    visibility: hidden;
+}
+
+/* Spinner overlay (separate keyframes to preserve centering translate + rotate) */
+.button.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0turn);
+
+    width: 1.25rem;
+    aspect-ratio: 1;
+    display: grid;
+    border: 0.2rem solid #0000;
+    border-radius: 50%;
+    border-right-color: var(--color-button-text);
+    animation: button-spinner 1s infinite linear;
+}
+
+@keyframes button-spinner {
+    100% { transform: translate(-50%, -50%) rotate(1turn); }
 }
 
     .button:hover {
         background-color: var(--color-button-hover);
         border: 0.1rem solid var(--color-button-hover);
     }
-    .button.disabled, .button.hollow {
+    .button.hollow {
         border: 0.1rem solid var(--color-button);
         color: var(--color-button);
         background-color: var(--color-button-disabled);
     }
-        .button.disabled.dark, .button.hollow.dark {
+        .button.hollow.dark {
             background-color: var(--color-card-faded);
         }
     .button.hollow:hover {
@@ -549,6 +716,8 @@ button[type="submit"] {
     }
     .button.hollow.red { border: 0.1rem solid var(--color-button-red); color: var(--color-button-red) }
     .button.hollow.red:hover { border: 0.1rem solid var(--color-button-red-hover); color: var(--color-button-red-hover) }
+    .button.hollow.yellow { border: 0.1rem solid var(--color-button-yellow); color: var(--color-button-yellow) }
+    .button.hollow.yellow:hover { border: 0.1rem solid var(--color-button-yellow-hover); color: var(--color-button-yellow-hover) }
     .button.dashed { border: 0.1rem dashed var(--color-button); color: var(--color-button) }
     .button.dashed:hover { border: 0.1rem dashed var(--color-button-hover); color: var(--color-button-hover) }
 
@@ -583,11 +752,27 @@ button[type="submit"] {
     z-index: 10;
     width: 100%;
 }
+.float-right.helper-text {
+    background-color: rgb(230, 230, 228);
+    padding: 1rem 1.2rem;
+    border-radius: 0.4rem;
+    position: relative;
+    margin-top: 0!important;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+.helper-text span {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.helper-text span:last-child {
+    margin-bottom: 0;
+}
 
 @media only screen and (min-width: 768px) {
     .float-right {
         margin-top: 0rem;
-        position: absolute;
+        position: absolute !important;
         margin-left: calc(100% + 1.5rem);
         max-width: 18rem;
     }
@@ -598,6 +783,23 @@ button[type="submit"] {
 
     background-color: var(--color-input-disabled-bg);
     border-radius: 0.2rem;
+    max-height: 28.4rem;
+    overflow-y: auto;
+
+    /* Flat style scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-faded) var(--color-input-disabled-bg);
+    &::-webkit-scrollbar {
+        background: var(--color-input-disabled-bg);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-text-faded);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-text-faded);
+    }
 }
 
 .itemSelector div {
@@ -650,6 +852,15 @@ button[type="submit"] {
     font-size: 0.8em;
 }
 
+.input-button {
+    color: var(--color-input-bg);
+    background-color: var(--color-floating-button);
+    border: 0.1rem solid var(--color-floating-button);
+}
+.input-button:hover {
+    border: 0.1rem solid var(--color-floating-button-hover);
+}
+
 .floating-button {
     position: absolute;
     right: 0rem;
@@ -665,7 +876,7 @@ button[type="submit"] {
 
     transition: 0.1s ease all;
     color: var(--color-input-bg);
-    background-color: var(--color-navbar-item-hover);
+    background-color: var(--color-floating-button);
     font-size: 1em;
     display: flex;
     justify-content: center;
@@ -673,15 +884,15 @@ button[type="submit"] {
     cursor: pointer;
     z-index: 10;
 }
-.floating-button:hover {
-    background-color: var(--color-card-text);
+.floating-button:hover, .input-button:hover {
+    background-color: var(--color-floating-button-hover);
 }
-.floating-button.disabled {
-    background-color: var(--color-logo-subtext);
+.floating-button.disabled, .input-button.disabled {
+    background-color: var(--color-floating-button-disabled);
     pointer-events: none;
 }
 
-input[type=text], input[type=date], input[type=datetime-local], select, textarea {
+input[type=text], input[type=date], input[type=datetime-local], input[type=file], select, textarea {
     background-color: var(--color-input-bg);
     width: 100%;
     padding: 1.6rem 0.8rem 0.6rem 0.8rem;
@@ -742,12 +953,8 @@ input.invalid {
         top: 0.93rem;
         left: 0.8rem;
     }
-    .inputContainer  {
-        width: 30rem;
-    }
     .icon {
         right: auto;
-        left: 27rem;
     }
 }
 
@@ -755,6 +962,7 @@ input[type=text]:focus + .floating-label,
 input[type=text]:not(:placeholder-shown) + .floating-label,
 input[type=date] + .floating-label, /* :valid for date, if selection is required */
 input[type=datetime-local] + .floating-label,
+input[type=file] + .floating-label,
 select:valid + .floating-label,
 textarea:focus + .floating-label,
 textarea:not(:placeholder-shown) + .floating-label {
@@ -780,12 +988,6 @@ textarea:not(:placeholder-shown) + .floating-label {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
     overflow: hidden;
-}
-
-@media only screen and (min-width: 768px) {
-    .progression-bar {
-        max-width: 38rem;
-    }
 }
 
 .progression-bar .progression {
@@ -915,6 +1117,11 @@ textarea:not(:placeholder-shown) + .floating-label {
 .header {
     font-size: 1.65em;
 }
+.header-small {
+    font-size: 1em;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
 .tiny {
     font-size: 0.6em;
 }
@@ -932,10 +1139,14 @@ textarea:not(:placeholder-shown) + .floating-label {
     text-transform: uppercase;
 }
 .faded {
-    color: var(--color-navbar-item-hover);
+    color: var(--color-text-faded);
 }
 .center {
     text-align: center;
+}
+
+.nowrap {
+    white-space: nowrap;
 }
 
 .thin {
@@ -1048,4 +1259,21 @@ textarea:not(:placeholder-shown) + .floating-label {
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
+}
+
+.tooltip-display { /* Position controlled by tooltipHelper.js */
+    display: none;
+    position: absolute;
+    background-color: var(--color-card-text);
+    color: #FFFFFF;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.2rem;
+    font-size: 0.8em;
+    z-index: 1;
+    opacity: 0.8;
+    pointer-events: none;
+    transition: none;
+}
+.tooltip-hover:hover > .tooltip-display {
+    display: block;
 }

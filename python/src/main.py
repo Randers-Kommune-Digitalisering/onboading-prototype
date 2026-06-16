@@ -1,36 +1,118 @@
-from flask import Flask, redirect, url_for, session, request
+from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_cors import CORS
 from healthcheck import HealthCheck
 from prometheus_client import generate_latest
 from authlib.integrations.flask_client import OAuth
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from utils.logging import set_logging_configuration
-from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK
+from utils.config import DEBUG, PORT, COOKIE_SECRET, KEYCLOAK_URL, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, DISABLE_KEYCLOAK, DISABLE_KEYCLOAK_ROLES, DISABLE_KEYCLOAK_USER_EMAIL, DISABLE_KEYCLOAK_USER_NAME, MAX_UPLOAD_BYTES
 from api_endpoints import api_endpoints
-from controllers.user_controller import azure_data_exists, get_and_save_azure_ad_data
+from controllers.user_controller import warm_azure_ad_cache
+from utils.db_connection import create_db_client, add_missing_columns
 
 set_logging_configuration()
 
 
 def create_app():
     app = Flask(__name__, static_folder='dist')
-    CORS(app)
+    CORS(app, allow_headers=['Content-Type', 'usermail', 'X-External-Access-Key'])
+
+    # Reject oversized request bodies early (before buffering/parsing form-data).
+    # This primarily protects file upload endpoints.
+    app.config['MAX_CONTENT_LENGTH'] = MAX_UPLOAD_BYTES
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_request_entity_too_large(_err):
+        return jsonify({"error": "File too large"}), 413
+
+    # Flask sessions are used for Keycloak auth and (in dev) for DISABLE_KEYCLOAK.
+    app.secret_key = COOKIE_SECRET
+
+    @app.after_request
+    def add_security_headers(response):
+        # Defense-in-depth: avoid sending URLs as referrers to other origins.
+        # (Fragments aren't included in Referer, but this also covers other URLs.)
+        response.headers.setdefault('Referrer-Policy', 'no-referrer')
+        return response
 
     if DISABLE_KEYCLOAK:
+        @app.before_request
+        def seed_fake_user_session():
+            # Dev-only: simulate Keycloak userinfo in a server-side session so
+            # authorization uses a stable identity (not spoofable headers).
+            raw_roles = (DISABLE_KEYCLOAK_ROLES or '').strip()
+            roles = [r.strip() for r in raw_roles.split(',') if r.strip()]
+
+            if 'user' in session:
+                # Keep a stable identity, but enforce roles from config so a
+                # stale session cookie doesn't accidentally drop privileges.
+                user = session.get('user') or {}
+                user.setdefault('name', DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen')
+                user.setdefault(
+                    'email',
+                    DISABLE_KEYCLOAK_USER_EMAIL
+                    or request.headers.get('usermail')
+                    or 'test.robot@randers.dk',
+                )
+                user['roles'] = roles
+                resource_access = user.get('resource_access') or {}
+                resource_access.setdefault(KEYCLOAK_CLIENT_ID, {})
+                resource_access[KEYCLOAK_CLIENT_ID]['roles'] = roles
+                user['resource_access'] = resource_access
+                session['user'] = user
+                return None
+
+            email = (
+                DISABLE_KEYCLOAK_USER_EMAIL
+                or request.headers.get('usermail')
+                or 'test.robot@randers.dk'
+            )
+
+            session['user'] = {
+                'name': DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen',
+                'email': email,
+                'roles': roles,
+                'resource_access': {
+                    KEYCLOAK_CLIENT_ID: {
+                        'roles': roles,
+                    }
+                },
+            }
+
         @app.route('/api/userinfo')
         def user_info():
-            user_info = {'name': 'Test Testsen', 'email': 'Test.Robot@randers.dk', 'roles': ['Ny medarbejder', 'Ansvarlig']}
-            return user_info, 200
+            return session.get('user', {}), 200
     else:
-        app.secret_key = COOKIE_SECRET
-
         oauth = OAuth(app)
 
         oauth.register(name='keycloak', client_id=KEYCLOAK_CLIENT_ID, client_secret=KEYCLOAK_CLIENT_SECRET, server_metadata_url=f'{KEYCLOAK_URL.rstrip("/")}/.well-known/openid-configuration', client_kwargs={'scope': 'openid profile email'})
 
         @app.before_request
         def check_authenticated():
-            if 'user' not in session and request.path not in ['/login', '/auth', '/healthz', '/metrics', '/api/cron/notify-expired-tasks']:
+            if 'user' in session:
+                return None
+
+            # Always allow static assets for the SPA to load.
+            if request.path.startswith('/assets/'):
+                return None
+
+            if request.path == '/favicon.ico':
+                return None
+
+            # Allow the external access flow only on the ForløbOverview route.
+            if request.path == '/forloeb-overview' and request.args.get('external', '').lower() == 'true':
+                return None
+
+            # Allow external API endpoints (they validate via accessKey).
+            if request.path.startswith('/api/external/'):
+                return None
+
+            # Allow userinfo lookup to return a JSON 401 (frontend falls back to Public).
+            if request.path == '/api/userinfo':
+                return None
+
+            if request.path not in ['/login', '/auth', '/healthz', '/metrics', '/api/cron/notify-expired-tasks', '/api/cron/send-planned-mails']:
                 return redirect(url_for("login"))
 
         @app.route("/login")
@@ -48,14 +130,17 @@ def create_app():
         def user_info():
             if 'user' in session:
                 user_info = session['user']
-                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', ["Ny medarbejder", "Ansvarlig"])
+                user_info['roles'] = user_info.get('resource_access', {}).get(KEYCLOAK_CLIENT_ID, {}).get('roles', [])
                 return user_info, 200
             else:
-                return redirect(url_for('login'))
+                return jsonify({"error": "Not authenticated"}), 401
 
-    # Import Azure data
-    if not azure_data_exists():
-        get_and_save_azure_ad_data()
+    # Create database client
+    create_db_client()
+    add_missing_columns()
+
+    # Import + transform Azure data (only refresh if missing or older than 24h)
+    warm_azure_ad_cache(max_age_hours=24)
 
     health = HealthCheck()
 

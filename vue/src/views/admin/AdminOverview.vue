@@ -8,6 +8,7 @@
 	const forloeb_ongoing = ref([])
 	const forloeb_future = ref([])
 	const forloeb_completed = ref([])
+	const forloeb_preparation = ref([])
 
 	onMounted( () => {	
 		getUserInfo().then(userInfo => {
@@ -27,6 +28,9 @@
 						response.data = [response.data]
 
 					for (const item of response.data) {
+						if (item.isPreparation)
+							forloeb_preparation.value.push(item)
+						else
 						if (new Date(item.startdate) > new Date())
 							forloeb_future.value.push(item)
 						else
@@ -48,7 +52,8 @@
 </script>
 
 <template>
-  <CourseList :courses="forloeb_ongoing" />
+  <CourseList :courses="forloeb_preparation" title="Under forberedelse" v-if="forloeb_preparation.length > 0" />
+  <CourseList :courses="forloeb_ongoing" :largeHeaderAdjust="forloeb_preparation.length > 0" />
   <CourseList :courses="forloeb_future" title="Kommende forløb" :largeHeaderAdjust="true" />
   <CourseList :courses="forloeb_completed" title="Afsluttede forløb" :largeHeaderAdjust="true" :dark="true" />
 </template>

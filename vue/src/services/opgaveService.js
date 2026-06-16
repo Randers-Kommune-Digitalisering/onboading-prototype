@@ -1,51 +1,55 @@
-import axios from 'axios';
+import { apiRequest } from './apiRequest';
 
 const API_URL = 'api';
 
 export const createOpgave = (data) => {
-  return axios.post(`${API_URL}/opgave`, data);
+  return apiRequest({ method: 'post', url: `${API_URL}/opgave`, data });
 };
 
 export const getOpgaverByForloebIDAdmin = (forloebID) => {
-  return axios.get(`${API_URL}/opgave/forloeb/admin/${forloebID}`);
+  return apiRequest({ method: 'get', url: `${API_URL}/opgave/forloeb/admin/${forloebID}` });
 };
 
-export const getOpgaverByForloebID = async (forloebID, config) => {
-  try {
-    const response = await axios.get(`${API_URL}/opgave/forloeb/${forloebID}`, config);
-    return response;
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return { data: [] }; // Return an empty array or any other custom response
-    }
-    throw error; // Re-throw the error if it's not a 404
-  }
+export const getOpgaverByForloebID = (forloebID, config) => {
+  return apiRequest({ method: 'get', url: `${API_URL}/opgave/forloeb/${forloebID}`, config });
+};
+
+export const getOpgaverByForloebIDExternal = (forloebID, accessKey) => {
+  return apiRequest({
+    method: 'get',
+    url: `${API_URL}/external/opgave/forloeb/${forloebID}`,
+    config: {
+      headers: {
+        'X-External-Access-Key': accessKey || '',
+      },
+    },
+  });
 };
 
 export const getOpgaverByAnsvarligEmail = (config) => {
-  return axios.get(`${API_URL}/opgave/admin`, config);
+  return apiRequest({ method: 'get', url: `${API_URL}/opgave/admin`, config });
 };
 
 export const getOpgaverByForloebsskabelonID = (forloebsskabelonID, config) => {
-  return axios.get(`${API_URL}/opgave/forloebsskabelon/admin/${forloebsskabelonID}`, config);
+  return apiRequest({ method: 'get', url: `${API_URL}/opgave/forloebsskabelon/admin/${forloebsskabelonID}`, config });
 };
 
 export const getOpgaveById = (opgaveID) => {
-  return axios.get(`${API_URL}/opgave/${opgaveID}`);
+  return apiRequest({ method: 'get', url: `${API_URL}/opgave/${opgaveID}` });
 };
   
 export const deleteOpgave = (opgaveID) => {
-    return axios.delete(`${API_URL}/opgave/${opgaveID}`);
+    return apiRequest({ method: 'delete', url: `${API_URL}/opgave/${opgaveID}` });
 };
   
 export const updateOpgave = (opgaveID, data) => {
-    return axios.put(`${API_URL}/opgave/${opgaveID}`, data);
+    return apiRequest({ method: 'put', url: `${API_URL}/opgave/${opgaveID}`, data });
 };
 
 export const getOpgaver = () => {
-    return axios.get(`${API_URL}/opgave`);
+  return apiRequest({ method: 'get', url: `${API_URL}/opgave` });
 };
 
 export const createOpgaveWithOpgaveskabelon = (data) => {
-  return axios.post(`${API_URL}/opgave/opgaveskabelon`, data);
+  return apiRequest({ method: 'post', url: `${API_URL}/opgave/opgaveskabelon`, data });
 };

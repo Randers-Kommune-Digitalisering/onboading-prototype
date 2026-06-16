@@ -20,7 +20,12 @@
         {
             type: Boolean,
             default: false
-        }
+        },
+        // color:
+        // {
+        //     type: String,
+        //     default: null
+        // }
     })
 </script>
 
@@ -36,10 +41,10 @@
             :deadline="new Date(course.enddate)"
             :duration="course.varighed"
             :dark="dark"
-            color="4c4980" />
+            :isPreparation="course.isPreparation" />
     </div>
     <div v-else>
-        <p class="indent-tiny">Ingen forløb fundet.</p>
+        <p class="indent-tiny faded">Ingen forløb fundet.</p>
     </div>
 
 </template>

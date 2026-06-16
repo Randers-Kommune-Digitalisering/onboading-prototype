@@ -4,7 +4,6 @@
 
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService.js'
 
-    const cardRef = ref(null)
     const completedPercentage = ref(0)
 
     const returnFormattedDate = (date) => {
@@ -34,10 +33,6 @@
         deadline: {
             type: Date
         },
-        color: {
-            type: String,
-            default: '000'
-        },
         disableInteraction: {
             type: Boolean,
             default: false
@@ -48,10 +43,16 @@
         },
         tasks: {
             type: Array
+        },
+        isPreparation: {
+            type: Boolean,
+            default: false
         }
     })
+
     const isTemplate = props.id == null
     const opgaver = ref(props.tasks || null)
+    const hasForloebStarted = props.startDate && new Date(props.startDate) <= new Date()
 
     onMounted(async () => {
         try {
@@ -89,21 +90,27 @@
 
 <template>
 
-    <router-link :to="{ path: 'forloeb-overview', query: { id: id, tid: tid } }" :class="{ 'disabled': props.disableInteraction }">
+    <component
+        :is="props.disableInteraction ? 'div' : 'router-link'"
+        v-bind="!props.disableInteraction ? { to: { path: 'forloeb-overview', query: { id: id, tid: tid } } } : {}"
+    >
 
-    <div :class="['card', 'course', {'dark': props.dark}]" ref="cardRef">
-        <div :class="['card-header', {'pointer': !props.disableInteraction}]" @click="expandCard">
+    <div :class="['card', 'course', {'dark': props.dark}]">
+        <div :class="['card-header', {'pointer': !props.disableInteraction}]">
 
             <div class="card-titles">
                 <p class="card-title">
-                    {{ name != '' ? name :  'Forløb uden titel' }}
+                    <span>{{ name != '' ? name :  'Forløb uden titel' }}</span>
+                    <div class="tag" v-if="props.isPreparation">Under forberedelse</div>
+                    <div class="tag gray" v-if="isTemplate">Skabelon</div>
                 </p>
                 <p v-if="title" class="card-subtitle">
                     {{ title }}
                 </p>
             </div>
 
-            <div class="card-details" v-if="props.duration == null">
+            <div class="card-details" v-if="!isTemplate && !isPreparation">
+
                 <div>
                     <div class="icon"><i class="fa-regular fa-clock"></i></div>
                     <div class="text">
@@ -139,9 +146,11 @@
             
         </div>
 
-        <div class="card-content always-show" v-if="!duration"><ProgressBar :hideText="true" :percentage="completedPercentage" /></div>
+        <div class="card-content always-show" v-if="!isTemplate && !isPreparation && hasForloebStarted">
+            <ProgressBar :hideText="true" :percentage="completedPercentage" />
+        </div>
     </div>
 
-    </router-link>
+    </component>
 
 </template>
