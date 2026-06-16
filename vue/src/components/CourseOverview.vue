@@ -98,7 +98,10 @@
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
 
                 if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+                {
                     forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
+                    sortBy.value = 'gruppe'
+                }
 
                 const opgaver_response = await getOpgaverByForloebIDExternal(forloeb_id.value, props.accessKey)
 
@@ -173,7 +176,10 @@
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
                 if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+                {
                     forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
+                    sortBy.value = 'gruppe'
+                }
                 
                 // Get opgaver
                                         // In ansvarligView fetch opgaver
@@ -392,8 +398,8 @@
         <div style="flex-grow:1">&nbsp;</div>
         <div class="sort-title">Sortér efter:</div>
         <select class="sort-selector" v-model="sortBy">
-            <option value="deadline">{{ isUnderPreparation || isTemplate ? 'Startdag' : 'Deadline' }}</option>
             <option value="gruppe">Gruppe</option>
+            <option value="deadline">{{ isUnderPreparation || isTemplate ? 'Startdag' : 'Deadline' }}</option>
         </select>
     </div>
     <div v-if="sortBy === 'deadline'">
