@@ -20,9 +20,9 @@
         isMedarbejder: false,
     })
 
-    const expandCard = () => {
-        cardRef.value.classList.toggle('expand-content')
-    }
+    // const expandCard = () => {
+    //     cardRef.value.classList.toggle('expand-content')
+    // }
 
     const returnDaysFromNow = (date) => {
         const target = new Date(date)
@@ -346,12 +346,12 @@
 </script>
 
 <template>
-    <div :class="['card', { 'expand-content': expandByDefault }, {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
-        <div class="card-header no-select" @click="e => { if (!e.target.closest('.tooltip')) expandCard() }">
+    <div :class="['card', {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
+        <div class="card-header">
 
             <div style="width:100%">
 
-                <div class="card-icon">
+                <div class="card-icon no-select">
                     <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
                         <div>{{ group?.letter }}</div>
                         <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
@@ -364,7 +364,6 @@
                 <span class="card-description">{{ description }}</span>
 
             </div>
-
 
             <div class="card-separator"></div>
 

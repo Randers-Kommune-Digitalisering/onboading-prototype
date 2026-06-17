@@ -13,6 +13,7 @@ body.onboarding-theme-sand {
     --color-navbar-item-hover: rgb(245, 238, 231);
     --color-card: rgb(237, 229, 220);
     --color-card-dark: rgb(215, 207, 197);
+    --color-card-dark-faded: rgb(204, 198, 191);
     --color-card-faded: rgb(221, 213, 204);
     --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
     --color-button-text: rgb(237, 229, 220);
@@ -55,6 +56,7 @@ body.onboarding-theme-randers {
     --color-card-text: rgb(92, 89, 88); Also used for floating-button hover */
     --color-card: rgb(230, 224, 218);
     --color-card-dark: rgb(215, 207, 197);
+    --color-card-dark-faded: rgb(219, 213, 205);
     --color-card-faded: rgb(241, 237, 232);
     --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
     --color-button-text: rgb(237, 229, 220);
@@ -299,6 +301,9 @@ p > a:hover {
     }
 }
 
+
+/* Flex */
+
 .content > .flex {
     display: flex;
     align-items: stretch;
@@ -307,9 +312,17 @@ p > a:hover {
     width: 100%;
 }
 
+.flex > .max-width {
+    width: 100%;
+}
+
+.flex.center {
+    align-items: center;
+    justify-content: center;
+}
+
 .divider {
     flex-grow: 1;
-
 }
 
 @media only screen and (min-width: 768px) {
@@ -326,13 +339,14 @@ p > a:hover {
 }
 
 
-
 /* Card */
 
 .card-list {
-    column-width: 18rem;
     column-gap: 1rem;
     direction: ltr;
+}
+.card-list.row {
+    column-width: 18rem;
 }
 
 .card-list > * {
@@ -528,13 +542,13 @@ p > a:hover {
     }
 }
 
-    .card.expand-content .card-image {
+    /* .card.expand-content .card-image {
         min-width: 0rem;
         width: 0rem;
         overflow: hidden;
         opacity: 0.1;
         border-bottom-right-radius: 0rem;
-    }
+    } */
 
 /* .card-large-image {
     width: 100%;
@@ -602,6 +616,10 @@ p > a:hover {
         cursor: pointer;
         padding: 0.4rem 0.6rem;
         border-radius: 0.3rem;
+    }
+
+    .card > .ressources > .ressource:hover {
+        background-color: var(--color-card-dark-faded);
     }
 
     .card > .ressources > .ressource > i {
@@ -1141,16 +1159,6 @@ textarea:not(:placeholder-shown) + .floating-label {
         color: var(--color-achievement-item-text);
     }
 
-/* Flex */
-
-.flex {
-    display: flex;
-}
-
-.flex.center {
-    align-items: center;
-    justify-content: center;
-}
 
 /* Font style */
 

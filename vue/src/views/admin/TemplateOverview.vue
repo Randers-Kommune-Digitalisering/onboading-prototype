@@ -64,6 +64,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
 	<div
 		class="float-right helper-text"
         @mousedown.prevent
@@ -103,6 +105,8 @@
 			  :expandFirstItem="false"
 			  :templateView="true"
 			  :expandItem="expandItem" />
+
+	</div></div><!-- /wrapper -->
 </template>
 
 <style scoped>

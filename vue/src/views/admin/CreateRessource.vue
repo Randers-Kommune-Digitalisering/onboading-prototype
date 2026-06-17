@@ -163,6 +163,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
 	<p v-if="fileTooLarge" class="indent-tiny notification red">
 		<span class="bold">Fejl</span>: Filen overstiger den tilladte størrelse på 20MB. Vælg en anden fil.
 	</p>
@@ -204,6 +206,8 @@
 
 	</div>
 	</form>
+
+	</div></div><!-- /wrapper -->
 </template>
 
 <style scoped>

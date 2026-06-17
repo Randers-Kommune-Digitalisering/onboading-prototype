@@ -81,7 +81,7 @@
 <template>
     <div>
         <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ (title ?? 'Opgaver' ) }} </p>
-        <div class="card-list" v-if="tasks && tasks.length > 0">
+        <div class="card-list row" v-if="tasks && tasks.length > 0">
             <template v-for="(task, index) in tasks">
                 <div class="start-spacer" v-if="forloebStartDate != null && index === startMessageIndex">
                     <div class="line"></div>

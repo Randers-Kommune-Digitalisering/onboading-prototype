@@ -202,6 +202,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
     <p class="indent-tiny bold uppercase p-header-adjust">Rediger forløb</p>
 
     <form @submit.prevent="submitForm">
@@ -251,4 +253,6 @@
 
     </div>
     </form>
+
+    </div></div><!-- /wrapper -->
 </template>

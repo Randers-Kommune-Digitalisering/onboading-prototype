@@ -227,6 +227,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
     <p class="indent-tiny bold uppercase p-header-adjust">{{ isPreparation ? 'Opret forløbsforberedelse' : 'Opret forløb' }}</p>
 
     <div
@@ -294,4 +296,6 @@
 
     </div>
     </form>
+
+    </div></div><!-- /wrapper -->
 </template>

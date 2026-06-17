@@ -392,6 +392,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
     <p class="indent-tiny bold uppercase p-header-adjust">
         {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave' }}
         {{ isTemplate ? '' : ' til ' + (forloeb?.name ?? 'forløbet') }}
@@ -601,6 +603,8 @@
 
     </div>
     </form>
+
+    </div></div><!-- /wrapper -->
 </template>
 <style scoped>
     .annot-label {

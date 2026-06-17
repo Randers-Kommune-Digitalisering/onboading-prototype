@@ -30,11 +30,7 @@
         </svg>
         <span class="logo-subtext semi-bold uppercase desktop-only">Onboardingmodul</span>
 
-        <div class="flex">
-            <div>
-                <router-view ref="currentComponent"></router-view>
-            </div>
-        </div>
+        <router-view ref="currentComponent"></router-view>
 
     </div>
     <div v-else>
