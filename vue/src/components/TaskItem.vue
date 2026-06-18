@@ -87,7 +87,8 @@
                 return
 
             const rect = item.getBoundingClientRect()
-            const calc = rect.top - (window.innerHeight / 2) + (item.offsetHeight / 2)
+            const topOffset = 45
+            const calc = rect.top - topOffset
             window.scrollBy({
                 left: 0, top: calc, 
                 behavior: "smooth" })

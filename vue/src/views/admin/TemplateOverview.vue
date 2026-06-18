@@ -1,5 +1,5 @@
 <script setup>
-	import { ref, onMounted, watch } from 'vue'
+	import { ref, onMounted, watch, computed } from 'vue'
 	import { useRoute, useRouter } from 'vue-router'
 
 	import { getUserInfo } from '@/services/keycloakService.js'
@@ -12,8 +12,10 @@
 	const route = useRoute()
 	const router = useRouter()
 	const view = route.query.view
-	const _expandItem = route.query.item
-	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
+	const expandItem = computed(() => {
+		const parsed = parseInt(route.query.item, 10)
+		return Number.isNaN(parsed) ? null : parsed
+	})
 
 	const TemplateType = {
 		Forloebsskabelon: 0,
