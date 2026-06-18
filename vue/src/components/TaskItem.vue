@@ -346,17 +346,23 @@
 </script>
 
 <template>
-    <div :class="['card', {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
+    <div :class="['card', 'task', {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
+
+        <div class="card-group">{{ group?.name }}</div>
+
+        <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
+
         <div class="card-header">
 
             <div style="width:100%">
 
-                <div class="card-icon no-select">
-                    <div :style="`background-color: #`+ color +`;`" class="tooltip-hover">
+
+                <!-- <div class="card-icon no-select">
+                    <div :style="`position:relative;background-color: #`+ color +`;`" class="tooltip-hover">
                         <div>{{ group?.letter }}</div>
                         <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
                     </div>
-                </div>
+                </div> -->
 
                 <span class="card-inline-title">
                     {{ title }}
@@ -365,9 +371,10 @@
 
             </div>
 
+            <!-- 
             <div class="card-separator"></div>
-
-            <!-- <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
+            
+            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
                 <div class="tooltipContainer">
                     <div class="icon"><i class="fa-solid fa-envelope"></i></div>
                     <div class="text">
@@ -396,14 +403,14 @@
                         target="_blank"
                         class="ressource tooltip-hover">
                         <i class="fa-solid fa-up-right-from-square"></i>
-                        {{ ressource.name }}asd
+                        {{ ressource.name }}
                         <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
                     </a>
                     <span v-else
                         @click="downloadRessource(ressource)"
                         class="ressource tooltip-hover">
                         <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
-                        {{ ressource.name }}asd
+                        {{ ressource.name }}
                         <span v-if="ressource != null" class="tooltip-display">{{ ressource.filename || ressource.url }}</span>
                     </span>
                 </div>
@@ -420,9 +427,6 @@
                     <!-- <span v-if="ressource != null" class="tooltip-display">{{ ressource.isFile ? (ressource.filename || ressource.url) : ressource.url }}</span> -->
                 </div>
             </template>
-        </div>
-
-        <div class="card-color-seperator" :style="`background-color: #`+ color +`;`">
         </div>
 
         <div class="card-details">
@@ -522,54 +526,12 @@
         border-radius: 0.4rem;
         white-space: pre-line;
     }
-    .tooltipContainer {
-        position: relative;
-    }
-    .tooltip {
-        background-color: var(--color-card-dark);
-        padding: 0.5rem 0.8rem;
-        border-radius: 0.4rem;
-
-        visibility: hidden;
-        opacity: 0;
-        position: absolute;
-        right: -0.75rem;
-
-        font-size: 0.75rem;
-        cursor: default;
-        text-align: right;
-
-        max-height: 4rem;
-        overflow-y: auto;
-        user-select: text;
-
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.4rem;
-    }
-    .tooltip > .mail {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-    .mail-recipient {
-        max-width: 15rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.9em;
-        font-weight: 400;
-    }
-    .tooltip i {
-        margin-left: 0.5rem;
-        font-size: 1rem;
-    }
-    .tooltip i:hover {
-        color: var(--color-button-red);
-        cursor: pointer;
-    }
-    .tooltipContainer:hover > .tooltip {
-        visibility: visible;
-        opacity: 1;
+    .card-group {
+        width: 100%;
+        font-size: 0.8em;
+        border-top-left-radius: 0.35rem;
+        border-top-right-radius: 0.35rem;
+        background-color: rgba(145, 135, 130, 0.16);
+        padding: 0.5rem 1rem;
     }
 </style>

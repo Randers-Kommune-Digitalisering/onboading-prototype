@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 
 import { getUserInfo } from './services/keycloakService.js'
+import { installTooltipHelper } from './utils/tooltipHelper.js'
 
 // Import af views til routing
 import CreateOpgave from '@/views/admin/CreateOpgave.vue'
@@ -137,6 +138,14 @@ const router = createRouter({
 
 const app = createApp(App)
 app.use(router)
+
+const uninstallTooltipHelper = installTooltipHelper()
+
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        uninstallTooltipHelper()
+    })
+}
 
 const currentPath = window.location.pathname
 const currentRoute = window.location.pathname + window.location.search

@@ -283,7 +283,7 @@ p > a:hover {
     padding-bottom: 1.5vh;
     min-height: 100dvh;
 
-    overflow-x: hidden;
+    max-width: 90rem;
     
     /* display: flex;
     flex-direction: column;
@@ -345,8 +345,12 @@ p > a:hover {
     column-gap: 1rem;
     direction: ltr;
 }
+
 .card-list.row {
     column-width: 18rem;
+}
+.ansvarlig-view  .card-list.row {
+    column-width: 26rem;
 }
 
 .card-list > * {
@@ -357,13 +361,14 @@ p > a:hover {
     -webkit-column-break-inside: avoid;
 }
 
-.card-list > .card:not(.course) {
+.card-list > .card.task {
     max-width: 100%;
 }
 
 .card {
     position: relative;
     background-color: var(--color-card);
+    overflow: visible;
 
     max-height: calc(auto);
     min-height: 4.5rem;
@@ -381,7 +386,7 @@ p > a:hover {
     transition-duration: 400ms; */
 }
 @media only screen and (min-width: 768px) {
-    .card:not(.course)
+    .card.task
     {
         max-width: calc(50% - 0.5rem);
     }
@@ -439,9 +444,9 @@ p > a:hover {
     height: 4.5rem;
     padding: 0rem 1.2rem;
 }
-*:not(.course) .card-header {
-    min-height: 4.5rem;
-    padding: 0.8rem 1.2rem;
+*.task .card-header {
+    /* min-height: 4.5rem; */
+    padding: 1rem 1.2rem;
 }
 
 .card-header:first-child {
@@ -566,7 +571,7 @@ p > a:hover {
 
 .card-color-seperator { /* Alternative to image */
     width: 100%;
-    height: 0.5rem;
+    height: 0.3rem;
     transition: 0ms;
     opacity: 0.8;
 }
@@ -579,6 +584,12 @@ p > a:hover {
 .card-content, .card-details {
     max-height: calc(auto);
     color: var(--color-card-text);
+}
+.card.task .card-details {
+    margin-left: 1.2rem;
+    margin-right: 1.2rem;
+    margin-top: 0rem;
+    margin-bottom: 1rem;
 }
 
     /* .card:not(.expand-content) .card-content:not(.always-show) {
@@ -653,6 +664,10 @@ p > a:hover {
     gap: 1rem;
     white-space: nowrap;
     font-size: 0.8rem;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
 .card-details {
@@ -660,8 +675,6 @@ p > a:hover {
     justify-content: space-between;
     align-items: flex-start;
     gap: 0.5rem;
-    margin: 1.5rem;
-    margin-top: 1rem;
     font-size: 0.8rem;
 }
 
@@ -670,17 +683,6 @@ p > a:hover {
         gap: 1rem;
         align-items: center;
     }
-
-.buttons {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 1rem 0.8rem;
-    border: 0;
-    gap: 0.5rem;
-}
-.card:not(.course) .buttons {
-    justify-content: flex-end;
-}
 
 /* Tags */
 
@@ -711,6 +713,17 @@ p > a:hover {
 
 /* Buttons + Inputs */
 
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1rem 0.8rem;
+    border: 0;
+    gap: 0.5rem;
+}
+.card.task .buttons {
+    justify-content: flex-end;
+    margin-top: 0.8rem;
+}
 .button {
     font-family: "Open Sans", sans-serif;
     font-weight: 400;
@@ -723,6 +736,11 @@ p > a:hover {
     cursor: pointer;
     border: 0.1rem solid var(--color-button);
     user-select: none;
+}
+.card.task .button {
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
 }
 
 /* Button loading overlay (CSS-only) using a pseudo-element overlay */

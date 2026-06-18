@@ -402,7 +402,7 @@
             <option value="deadline">{{ isUnderPreparation || isTemplate ? 'Startdag' : 'Deadline' }}</option>
         </select>
     </div>
-    <div v-if="sortBy === 'deadline'">
+    <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-if="sortBy === 'deadline'">
         <TaskList v-if="forloeb != null && (isTemplate || isUnderPreparation)"
                 :tasks="opgaver_template"
                 :isFetchingTasks="!isOpgaverFetched"
@@ -452,7 +452,7 @@
                 :accessKey="props.accessKey"
                 itemColor="617a5d" />
     </div>
-    <div v-else>
+    <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-else>
         <TaskList v-if="forloeb != null" v-for="group in forloeb.opgave_grupper" :key="group.id"
                 :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID === group.OpgaveGruppeID)"
                 :isFetchingTasks="!isOpgaverFetched"
