@@ -64,16 +64,37 @@
         return days > 1 ? 'dage' : 'dag'
     }
 
+    const triggerScrollFlash = () => {
+        const item = cardRef.value
+        if (!item)
+            return
+
+        item.classList.remove('scroll-flash')
+        void item.offsetWidth
+        item.classList.add('scroll-flash')
+
+        setTimeout(() => {
+            item.classList.remove('scroll-flash')
+        }, 2800)
+    }
+
     function scrollTo()
     {
         setTimeout(function()
         {
             const item = cardRef.value
-            let rect = item.getBoundingClientRect()
-            let calc = rect.top - (window.innerHeight / 2) + (item.offsetHeight / 2)
+            if (!item)
+                return
+
+            const rect = item.getBoundingClientRect()
+            const calc = rect.top - (window.innerHeight / 2) + (item.offsetHeight / 2)
             window.scrollBy({
                 left: 0, top: calc, 
                 behavior: "smooth" })
+
+            setTimeout(() => {
+                triggerScrollFlash()
+            }, 500)
         }, 50) // Wait ms before scrolling
     }
 
@@ -520,6 +541,24 @@
 </template>
 
 <style scoped>
+    @keyframes subtle-outline-blink {
+        0%, 100% {
+            outline-color: rgba(108, 126, 138, 0);
+        }
+        20%, 55%, 85% {
+            outline-color: rgba(108, 126, 138, 0.55);
+        }
+        35%, 70%, 95% {
+            outline-color: rgba(108, 126, 138, 0);
+        }
+    }
+
+    .task.scroll-flash {
+        outline: 0.2rem solid rgba(143, 143, 162, 0);
+        outline-offset: 0.05rem;
+        animation: subtle-outline-blink 2.5s ease-in-out;
+    }
+
     .notes {
         background-color: rgb(247, 248, 210);
         padding: 0.5rem 0.8rem;
