@@ -504,7 +504,7 @@
                 :accessKey="props.accessKey" />
 
         
-        <TaskList v-if="forloeb != null"
+        <TaskList v-if="forloeb != null && (forloeb.opgave_grupper.length === 0 || opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null).length > 0)"
                 :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null)"
                 :isFetchingTasks="!isOpgaverFetched"
                 title="Ingen gruppe"
