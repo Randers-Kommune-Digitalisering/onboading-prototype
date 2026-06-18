@@ -32,6 +32,15 @@ const routes = [
         path: '/create-opgave',
         name: 'CreateOpgave',
         component: CreateOpgave,
+        beforeEnter: (to) => {
+            if (to.query.template === 'true' || to.query.tid)
+                return true
+
+            return {
+                path: '/forloeb-overview/create-opgave',
+                query: to.query,
+            }
+        },
         meta: { roles: ['Admin'] }
     },
     {
@@ -43,19 +52,34 @@ const routes = [
     {
         path: '/edit-forloeb',
         name: 'EditForløb',
-        component: EditForløb,
+        redirect: (to) => ({
+            path: '/forloeb-overview/edit-forloeb',
+            query: to.query,
+        }),
         meta: { roles: ['Admin'] }
     },
     {
         path: '/start-forloeb',
         name: 'StartForløb',
-        component: StartForløb,
+        redirect: (to) => ({
+            path: '/forloeb-overview/start-forloeb',
+            query: to.query,
+        }),
         meta: { roles: ['Admin'] }
     },
     {
         path: '/create-ressource',
         name: 'CreateRessource',
         component: CreateRessource,
+        beforeEnter: (to) => {
+            if (to.query.tid)
+                return true
+
+            return {
+                path: '/forloeb-overview/create-ressource',
+                query: to.query,
+            }
+        },
         meta: { roles: ['Admin', 'Medarbejder'] }
     },
     {
@@ -67,7 +91,10 @@ const routes = [
     {
         path: '/send-velkomst',
         name: 'SendVelkomst',
-        component: SendWelcome,
+        redirect: (to) => ({
+            path: '/forloeb-overview/send-velkomst',
+            query: to.query,
+        }),
         meta: { roles: ['Admin'] }
     },
     {
@@ -108,8 +135,39 @@ const routes = [
     },
     {
         path: '/forloeb-overview',
-        name: 'ForløbOverview',
         component: ForløbOverview,
+        children: [
+            {
+                path: 'edit-forloeb',
+                name: 'ForløbOverviewEditForløb',
+                component: EditForløb,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'create-opgave',
+                name: 'ForløbOverviewCreateOpgave',
+                component: CreateOpgave,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'create-ressource',
+                name: 'ForløbOverviewCreateRessource',
+                component: CreateRessource,
+                meta: { roles: ['Admin', 'Medarbejder'] }
+            },
+            {
+                path: 'send-velkomst',
+                name: 'ForløbOverviewSendVelkomst',
+                component: SendWelcome,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'start-forloeb',
+                name: 'ForløbOverviewStartForløb',
+                component: StartForløb,
+                meta: { roles: ['Admin'] }
+            }
+        ],
         meta: { roles: ['Admin', 'Medarbejder', 'Public'] }
     },
     {

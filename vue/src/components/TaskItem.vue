@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { computed, ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
 
     import { getUserInfo } from '@/services/keycloakService.js'
@@ -204,16 +204,55 @@
     })
 
     const dynamicMails = ref(props.mails)
+    const localTaskResult = ref(props.result)
+
+
+    /* Local color overrides for task states */
+
+    const defaultTaskColor = '4c4980'
+    const completedTaskColor = '617a5d'
+    const overdueTaskColor = 'bf4e4e'
+
+    const hasLocalResultOverride = computed(() => localTaskResult.value !== props.result)
+    const isTaskOverdue = computed(() => {
+        if (localTaskResult.value || props.templateView || props.isPreparation || !props.deadline)
+            return false
+
+        return new Date(props.deadline) < new Date()
+    })
+
+    const cardIsDark = computed(() => {
+        return hasLocalResultOverride.value ? localTaskResult.value : props.dark
+    })
+
+    const taskAccentColor = computed(() => {
+        if (!hasLocalResultOverride.value)
+            return props.color
+
+        return localTaskResult.value
+            ? completedTaskColor
+            : (isTaskOverdue.value ? overdueTaskColor : defaultTaskColor)
+    })
+
+    const taskBorder = computed(() => {
+        if (!hasLocalResultOverride.value)
+            return props.border
+
+        return isTaskOverdue.value ? overdueTaskColor : null
+    })
+
+    watch(() => props.result, (newResult) => {
+        localTaskResult.value = newResult
+    })
 
     /* Task operations */
 
     const completeTask = (result = true) => {
-        updateOpgave(props.id, { result: result }).then(response => {
-            const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
-            router.replace({ path: '/reload' }).then(() => {
-                router.replace(currentPath)
-            })
-        }).catch(error => {
+        const previousResult = localTaskResult.value
+        localTaskResult.value = result
+
+        updateOpgave(props.id, { result: result }).catch(error => {
+            localTaskResult.value = previousResult
             console.error('Error completing task:', error)
         })
     }
@@ -245,26 +284,43 @@
     const gotoRessource = (id) => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
+        const ressourcePath = props.isTemplate ? '/create-ressource' : '/forloeb-overview/create-ressource'
+        const parentForloebId = currentQuery.id ?? currentQuery.tid
 
         let newQuery = {}
         if(props.isTemplate)
             newQuery.tid = id != null ? id : props.id
         else
             newQuery.id = id != null ? id : props.id
+
+        if (parentForloebId)
+            newQuery.forloebId = parentForloebId
+
         if(id != null)
             newQuery.edit = true
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-ressource', query: newQuery })
+            router.push({ path: ressourcePath, query: newQuery })
         })
     }
 
     const gotoTask = () => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
+        const taskPath = props.isTemplate ? '/create-opgave' : '/forloeb-overview/create-opgave'
+        const parentForloebId = currentQuery.id ?? currentQuery.tid
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate, prep: props.isPreparation } })
+            router.push({
+                path: taskPath,
+                query: {
+                    id: props.id,
+                    edit: true,
+                    template: props.isTemplate,
+                    prep: props.isPreparation,
+                    forloebId: parentForloebId,
+                },
+            })
         })
     }
 
@@ -364,14 +420,19 @@
             scrollTo()
         }
     })
+
+    watch(() => props.expandByDefault, (expandByDefault, previousValue) => {
+        if (expandByDefault && !previousValue)
+            scrollTo()
+    })
 </script>
 
 <template>
-    <div :class="['card', 'task', {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
+    <div :class="['card', 'task', {'dark': cardIsDark}]" :style="{ border: taskBorder ? `0.1rem dashed #${taskBorder}` : 'none' }" ref="cardRef">
 
         <div class="card-group">{{ group?.name }}</div>
 
-        <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
+        <div class="card-color-seperator" :style="`background-color: #`+ taskAccentColor +`;`"></div>
 
         <div class="card-header">
 
@@ -513,14 +574,14 @@
                     Redigér
             </div>
 
-            <div :class="['button', 'hollow', {'yellow': result}]"
+            <div :class="['button', 'hollow', {'yellow': localTaskResult}]"
                     v-if="!templateView && !isPreparation && 
                         (userInfo?.isAdmin ||
                             (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
                             (userInfo?.isMedarbejder && ansvarligEmail == '')
                         )"
-                    @click="completeTask(!result)">
-                    Markér {{ result ? 'ej ' :'' }} gennemført
+                    @click="completeTask(!localTaskResult)">
+                    Markér {{ localTaskResult ? 'ej ' :'' }} gennemført
             </div>
 
             <div class="button hollow red"

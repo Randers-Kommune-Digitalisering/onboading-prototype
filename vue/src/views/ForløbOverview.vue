@@ -8,10 +8,12 @@
 
     const route = useRoute()
     const router = useRouter()
-    const id = computed(() => parseInt(route.query.id || route.query.tid, 10))
+    const id = computed(() => parseInt(route.query.forloebId || route.query.id || route.query.tid, 10))
     const isTemplate = computed(() => route.query.tid !== undefined)
-	const _expandItem = route.query.item
-	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
+    const expandItem = computed(() => {
+        const parsed = parseInt(route.query.item, 10)
+        return Number.isNaN(parsed) ? null : parsed
+    })
     const userInfo = ref(null)
 
     const isExternal = computed(() => (route.query.external || '').toString().toLowerCase() === 'true')
@@ -136,5 +138,19 @@
                         :showDetails="true"
                         :isTemplate="isTemplate"
                         :expandItem="expandItem" />
+
+        <div class="content">
+            <router-view v-slot="{ Component }">
+                <div v-if="Component" class="workspace-editor">
+                    <component :is="Component" />
+                </div>
+            </router-view>
+        </div>
     </div>
 </template>
+
+<style scoped>
+    .workspace-editor {
+        margin-top: 1.2rem;
+    }
+</style>

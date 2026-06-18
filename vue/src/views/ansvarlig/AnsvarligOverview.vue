@@ -7,8 +7,6 @@
 
     const route = useRoute()
 	const userInfo = ref(null)
-	const _expandItem = route.query.item
-	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
 
 	getUserInfo().then(response => {
 		userInfo.value = response
@@ -19,6 +17,6 @@
 
 <template>
 	<div v-if="userInfo && userInfo.email && userInfo.email != ''">
-		<CourseOverview :ansvarligView="true" :expandItem="expandItem" />
+		<CourseOverview :ansvarligView="true" />
 	</div>
 </template>

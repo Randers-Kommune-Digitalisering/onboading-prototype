@@ -1,6 +1,6 @@
 <script setup>
-    import { ref, onMounted, watch } from 'vue'
-    import { useRouter } from 'vue-router'
+    import { computed, ref, onMounted, watch } from 'vue'
+    import { useRoute, useRouter } from 'vue-router'
     import { getUserInfo } from '@/services/keycloakService.js'
     import { getExternalUserInfo } from '@/services/externalAccessService.js'
     
@@ -13,6 +13,7 @@
     import ProgressBar from '@/components/ProgressBar.vue'
 
     const router = useRouter()
+    const route = useRoute()
 
     const props = defineProps({
         showDetails: {
@@ -69,7 +70,24 @@
     const externalAccessDenied = ref(false)
     const roleAccessDenied = ref(false)
 
+    const isNestedForloebRoute = (path) => path.startsWith('/forloeb-overview/')
+    const isBaseForloebRoute = (path) => path === '/forloeb-overview' || path === '/forloeb-overview/'
+    const showTaskLists = computed(() => !isNestedForloebRoute(route.path))
+
+    const resetTaskState = () => {
+        opgaver_all.value = []
+        opgaver_ongoing.value = []
+        opgaver_future.value = []
+        opgaver_completed.value = []
+        opgaver_template.value = []
+        completedPercentage.value = 0
+        start_message_index.value = -1
+    }
+
     const fetchOpgaver = async () => {
+        resetTaskState()
+        isOpgaverFetched.value = false
+
         // External access flow
         try {
             if (props.external) {
@@ -296,6 +314,26 @@
         }
     })
 
+    watch(() => route.query.refreshTasks, async (newValue, oldValue) => {
+        if (newValue === oldValue)
+            return
+
+        if (!showTaskLists.value)
+            return
+
+        await fetchOpgaver()
+    })
+
+    watch(() => route.path, async (newPath, oldPath) => {
+        if (!isBaseForloebRoute(newPath))
+            return
+
+        if (!isNestedForloebRoute(oldPath || ''))
+            return
+
+        await fetchOpgaver()
+    })
+
     watch(() => sortBy.value, (newSortingValue) => {
         router.replace({
             query: {
@@ -318,9 +356,9 @@
     <p v-if="forloeb != null && isForloebFetched && userInfo.isAdmin && isForloebOngoing && !forloeb.usermail.includes('@randers.dk')" class="indent-tiny notification yellow">
         <span class="bold">OBS</span>: Forløbet er oprettet med medarbejderens private mailadresse. Husk at opdatere til medarbejderens nye Randers-mail når medarbejderen er startet i kommunen.
     </p>
-    <p v-if="showDetails && forloeb != null" class="indent-tiny bold uppercase p-header-adjust">
+    <!-- <p v-if="showDetails && forloeb != null" class="indent-tiny bold uppercase p-header-adjust">
         Oversigt
-    </p>
+    </p> -->
     <CourseItem v-if="forloeb != null && isOpgaverFetched && showDetails"
                 :disableInteraction="true" 
                 :dark="true" 
@@ -341,7 +379,7 @@
     <!-- Admin actions -->
     <div class="buttons" v-if="userInfo.isAdmin && !props.ansvarligView && forloeb != null && isOpgaverFetched">
 
-        <router-link :to="`/create-opgave?id=${forloeb_id}&prep=${isUnderPreparation}`"
+        <router-link :to="`/forloeb-overview/create-opgave?id=${forloeb_id}&prep=${isUnderPreparation}`"
                      class="button" v-if="!isTemplate && !isForloebCompleted">
                         + Tilføj opgave
         </router-link>
@@ -352,7 +390,7 @@
                         + Tilføj opgave
         </router-link>
 
-        <router-link :to="`/edit-forloeb?id=${forloeb_id}`" v-if="!isTemplate"
+        <router-link :to="`/forloeb-overview/edit-forloeb?id=${forloeb_id}`" v-if="!isTemplate"
                      class="button hollow">
                         Redigér{{isForloebCompleted ? ' / genoptag' : '' }} forløb
         </router-link>
@@ -362,7 +400,7 @@
                         Redigér skabelon
         </router-link>
 
-        <router-link :to="`/send-velkomst?id=${forloeb_id}`"
+        <router-link :to="`/forloeb-overview/send-velkomst?id=${forloeb_id}`"
              class="button hollow dashed"
              v-if="!isTemplate && !isUnderPreparation">
                 Send velkomstmail
@@ -374,7 +412,7 @@
                 Afslut forløb
         </div>
 
-        <router-link :to="`/start-forloeb?id=${forloeb_id}`"
+        <router-link :to="`/forloeb-overview/start-forloeb?id=${forloeb_id}`"
                      class="button hollow yellow"
                      v-if="!isTemplate && isUnderPreparation">
                         Start forløb
@@ -394,7 +432,7 @@
 
     </div>
 
-    <div v-if="forloeb != null && forloeb?.opgave_grupper?.length > 0" class="sort-container">
+    <div v-if="showTaskLists && forloeb != null && forloeb?.opgave_grupper?.length > 0" class="sort-container">
         <div style="flex-grow:1">&nbsp;</div>
         <div class="sort-title">Sortér efter:</div>
         <select class="sort-selector" v-model="sortBy">
@@ -402,7 +440,7 @@
             <option value="deadline">{{ isUnderPreparation || isTemplate ? 'Startdag' : 'Deadline' }}</option>
         </select>
     </div>
-    <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-if="sortBy === 'deadline'">
+    <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-if="showTaskLists && sortBy === 'deadline'">
         <TaskList v-if="forloeb != null && (isTemplate || isUnderPreparation)"
                 :tasks="opgaver_template"
                 :isFetchingTasks="!isOpgaverFetched"
@@ -452,7 +490,7 @@
                 :accessKey="props.accessKey"
                 itemColor="617a5d" />
     </div>
-    <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-else>
+    <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-else-if="showTaskLists">
         <TaskList v-if="forloeb != null" v-for="group in forloeb.opgave_grupper" :key="group.id"
                 :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID === group.OpgaveGruppeID)"
                 :isFetchingTasks="!isOpgaverFetched"

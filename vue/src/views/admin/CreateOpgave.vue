@@ -378,9 +378,50 @@
 
     const returnToPrevious = (id = null) =>
 	{
+        if (router.currentRoute.value.path.startsWith('/forloeb-overview/')) {
+            const nextQuery = {
+                ...router.currentRoute.value.query,
+                item: id ?? opgaveId,
+                refreshTasks: Date.now().toString(),
+            }
+
+            if (addToTemplate.value)
+                nextQuery.tid = forloeb_id.value
+            else
+                nextQuery.id = forloeb_id.value
+
+            delete nextQuery.edit
+            delete nextQuery.forloebId
+            router.replace({ path: '/forloeb-overview', query: nextQuery })
+            return
+        }
+
 		// Get last route
 		let lastUrl = router.options.history.state.back
+        if (!lastUrl) {
+            router.replace({
+                path: '/forloeb-overview',
+                query: {
+                    id: forloeb_id.value,
+                    item: id ?? opgaveId,
+                    refreshTasks: Date.now().toString(),
+                },
+            })
+            return
+        }
+
 		let lastRoute = router.getRoutes().find(route => route.path == lastUrl.split('?')[0])
+        if (!lastRoute) {
+            router.replace({
+                path: '/forloeb-overview',
+                query: {
+                    id: forloeb_id.value,
+                    item: id ?? opgaveId,
+                    refreshTasks: Date.now().toString(),
+                },
+            })
+            return
+        }
 		lastRoute.query = Object.fromEntries(new URLSearchParams(lastUrl.split('?')[1]))
 
 		// Add query params

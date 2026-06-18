@@ -296,7 +296,7 @@ p > a:hover {
     #app > .content { 
         padding-left: calc(5.5rem + 2.8vw);
         padding-right: 1.5vw;
-        padding-top: 10vh;
+        padding-top: 2rem;
         padding-bottom: 2.5vh;
     }
 }
@@ -304,7 +304,7 @@ p > a:hover {
 
 /* Flex */
 
-.content > .flex {
+.content .flex {
     display: flex;
     align-items: stretch;
     flex-direction: column;
@@ -326,14 +326,14 @@ p > a:hover {
 }
 
 @media only screen and (min-width: 768px) {
-    .content > .flex {
+    .content .flex {
         flex-direction: row;
         align-items: flex-start;
         max-width: calc(68rem - 18rem - 1.5rem);
     }
 }
 @media only screen and (min-width: 768px) and (max-width: 1240px) {
-    .content > .flex:has(.float-right), .flex:has(.float-right-gutter) {
+    .content .flex:has(.float-right), .content .flex:has(.float-right-gutter) {
         max-width: calc(100% - 18rem - 1.5rem);
     }
 }
@@ -738,7 +738,7 @@ p > a:hover {
     user-select: none;
 }
 .card.task .button {
-    padding: 0.5rem 0.65rem;
+    padding: 0.5rem 0.7rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;
 }
