@@ -241,7 +241,7 @@
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
         const ressourcePath = props.isTemplate ? '/create-ressource' : '/forloeb-overview/create-ressource'
-        const parentForloebId = currentQuery.id ?? currentQuery.tid
+        const parentForloebId = props.forloebId ?? currentQuery.id ?? currentQuery.tid
 
         let newQuery = {}
         if(props.isTemplate)
@@ -264,7 +264,7 @@
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
         const taskPath = props.isTemplate ? '/create-opgave' : '/forloeb-overview/create-opgave'
-        const parentForloebId = currentQuery.id ?? currentQuery.tid
+        const parentForloebId = props.forloebId ?? currentQuery.id ?? currentQuery.tid
 
         router.replace({ query: updateQuery }).then(() => {
             router.push({
