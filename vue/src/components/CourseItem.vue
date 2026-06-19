@@ -69,14 +69,14 @@
         { deep: true, immediate: true }
     )
 
-    // watch(
-    //     () => opgaver.value,
-    //     (tasks) => {
-    //         if (props.tasks == null)
-    //             updateCompletedPercentage(tasks)
-    //     },
-    //     { deep: true }
-    // )
+    watch(
+        () => opgaver.value,
+        (tasks) => {
+            if (props.tasks == null)
+                updateCompletedPercentage(tasks)
+        },
+        { deep: true }
+    )
 
     onMounted(async () => {
         try {
