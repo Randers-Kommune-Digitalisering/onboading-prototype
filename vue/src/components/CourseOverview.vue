@@ -413,9 +413,7 @@
     <p v-if="forloeb != null && isForloebFetched && userInfo.isAdmin && isForloebOngoing && !forloeb.usermail.includes('@randers.dk')" class="indent-tiny notification yellow">
         <span class="bold">OBS</span>: Forløbet er oprettet med medarbejderens private mailadresse. Husk at opdatere til medarbejderens nye Randers-mail når medarbejderen er startet i kommunen.
     </p>
-    <!-- <p v-if="showDetails && forloeb != null" class="indent-tiny bold uppercase p-header-adjust">
-        Oversigt
-    </p> -->
+
     <CourseItem v-if="forloeb != null && isOpgaverFetched && showDetails"
                 :disableInteraction="true" 
                 :dark="true" 
@@ -488,12 +486,6 @@
              v-if="isTemplate || isForloebCompleted || (!isForloebCompleted && !isForloebOngoing)">
                 Slet {{ isTemplate ? 'skabelon' : 'forløb' }}
         </div>
-
-        <!-- <router-link :to="`/create-forloeb?tid=${forloeb_id}`"
-                     class="button"
-                     v-if="isTemplate">
-                        + Opret forløb med skabelon
-        </router-link> -->
 
         </template>
 
