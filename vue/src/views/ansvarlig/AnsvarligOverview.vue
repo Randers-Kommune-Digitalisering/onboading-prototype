@@ -7,6 +7,8 @@
 
     const route = useRoute()
 	const userInfo = ref(null)
+	const _scrollTo = route.query.item
+	const scrollTo = ref(_scrollTo ? parseInt(_scrollTo) : null)
 
 	getUserInfo().then(response => {
 		userInfo.value = response
@@ -17,6 +19,6 @@
 
 <template>
 	<div v-if="userInfo && userInfo.email && userInfo.email != ''">
-		<CourseOverview :ansvarligView="true" />
+		<CourseOverview :ansvarligView="true" :scrollTo="scrollTo" />
 	</div>
 </template>
