@@ -104,7 +104,6 @@
 	<TaskList v-if="selectedType==TemplateType.Opgaveskabelon"
 			  :tasks="opgaveTemplates"
 			  title=""
-			  :expandFirstItem="false"
 			  :templateView="true"
 			  :scrollToItem="scrollToItem" />
 

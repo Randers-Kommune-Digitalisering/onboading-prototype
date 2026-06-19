@@ -21,10 +21,6 @@
         isMedarbejder: false,
     })
 
-    // const expandCard = () => {
-    //     cardRef.value.classList.toggle('expand-content')
-    // }
-
     const returnDaysFromNow = (date) => {
         const target = new Date(date)
         if (target.toString() === 'Invalid Date') return null

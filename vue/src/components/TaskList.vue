@@ -26,11 +26,6 @@
             type: Boolean,
             default: false
         },
-        expandFirstItem:
-        {
-            type: Boolean,
-            default: true
-        },
         scrollToItem:
         {
             type: Number,
