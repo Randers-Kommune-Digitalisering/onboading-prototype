@@ -1,5 +1,5 @@
 <script setup>
-    import { computed, ref, onMounted, watch } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
 
     import { getUserInfo } from '@/services/keycloakService.js'
@@ -10,6 +10,7 @@
     import { downloadRessourceFile } from '@/services/ressourceService.js'
 
     const router = useRouter()
+    const emit = defineEmits(['result-updated'])
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
@@ -205,55 +206,13 @@
     })
 
     const dynamicMails = ref(props.mails)
-    const localTaskResult = ref(props.result)
-
-
-    /* Local color overrides for task states */
-
-    const defaultTaskColor = '4c4980'
-    const completedTaskColor = '617a5d'
-    const overdueTaskColor = 'bf4e4e'
-
-    const hasLocalResultOverride = computed(() => localTaskResult.value !== props.result)
-    const isTaskOverdue = computed(() => {
-        if (localTaskResult.value || props.templateView || props.isPreparation || !props.deadline)
-            return false
-
-        return new Date(props.deadline) < new Date()
-    })
-
-    const cardIsDark = computed(() => {
-        return hasLocalResultOverride.value ? localTaskResult.value : props.dark
-    })
-
-    const taskAccentColor = computed(() => {
-        if (!hasLocalResultOverride.value)
-            return props.color
-
-        return localTaskResult.value
-            ? completedTaskColor
-            : (isTaskOverdue.value ? overdueTaskColor : defaultTaskColor)
-    })
-
-    const taskBorder = computed(() => {
-        if (!hasLocalResultOverride.value)
-            return props.border
-
-        return isTaskOverdue.value ? overdueTaskColor : null
-    })
-
-    watch(() => props.result, (newResult) => {
-        localTaskResult.value = newResult
-    })
 
     /* Task operations */
 
     const completeTask = (result = true) => {
-        const previousResult = localTaskResult.value
-        localTaskResult.value = result
-
-        updateOpgave(props.id, { result: result }).catch(error => {
-            localTaskResult.value = previousResult
+        updateOpgave(props.id, { result: result }).then(() => {
+            emit('result-updated', { id: props.id, result: result })
+        }).catch(error => {
             console.error('Error completing task:', error)
         })
     }
@@ -429,11 +388,11 @@
 </script>
 
 <template>
-    <div :class="['card', 'task', {'dark': cardIsDark}]" :style="{ border: taskBorder ? `0.1rem dashed #${taskBorder}` : 'none' }" ref="cardRef">
+    <div :class="['card', 'task', {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
 
         <div class="card-group">{{ group?.name }}</div>
 
-        <div class="card-color-seperator" :style="`background-color: #`+ taskAccentColor +`;`"></div>
+        <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
 
         <div class="card-header">
 
@@ -575,14 +534,14 @@
                     Redigér
             </div>
 
-            <div :class="['button', 'hollow', {'yellow': localTaskResult}]"
+            <div :class="['button', 'hollow', {'yellow': result}]"
                     v-if="!templateView && !isPreparation && 
                         (userInfo?.isAdmin ||
                             (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
                             (userInfo?.isMedarbejder && ansvarligEmail == '')
                         )"
-                    @click="completeTask(!localTaskResult)">
-                    Markér {{ localTaskResult ? 'ej ' :'' }} gennemført
+                    @click="completeTask(!result)">
+                    Markér {{ result ? 'ej ' :'' }} gennemført
             </div>
 
             <div class="button hollow red"

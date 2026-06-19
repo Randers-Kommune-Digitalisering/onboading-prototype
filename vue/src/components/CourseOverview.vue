@@ -84,6 +84,45 @@
         start_message_index.value = -1
     }
 
+    const getTaskId = (task) => task?.OpgaveID ?? task?.OpgaveskabelonID
+
+    const removeTaskFromListById = (taskList, taskId) => {
+        const index = taskList.findIndex(task => getTaskId(task) === taskId)
+        if (index !== -1)
+            taskList.splice(index, 1)
+    }
+
+    const updateCompletedPercentage = () => {
+        completedPercentage.value = opgaver_all.value.length > 0
+            ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100)
+            : 0
+    }
+
+    const handleTaskResultChange = ({ id, result }) => {
+        const task = opgaver_all.value.find(item => getTaskId(item) === id)
+        if (!task)
+            return
+
+        task.result = result
+        updateCompletedPercentage()
+
+        if (props.isTemplate || isUnderPreparation.value)
+            return
+
+        removeTaskFromListById(opgaver_ongoing.value, id)
+        removeTaskFromListById(opgaver_future.value, id)
+        removeTaskFromListById(opgaver_completed.value, id)
+
+        if (result)
+            opgaver_completed.value.push(task)
+        else if (new Date(task.startdato) > new Date())
+            opgaver_future.value.push(task)
+        else
+            opgaver_ongoing.value.push(task)
+
+        opgaver_future.value.sort((a, b) => new Date(a.startdato) - new Date(b.startdato))
+    }
+
     const fetchOpgaver = async () => {
         resetTaskState()
         isOpgaverFetched.value = false
@@ -453,7 +492,8 @@
                 :external="props.external"
                 :accessKey="props.accessKey"
                 :forloebStartDate="new Date(forloeb?.startdate)"
-                :startMessageIndex="start_message_index" />
+                :startMessageIndex="start_message_index"
+                @task-result-change="handleTaskResultChange" />
 
         <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_ongoing"
@@ -463,7 +503,8 @@
                 :expandFirstItem="false"
             :expandItem="expandItem"
                 :external="props.external"
-                :accessKey="props.accessKey" />
+                :accessKey="props.accessKey"
+                @task-result-change="handleTaskResultChange" />
 
         <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_future"
@@ -476,7 +517,8 @@
                 :accessKey="props.accessKey"
                 itemColor="777371"
                 :forloebStartDate="new Date(forloeb?.startdate)"
-                :startMessageIndex="start_message_index" />
+                :startMessageIndex="start_message_index"
+                @task-result-change="handleTaskResultChange" />
 
         <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
                 :tasks="opgaver_completed"
@@ -488,7 +530,8 @@
                 :dark="true"
                 :external="props.external"
                 :accessKey="props.accessKey"
-                itemColor="617a5d" />
+                itemColor="617a5d"
+                @task-result-change="handleTaskResultChange" />
     </div>
     <div :class="{ 'ansvarlig-view': props.ansvarligView }" v-else-if="showTaskLists">
         <TaskList v-if="forloeb != null" v-for="group in forloeb.opgave_grupper" :key="group.id"
@@ -501,9 +544,9 @@
                 :templateView="isTemplate"
                 :isPreparation="isUnderPreparation"
                 :external="props.external"
-                :accessKey="props.accessKey" />
+                :accessKey="props.accessKey"
+                @task-result-change="handleTaskResultChange" />
 
-        
         <TaskList v-if="forloeb != null && (forloeb.opgave_grupper.length === 0 || opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null).length > 0)"
                 :tasks="opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null)"
                 :isFetchingTasks="!isOpgaverFetched"
@@ -514,7 +557,8 @@
                 :templateView="isTemplate"
                 :isPreparation="isUnderPreparation"
                 :external="props.external"
-                :accessKey="props.accessKey" />
+                :accessKey="props.accessKey"
+                @task-result-change="handleTaskResultChange" />
     </div>
 
 </template>

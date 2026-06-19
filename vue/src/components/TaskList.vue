@@ -75,6 +75,12 @@
         }
     })
 
+    const emit = defineEmits(['task-result-change'])
+
+    const onTaskResultUpdated = (payload) => {
+        emit('task-result-change', payload)
+    }
+
     const defaultItemColor = '4c4980'
 </script>
 
@@ -119,7 +125,8 @@
                     :mails="task.pending_emails"
 					:isPreparation="isPreparation"
 					:external="external"
-					:accessKey="accessKey" />
+                    :accessKey="accessKey"
+                    @result-updated="onTaskResultUpdated" />
             </template>
         </div><!-- /card-list -->
         <div v-else>

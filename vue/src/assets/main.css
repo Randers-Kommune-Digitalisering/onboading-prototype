@@ -294,9 +294,9 @@ p > a:hover {
 
 @media only screen and (min-width: 768px) {
     #app > .content { 
-        padding-left: calc(5.5rem + 2.8vw);
+        margin-left: calc(5.5rem + 2.8vw - 1.5vw);
         padding-right: 1.5vw;
-        padding-top: 2rem;
+        padding-top: 2.8vw;
         padding-bottom: 2.5vh;
     }
 }
