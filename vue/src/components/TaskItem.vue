@@ -79,7 +79,7 @@
         }, 2800)
     }
 
-    function scrollTo()
+    function _scrollTo()
     {
         setTimeout(function()
         {
@@ -165,7 +165,7 @@
             type: String,
             default: null
         },
-        expandByDefault: {
+        scrollTo: {
             type: Boolean,
             default: false
         },
@@ -376,14 +376,14 @@
     onMounted(async () => {
         userInfo.value = await getUserInfo()
         isFutureTask.value = new Date(props.startdate) > new Date()
-        if (props.expandByDefault) {
-            scrollTo()
+        if (props.scrollTo) {
+            _scrollTo()
         }
     })
 
-    watch(() => props.expandByDefault, (expandByDefault, previousValue) => {
-        if (expandByDefault && !previousValue)
-            scrollTo()
+    watch(() => props.scrollTo, (scrollTo, previousValue) => {
+        if (scrollTo && !previousValue)
+            _scrollTo()
     })
 </script>
 

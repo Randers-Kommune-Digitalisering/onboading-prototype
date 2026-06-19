@@ -12,7 +12,7 @@
 	const route = useRoute()
 	const router = useRouter()
 	const view = route.query.view
-	const expandItem = computed(() => {
+	const scrollToItem = computed(() => {
 		const parsed = parseInt(route.query.item, 10)
 		return Number.isNaN(parsed) ? null : parsed
 	})
@@ -106,7 +106,7 @@
 			  title=""
 			  :expandFirstItem="false"
 			  :templateView="true"
-			  :expandItem="expandItem" />
+			  :scrollToItem="scrollToItem" />
 
 	</div></div><!-- /wrapper -->
 </template>

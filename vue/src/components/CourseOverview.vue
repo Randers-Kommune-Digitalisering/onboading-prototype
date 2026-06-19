@@ -27,7 +27,7 @@
             type: Boolean,
             default: false
         },
-        expandItem: {
+        scrollToItem: {
             type: Number,
             default: null
         },
@@ -514,7 +514,7 @@
                 title="Alle opgaver"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
+            :scrollToItem="scrollToItem"
                 :templateView="isTemplate"
                 :isPreparation="isUnderPreparation"
                 :external="props.external"
@@ -529,7 +529,7 @@
                 :title="props.id != null ? 'Aktuelle opgaver' : 'Mine opgaver'"
                 :largeHeaderAdjust="(!props.ansvarligView && id != null) || (!props.ansvarligView && !userInfo.isAdmin)"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
+            :scrollToItem="scrollToItem"
                 :external="props.external"
                 :accessKey="props.accessKey"
                 @task-result-change="handleTaskResultChange" />
@@ -540,7 +540,7 @@
                 title="Kommende opgaver"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
+            :scrollToItem="scrollToItem"
                 :external="props.external"
                 :accessKey="props.accessKey"
                 itemColor="777371"
@@ -554,7 +554,7 @@
                 title="Afsluttede opgaver"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
+            :scrollToItem="scrollToItem"
                 :dark="true"
                 :external="props.external"
                 :accessKey="props.accessKey"
@@ -568,7 +568,7 @@
                 :title="group.name"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
+            :scrollToItem="scrollToItem"
                 :templateView="isTemplate"
                 :isPreparation="isUnderPreparation"
                 :external="props.external"
@@ -581,7 +581,7 @@
                 title="Ingen gruppe"
                 :largeHeaderAdjust="true"
                 :expandFirstItem="false"
-            :expandItem="expandItem"
+            :scrollToItem="scrollToItem"
                 :templateView="isTemplate"
                 :isPreparation="isUnderPreparation"
                 :external="props.external"

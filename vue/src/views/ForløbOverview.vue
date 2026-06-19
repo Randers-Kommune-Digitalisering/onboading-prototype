@@ -10,7 +10,7 @@
     const router = useRouter()
     const id = computed(() => parseInt(route.query.forloebId || route.query.id || route.query.tid, 10))
     const isTemplate = computed(() => route.query.tid !== undefined)
-    const expandItem = computed(() => {
+    const scrollToItem = computed(() => {
         const parsed = parseInt(route.query.item, 10)
         return Number.isNaN(parsed) ? null : parsed
     })
@@ -128,7 +128,7 @@
                             :id="id"
                             :showDetails="true"
                             :isTemplate="false"
-                            :expandItem="expandItem"
+                            :scrollToItem="scrollToItem"
                             :external="true"
                             :accessKey="accessKey" />
         </div>
@@ -137,7 +137,7 @@
                         :id="id"
                         :showDetails="true"
                         :isTemplate="isTemplate"
-                        :expandItem="expandItem" />
+                        :scrollToItem="scrollToItem" />
 
         <div class="content">
             <router-view v-slot="{ Component }">
