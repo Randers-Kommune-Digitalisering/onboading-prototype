@@ -486,6 +486,36 @@
                 </div>
             </div>
 
+            <div :class="['inputContainer']" v-if="!isTemplate">
+                <input
+                    type="text" id="gruppe" name="gruppe" 
+                    v-if="isAddingNewGroup"
+                    placeholder=""
+                    v-model="inputFields.OpgaveGruppeNavn"
+                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
+                    @blur="focusedInput = null"
+                    required>
+                <select
+                    id="gruppe" name="gruppe" 
+                    v-else
+                    v-model="selectedGroup"
+                    @change="selectGroup(selectedGroup)"
+                    @focus="focusedInput = inputFieldDescriptions.gruppe"
+                    @blur="focusedInput = null"
+                    required>
+                    <option value="" disabled selected hidden></option>
+                    <option :value="null" style="color:gray">Ingen gruppe</option>
+                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
+                </select>
+                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
+                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
+                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
+                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
+                    <i v-else class="fa-solid fa-plus"></i>
+                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
+                </div>
+            </div>
+
             <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
                 <input
                     type="text" id="assistant" name="assistant"
@@ -528,36 +558,6 @@
                     @focus="focusedInput = inputFieldDescriptions.note"
                     @blur="focusedInput = null"></textarea>
                 <label for="note" class="floating-label">Note til ansvarlig</label>
-            </div>
-
-            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
-                <input
-                    type="text" id="gruppe" name="gruppe" 
-                    v-if="isAddingNewGroup"
-                    placeholder=""
-                    v-model="inputFields.OpgaveGruppeNavn"
-                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
-                    @blur="focusedInput = null"
-                    required>
-                <select
-                    id="gruppe" name="gruppe" 
-                    v-else
-                    v-model="selectedGroup"
-                    @change="selectGroup(selectedGroup)"
-                    @focus="focusedInput = inputFieldDescriptions.gruppe"
-                    @blur="focusedInput = null"
-                    required>
-                    <option value="" disabled selected hidden></option>
-                    <option :value="null" style="color:gray">Ingen gruppe</option>
-                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
-                </select>
-                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
-                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
-                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
-                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
-                    <i v-else class="fa-solid fa-plus"></i>
-                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
-                </div>
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">

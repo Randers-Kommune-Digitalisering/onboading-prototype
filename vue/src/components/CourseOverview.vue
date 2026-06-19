@@ -343,6 +343,24 @@
             })
     }
 
+    const returnToOverview = () => {
+        const query = {
+            sort: sortBy.value,
+            refreshTasks: Date.now().toString(),
+        }
+
+        const parentForloebId = route.query.forloebId || route.query.id || forloeb_id.value
+        if (route.query.tid != null && !parentForloebId)
+            query.tid = route.query.tid
+        else if (parentForloebId != null)
+            query.id = parentForloebId
+
+        if (route.query.external != null)
+            query.external = route.query.external
+
+        router.replace({ path: '/forloeb-overview', query })
+    }
+
     onMounted(async () => {
         try {
             if (!props.external)
@@ -418,6 +436,14 @@
     <!-- Admin actions -->
     <div class="buttons" v-if="userInfo.isAdmin && !props.ansvarligView && forloeb != null && isOpgaverFetched">
 
+        <div @click="returnToOverview()"
+             class="button hollow"
+             v-if="!showTaskLists">
+                <i class="fa-solid fa-chevron-left" style="font-size: 0.6em;margin-right:0.4rem;transform:translateY(-0.06rem)"></i>Tilbage til oversigt
+        </div>
+
+        <template v-else>
+
         <router-link :to="`/forloeb-overview/create-opgave?id=${forloeb_id}&prep=${isUnderPreparation}`"
                      class="button" v-if="!isTemplate && !isForloebCompleted">
                         + Tilføj opgave
@@ -468,6 +494,8 @@
                      v-if="isTemplate">
                         + Opret forløb med skabelon
         </router-link> -->
+
+        </template>
 
     </div>
 
