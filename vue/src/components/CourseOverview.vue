@@ -545,7 +545,6 @@
                 :scrollToItem="scrollToItem"
                 :external="props.external"
                 :accessKey="props.accessKey"
-                itemColor="777371"
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index"
                 @task-result-change="handleTaskResultChange" />

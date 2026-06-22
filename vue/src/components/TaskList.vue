@@ -41,10 +41,6 @@
             type: Boolean,
             default: false
         },
-        itemColor:
-        {
-            type: String
-        },
         forloebStartDate:
         {
             type: Date,
@@ -77,6 +73,9 @@
     }
 
     const defaultItemColor = '4c4980'
+    const completedItemColor = '617a5d'
+    const overdueItemColor = 'bf4e4e'
+    const upcomingItemColor = '777371'
 </script>
 
 <template>
@@ -109,8 +108,8 @@
                     :ansvarlig="task.ansvarlig"
                     :ansvarligEmail="task.ansvarligEmail"
                     :booking="task.booking ? new Date(new Date(task.booking)) : null"
-                    :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-                    :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
+                    :color="task.result ? completedItemColor : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? overdueItemColor : (!templateView && !isPreparation && new Date(task.startdato) > new Date()) ? upcomingItemColor : defaultItemColor"
+                    :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? overdueItemColor : null"
                     :scrollTo="scrollToItem === task.OpgaveID || scrollToItem === task.OpgaveskabelonID"
                     :dark="dark || task.result"
                     :templateView="templateView"

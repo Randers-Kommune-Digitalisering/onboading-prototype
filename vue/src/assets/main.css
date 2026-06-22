@@ -636,14 +636,19 @@ p > a:hover {
     margin-right: 1.5rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
+    justify-content: space-between;
 }
 
 .card-details {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
     gap: 0.5rem;
     font-size: 0.8rem;
+}
+
+.task .card-details {
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
     .card-details > div, .card-header .card-details > div {

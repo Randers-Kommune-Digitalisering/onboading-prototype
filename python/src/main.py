@@ -43,18 +43,24 @@ def create_app():
             # authorization uses a stable identity (not spoofable headers).
             raw_roles = (DISABLE_KEYCLOAK_ROLES or '').strip()
             roles = [r.strip() for r in raw_roles.split(',') if r.strip()]
+            configured_name = (DISABLE_KEYCLOAK_USER_NAME or '').strip()
+            configured_email = (DISABLE_KEYCLOAK_USER_EMAIL or '').strip()
 
             if 'user' in session:
                 # Keep a stable identity, but enforce roles from config so a
-                # stale session cookie doesn't accidentally drop privileges.
+                # stale session cookie doesn't accidentally retain old identity
+                # or drop privileges.
                 user = session.get('user') or {}
-                user.setdefault('name', DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen')
-                user.setdefault(
-                    'email',
-                    DISABLE_KEYCLOAK_USER_EMAIL
-                    or request.headers.get('usermail')
-                    or 'test.robot@randers.dk',
-                )
+                if configured_name:
+                    user['name'] = configured_name
+                else:
+                    user.setdefault('name', 'Test Testsen')
+
+                if configured_email:
+                    user['email'] = configured_email
+                else:
+                    user.setdefault('email', '')
+
                 user['roles'] = roles
                 resource_access = user.get('resource_access') or {}
                 resource_access.setdefault(KEYCLOAK_CLIENT_ID, {})
@@ -63,14 +69,10 @@ def create_app():
                 session['user'] = user
                 return None
 
-            email = (
-                DISABLE_KEYCLOAK_USER_EMAIL
-                or request.headers.get('usermail')
-                or 'test.robot@randers.dk'
-            )
+            email = configured_email
 
             session['user'] = {
-                'name': DISABLE_KEYCLOAK_USER_NAME or 'Test Testsen',
+                'name': configured_name or 'Test Testsen',
                 'email': email,
                 'roles': roles,
                 'resource_access': {
