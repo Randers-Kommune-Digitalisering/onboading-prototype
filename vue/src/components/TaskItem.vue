@@ -202,12 +202,15 @@
     })
 
     const dynamicMails = ref(props.mails)
+    const isCollapsed = ref(props.result)
 
     /* Task operations */
 
     const completeTask = (result = true) => {
         updateOpgave(props.id, { result: result }).then(() => {
             emit('result-updated', { id: props.id, result: result })
+            if (result)
+                isCollapsed.value = true
         }).catch(error => {
             console.error('Error completing task:', error)
         })
@@ -401,9 +404,12 @@
 </script>
 
 <template>
-    <div :class="['card', 'task', {'dark': dark}]" :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }" ref="cardRef">
+    <div :class="['card', 'task', {'dark': dark}, {'collapsed': isCollapsed}]"
+         :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }"
+         ref="cardRef"
+         @click="isCollapsed ? isCollapsed = false : null">
 
-        <div class="card-group">{{ group?.name }}</div>
+        <div class="card-group" @click.stop="isCollapsed = !isCollapsed">{{ group?.name }}</div>
 
         <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
 
@@ -502,7 +508,7 @@
                 </div>
             </div>
 
-            <div v-if="!templateView">
+            <div v-if="!templateView && ansvarlig">
                 <div class="icon"><i class="fa-solid fa-user"></i></div>
                 
                 <div class="text" v-if="forloebId != null && userInfo.email == ansvarligEmail">
@@ -515,7 +521,7 @@
                 </div>
             </div>
 
-            <div v-if="!templateView && !isPreparation">
+            <div v-if="!templateView && !isPreparation && booking">
                 <div class="icon"><i class="fa-solid fa-calendar"></i></div>
                 <div class="text">
                     <div class="small faded">Booking</div>
@@ -606,5 +612,42 @@
         border-top-right-radius: 0.35rem;
         background-color: rgba(145, 135, 130, 0.16);
         padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+
+    .task {
+        position: relative;
+        overflow: hidden;
+        max-height: 80rem;
+        transition: max-height 320ms ease, margin-bottom 320ms ease;
+    }
+
+    .task::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 2.8rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 220ms ease;
+    }
+
+    .collapsed {
+        max-height: 5rem;
+        cursor: pointer;
+        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        margin-bottom: 2rem;
+    }
+
+    .collapsed::after {
+        opacity: 1;
+    }
+
+    .collapsed:hover {
+        max-height: 6rem;
+        margin-bottom: 1rem;
+        mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
     }
 </style>

@@ -198,8 +198,15 @@ def get_and_save_azure_ad_data():
 
         df = pd.DataFrame(users)
         csv_filename = AZURE_CSV_PATH
-        df_to_csv(df, csv_filename.split(".")[0])
-        logger.info(f"Data saved to {csv_filename}")
+        base_path, extension = os.path.splitext(csv_filename)
+        target_base = base_path if extension.lower() == ".csv" else csv_filename
+        saved_path = f"{target_base}.csv"
+        parent_dir = os.path.dirname(saved_path)
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
+
+        df_to_csv(df, target_base)
+        logger.info(f"Data saved to {saved_path}")
         return True
     except Exception as e:
         logger.error(f"Error processing data: {e}")
