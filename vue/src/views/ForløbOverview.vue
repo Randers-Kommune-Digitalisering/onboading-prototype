@@ -8,8 +8,8 @@
 
     const route = useRoute()
     const router = useRouter()
-    const id = computed(() => parseInt(route.query.forloebId || route.query.id || route.query.tid, 10))
-    const isTemplate = computed(() => route.query.tid !== undefined)
+    const id = computed(() => parseInt(route.query.forloebTid || route.query.forloebId || route.query.tid || route.query.id, 10))
+    const isTemplate = computed(() => route.query.tid !== undefined || route.query.forloebTid !== undefined)
     const scrollToItem = computed(() => {
         const parsed = parseInt(route.query.item, 10)
         return Number.isNaN(parsed) ? null : parsed

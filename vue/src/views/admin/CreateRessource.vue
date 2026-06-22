@@ -177,7 +177,7 @@
 			router.replace({
 				path: '/forloeb-overview',
 				query: {
-					id: opgaveId.value,
+					id: router.currentRoute.value.query.forloebId ?? router.currentRoute.value.query.forloebTid,
 					item: opgaveId.value,
 					refreshTasks: Date.now().toString(),
 				},
@@ -190,7 +190,7 @@
 			router.replace({
 				path: '/forloeb-overview',
 				query: {
-					id: opgaveId.value,
+					id: router.currentRoute.value.query.forloebId ?? router.currentRoute.value.query.forloebTid,
 					item: opgaveId.value,
 					refreshTasks: Date.now().toString(),
 				},

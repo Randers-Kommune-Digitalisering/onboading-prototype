@@ -19,6 +19,6 @@
 
 <template>
 	<div v-if="userInfo && userInfo.email && userInfo.email != ''">
-		<CourseOverview :ansvarligView="true" :scrollTo="scrollTo" />
+		<CourseOverview :ansvarligView="true" :scrollToItem="scrollTo" />
 	</div>
 </template>
