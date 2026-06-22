@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useRouter } from 'vue-router'
 
     import { getUserInfo } from '@/services/keycloakService.js'
@@ -10,6 +10,7 @@
     import { downloadRessourceFile } from '@/services/ressourceService.js'
 
     const router = useRouter()
+    const emit = defineEmits(['result-updated'])
 
     const cardRef = ref(null)
     const isFutureTask = ref(false)
@@ -19,10 +20,6 @@
         isAdmin: false,
         isMedarbejder: false,
     })
-
-    // const expandCard = () => {
-    //     cardRef.value.classList.toggle('expand-content')
-    // }
 
     const returnDaysFromNow = (date) => {
         const target = new Date(date)
@@ -78,7 +75,7 @@
         }, 2800)
     }
 
-    function scrollTo()
+    function _scrollTo()
     {
         setTimeout(function()
         {
@@ -87,7 +84,8 @@
                 return
 
             const rect = item.getBoundingClientRect()
-            const calc = rect.top - (window.innerHeight / 2) + (item.offsetHeight / 2)
+            const topOffset = 45
+            const calc = rect.top - topOffset
             window.scrollBy({
                 left: 0, top: calc, 
                 behavior: "smooth" })
@@ -163,7 +161,7 @@
             type: String,
             default: null
         },
-        expandByDefault: {
+        scrollTo: {
             type: Boolean,
             default: false
         },
@@ -208,11 +206,8 @@
     /* Task operations */
 
     const completeTask = (result = true) => {
-        updateOpgave(props.id, { result: result }).then(response => {
-            const currentPath = { path: router.currentRoute.value.path, query: router.currentRoute.value.query }
-            router.replace({ path: '/reload' }).then(() => {
-                router.replace(currentPath)
-            })
+        updateOpgave(props.id, { result: result }).then(() => {
+            emit('result-updated', { id: props.id, result: result })
         }).catch(error => {
             console.error('Error completing task:', error)
         })
@@ -245,26 +240,60 @@
     const gotoRessource = (id) => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
+        const ressourcePath = '/forloeb-overview/create-ressource'
+        const parentForloebId = props.forloebId ?? currentQuery.id ?? currentQuery.tid
+        const isParentTemplateContext = currentQuery.tid != null || (props.templateView && !props.isTemplate)
 
         let newQuery = {}
         if(props.isTemplate)
             newQuery.tid = id != null ? id : props.id
         else
             newQuery.id = id != null ? id : props.id
+
+        if (props.isTemplate)
+            newQuery.template = true
+
+        if (parentForloebId) {
+            if (isParentTemplateContext)
+                newQuery.forloebTid = parentForloebId
+            else
+                newQuery.forloebId = parentForloebId
+        }
+
         if(id != null)
             newQuery.edit = true
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-ressource', query: newQuery })
+            router.push({ path: ressourcePath, query: newQuery })
         })
     }
 
     const gotoTask = () => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
+        const taskPath = props.isTemplate ? '/create-opgave' : '/forloeb-overview/create-opgave'
+        const parentForloebId = props.forloebId ?? currentQuery.id ?? currentQuery.tid
+        const isParentTemplateContext = currentQuery.tid != null || (props.templateView && !props.isTemplate)
+
+        const nextQuery = {
+            id: props.id,
+            edit: true,
+            template: props.isTemplate,
+            prep: props.isPreparation,
+        }
+
+        if (parentForloebId) {
+            if (isParentTemplateContext)
+                nextQuery.forloebTid = parentForloebId
+            else
+                nextQuery.forloebId = parentForloebId
+        }
 
         router.replace({ query: updateQuery }).then(() => {
-            router.push({ path: '/create-opgave', query: { id: props.id, edit: true, template: props.isTemplate, prep: props.isPreparation } })
+            router.push({
+                path: taskPath,
+                query: nextQuery,
+            })
         })
     }
 
@@ -360,9 +389,14 @@
     onMounted(async () => {
         userInfo.value = await getUserInfo()
         isFutureTask.value = new Date(props.startdate) > new Date()
-        if (props.expandByDefault) {
-            scrollTo()
+        if (props.scrollTo) {
+            _scrollTo()
         }
+    })
+
+    watch(() => props.scrollTo, (scrollTo, previousValue) => {
+        if (scrollTo && !previousValue)
+            _scrollTo()
     })
 </script>
 

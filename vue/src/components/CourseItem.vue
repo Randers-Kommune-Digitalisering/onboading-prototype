@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import ProgressBar from './ProgressBar.vue'
 
     import { getOpgaverByForloebID, getOpgaverByForloebsskabelonID } from '@/services/opgaveService.js'
@@ -54,6 +54,30 @@
     const opgaver = ref(props.tasks || null)
     const hasForloebStarted = props.startDate && new Date(props.startDate) <= new Date()
 
+    const updateCompletedPercentage = (tasks) => {
+        completedPercentage.value = tasks?.length > 0
+            ? Math.round((tasks.filter(opgave => opgave.result).length / tasks.length) * 100)
+            : 0
+    }
+
+    watch(
+        () => props.tasks,
+        (tasks) => {
+            if (tasks != null)
+                updateCompletedPercentage(tasks)
+        },
+        { deep: true, immediate: true }
+    )
+
+    watch(
+        () => opgaver.value,
+        (tasks) => {
+            if (props.tasks == null)
+                updateCompletedPercentage(tasks)
+        },
+        { deep: true }
+    )
+
     onMounted(async () => {
         try {
             if (props.tasks == null)
@@ -68,14 +92,9 @@
                     getOpgaverByForloebID(props.id)
                     .then(response => {
                         if (response?.data != null)
-                        {
                             opgaver.value = response.data
-                            completedPercentage.value = opgaver.value.length > 0 ? Math.round((opgaver.value.filter(opgave => opgave.result).length / opgaver.value.length) * 100) : 0
-                        }
                     })
             }
-            else
-                completedPercentage.value = props.tasks.length > 0 ? Math.round((props.tasks.filter(opgave => opgave.result).length / props.tasks.length) * 100) : 0
         }
         catch (error) {
             console.error(error)

@@ -378,9 +378,58 @@
 
     const returnToPrevious = (id = null) =>
 	{
+        if (router.currentRoute.value.path.startsWith('/forloeb-overview/')) {
+            const parentForloebId = route.query.forloebTid || route.query.forloebId || forloeb_id.value
+            const returnToTemplateOverview = route.query.forloebTid != null || route.query.tid != null
+            const nextQuery = {
+                ...router.currentRoute.value.query,
+                item: id ?? opgaveId,
+                refreshTasks: Date.now().toString(),
+            }
+
+            if (returnToTemplateOverview)
+                nextQuery.tid = parentForloebId
+            else
+                nextQuery.id = parentForloebId
+
+            // In nested edit flows, `id` may still be the task id from the editor URL.
+            // Keep task selection in `item` and avoid leaking stale task id as forloeb id.
+            if (returnToTemplateOverview)
+                delete nextQuery.id
+
+            delete nextQuery.edit
+            delete nextQuery.forloebId
+            delete nextQuery.forloebTid
+            router.replace({ path: '/forloeb-overview', query: nextQuery })
+            return
+        }
+
 		// Get last route
 		let lastUrl = router.options.history.state.back
+        if (!lastUrl) {
+            router.replace({
+                path: '/forloeb-overview',
+                query: {
+                    id: forloeb_id.value,
+                    item: id ?? opgaveId,
+                    refreshTasks: Date.now().toString(),
+                },
+            })
+            return
+        }
+
 		let lastRoute = router.getRoutes().find(route => route.path == lastUrl.split('?')[0])
+        if (!lastRoute) {
+            router.replace({
+                path: '/forloeb-overview',
+                query: {
+                    id: forloeb_id.value,
+                    item: id ?? opgaveId,
+                    refreshTasks: Date.now().toString(),
+                },
+            })
+            return
+        }
 		lastRoute.query = Object.fromEntries(new URLSearchParams(lastUrl.split('?')[1]))
 
 		// Add query params
@@ -445,6 +494,36 @@
                 </div>
             </div>
 
+            <div :class="['inputContainer']" v-if="!isTemplate">
+                <input
+                    type="text" id="gruppe" name="gruppe" 
+                    v-if="isAddingNewGroup"
+                    placeholder=""
+                    v-model="inputFields.OpgaveGruppeNavn"
+                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
+                    @blur="focusedInput = null"
+                    required>
+                <select
+                    id="gruppe" name="gruppe" 
+                    v-else
+                    v-model="selectedGroup"
+                    @change="selectGroup(selectedGroup)"
+                    @focus="focusedInput = inputFieldDescriptions.gruppe"
+                    @blur="focusedInput = null"
+                    required>
+                    <option value="" disabled selected hidden></option>
+                    <option :value="null" style="color:gray">Ingen gruppe</option>
+                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
+                </select>
+                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
+                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
+                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
+                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
+                    <i v-else class="fa-solid fa-plus"></i>
+                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
+                </div>
+            </div>
+
             <div class="inputContainer" v-if="!isTemplate && !addToTemplate">
                 <input
                     type="text" id="assistant" name="assistant"
@@ -487,36 +566,6 @@
                     @focus="focusedInput = inputFieldDescriptions.note"
                     @blur="focusedInput = null"></textarea>
                 <label for="note" class="floating-label">Note til ansvarlig</label>
-            </div>
-
-            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
-                <input
-                    type="text" id="gruppe" name="gruppe" 
-                    v-if="isAddingNewGroup"
-                    placeholder=""
-                    v-model="inputFields.OpgaveGruppeNavn"
-                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
-                    @blur="focusedInput = null"
-                    required>
-                <select
-                    id="gruppe" name="gruppe" 
-                    v-else
-                    v-model="selectedGroup"
-                    @change="selectGroup(selectedGroup)"
-                    @focus="focusedInput = inputFieldDescriptions.gruppe"
-                    @blur="focusedInput = null"
-                    required>
-                    <option value="" disabled selected hidden></option>
-                    <option :value="null" style="color:gray">Ingen gruppe</option>
-                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
-                </select>
-                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
-                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
-                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
-                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
-                    <i v-else class="fa-solid fa-plus"></i>
-                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
-                </div>
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">

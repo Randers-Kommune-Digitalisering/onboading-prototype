@@ -136,7 +136,7 @@ Randers Kommune",
 </script>
 
 <template>
-
+    <div class="flex"><div class="max-width"><!-- wrapper -->
 
     <p class="indent-tiny bold uppercase p-header-adjust">Send velkomstmail</p>
 
@@ -199,8 +199,7 @@ Randers Kommune",
     </div>
     </form>
 
-
-
+    </div></div>
 </template>
 
 

@@ -294,9 +294,9 @@ p > a:hover {
 
 @media only screen and (min-width: 768px) {
     #app > .content { 
-        padding-left: calc(5.5rem + 2.8vw);
+        margin-left: calc(5.5rem + 2.8vw - 1.5vw);
         padding-right: 1.5vw;
-        padding-top: 10vh;
+        padding-top: 2.8vw;
         padding-bottom: 2.5vh;
     }
 }
@@ -304,12 +304,16 @@ p > a:hover {
 
 /* Flex */
 
-.content > .flex {
+.content .flex {
     display: flex;
     align-items: stretch;
     flex-direction: column;
 	position: relative;
     width: 100%;
+}
+
+.content .content .flex { /* Sub-router view */
+    margin-top: 2rem;
 }
 
 .flex > .max-width {
@@ -326,14 +330,14 @@ p > a:hover {
 }
 
 @media only screen and (min-width: 768px) {
-    .content > .flex {
+    .content .flex {
         flex-direction: row;
         align-items: flex-start;
         max-width: calc(68rem - 18rem - 1.5rem);
     }
 }
 @media only screen and (min-width: 768px) and (max-width: 1240px) {
-    .content > .flex:has(.float-right), .flex:has(.float-right-gutter) {
+    .content .flex:has(.float-right), .content .flex:has(.float-right-gutter) {
         max-width: calc(100% - 18rem - 1.5rem);
     }
 }
@@ -416,11 +420,6 @@ p > a:hover {
     transition: cubic-bezier(0.075, 0.82, 0.165, 1);
     transition-duration: 400ms;
 }
-
-/* .card.expand-content {
-    max-height: calc(auto);
-    overflow: hidden;
-} */
 
     .card .hidden {
         max-height: 0;
@@ -547,27 +546,6 @@ p > a:hover {
     }
 }
 
-    /* .card.expand-content .card-image {
-        min-width: 0rem;
-        width: 0rem;
-        overflow: hidden;
-        opacity: 0.1;
-        border-bottom-right-radius: 0rem;
-    } */
-
-/* .card-large-image {
-    width: 100%;
-    height: 10rem;
-
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-    .card:not(.expand-content) .card-large-image {
-        height: 0rem;
-        overflow: hidden;
-        opacity: 0;
-    } */
 
 .card-color-seperator { /* Alternative to image */
     width: 100%;
@@ -575,11 +553,6 @@ p > a:hover {
     transition: 0ms;
     opacity: 0.8;
 }
-    /* .card:not(.expand-content) .card-color-seperator {
-        height: 0rem;
-        overflow: hidden;
-        opacity: 0;
-    } */
 
 .card-content, .card-details {
     max-height: calc(auto);
@@ -591,13 +564,6 @@ p > a:hover {
     margin-top: 0rem;
     margin-bottom: 1rem;
 }
-
-    /* .card:not(.expand-content) .card-content:not(.always-show) {
-        max-height: calc(0rem);
-        overflow: hidden;
-        transition-duration: 400ms;
-        opacity: 0;
-    } */
 
 .card-content > p {
     margin-left: 1.2rem;
@@ -738,7 +704,7 @@ p > a:hover {
     user-select: none;
 }
 .card.task .button {
-    padding: 0.5rem 0.65rem;
+    padding: 0.5rem 0.7rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;
 }

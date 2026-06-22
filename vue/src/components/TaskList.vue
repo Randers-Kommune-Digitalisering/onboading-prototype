@@ -26,12 +26,7 @@
             type: Boolean,
             default: false
         },
-        expandFirstItem:
-        {
-            type: Boolean,
-            default: true
-        },
-        expandItem:
+        scrollToItem:
         {
             type: Number,
             default: null
@@ -75,6 +70,12 @@
         }
     })
 
+    const emit = defineEmits(['task-result-change'])
+
+    const onTaskResultUpdated = (payload) => {
+        emit('task-result-change', payload)
+    }
+
     const defaultItemColor = '4c4980'
 </script>
 
@@ -110,7 +111,7 @@
                     :booking="task.booking ? new Date(new Date(task.booking)) : null"
                     :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
                     :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
-                    :expandByDefault="expandFirstItem && index == 0 || expandItem === task.OpgaveID || expandItem === task.OpgaveskabelonID"
+                    :scrollTo="scrollToItem === task.OpgaveID || scrollToItem === task.OpgaveskabelonID"
                     :dark="dark || task.result"
                     :templateView="templateView"
                     :isTemplate="task.OpgaveskabelonID != null"
@@ -119,7 +120,8 @@
                     :mails="task.pending_emails"
 					:isPreparation="isPreparation"
 					:external="external"
-					:accessKey="accessKey" />
+                    :accessKey="accessKey"
+                    @result-updated="onTaskResultUpdated" />
             </template>
         </div><!-- /card-list -->
         <div v-else>

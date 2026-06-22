@@ -32,6 +32,15 @@ const routes = [
         path: '/create-opgave',
         name: 'CreateOpgave',
         component: CreateOpgave,
+        beforeEnter: (to) => {
+            if (to.query.template === 'true' || to.query.tid)
+                return true
+
+            return {
+                path: '/forloeb-overview/create-opgave',
+                query: to.query,
+            }
+        },
         meta: { roles: ['Admin'] }
     },
     {
@@ -43,31 +52,60 @@ const routes = [
     {
         path: '/edit-forloeb',
         name: 'EditForløb',
-        component: EditForløb,
+        redirect: (to) => ({
+            path: '/forloeb-overview/edit-forloeb',
+            query: to.query,
+        }),
         meta: { roles: ['Admin'] }
     },
     {
         path: '/start-forloeb',
         name: 'StartForløb',
-        component: StartForløb,
+        redirect: (to) => ({
+            path: '/forloeb-overview/start-forloeb',
+            query: to.query,
+        }),
         meta: { roles: ['Admin'] }
     },
     {
         path: '/create-ressource',
         name: 'CreateRessource',
         component: CreateRessource,
+        beforeEnter: (to) => {
+            if (to.query.tid)
+                return true
+
+            return {
+                path: '/forloeb-overview/create-ressource',
+                query: to.query,
+            }
+        },
         meta: { roles: ['Admin', 'Medarbejder'] }
     },
     {
         path: '/create-forloebsskabelon',
         name: 'CreateForløbsskabelon',
         component: CreateForløbsskabelon,
+        beforeEnter: (to) => {
+            // Keep standalone create flow from template-overview.
+            // Redirect edit/context-bound flows to nested forloeb-overview route.
+            if (to.query.edit !== 'true' && !to.query.id && !to.query.tid)
+                return true
+
+            return {
+                path: '/forloeb-overview/create-forloebsskabelon',
+                query: to.query,
+            }
+        },
         meta: { roles: ['Admin'] }
     },
     {
         path: '/send-velkomst',
         name: 'SendVelkomst',
-        component: SendWelcome,
+        redirect: (to) => ({
+            path: '/forloeb-overview/send-velkomst',
+            query: to.query,
+        }),
         meta: { roles: ['Admin'] }
     },
     {
@@ -108,8 +146,45 @@ const routes = [
     },
     {
         path: '/forloeb-overview',
-        name: 'ForløbOverview',
         component: ForløbOverview,
+        children: [
+            {
+                path: 'edit-forloeb',
+                name: 'ForløbOverviewEditForløb',
+                component: EditForløb,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'create-opgave',
+                name: 'ForløbOverviewCreateOpgave',
+                component: CreateOpgave,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'create-ressource',
+                name: 'ForløbOverviewCreateRessource',
+                component: CreateRessource,
+                meta: { roles: ['Admin', 'Medarbejder'] }
+            },
+            {
+                path: 'send-velkomst',
+                name: 'ForløbOverviewSendVelkomst',
+                component: SendWelcome,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'start-forloeb',
+                name: 'ForløbOverviewStartForløb',
+                component: StartForløb,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'create-forloebsskabelon',
+                name: 'ForløbOverviewCreateForløbsskabelon',
+                component: CreateForløbsskabelon,
+                meta: { roles: ['Admin'] }
+            }
+        ],
         meta: { roles: ['Admin', 'Medarbejder', 'Public'] }
     },
     {
