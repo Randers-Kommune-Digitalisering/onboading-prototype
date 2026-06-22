@@ -153,6 +153,10 @@
             type: Boolean,
             default: false
         },
+        hidden: {
+            type: Boolean,
+            default: false
+        },
         color: {
             type: String,
             default: '000'
@@ -404,12 +408,27 @@
 </script>
 
 <template>
-    <div :class="['card', 'task', {'dark': dark}, {'collapsed': isCollapsed}]"
+    <div :class="['card', 'task', {'dark': dark}, {'collapsed': isCollapsed}, {'hidden-task': hidden}]"
          :style="{ border: border ? `0.1rem dashed #${border}` : 'none' }"
          ref="cardRef"
          @click="isCollapsed ? isCollapsed = false : null">
 
-        <div class="card-group" @click.stop="isCollapsed = !isCollapsed">{{ group?.name }}</div>
+        <div class="card-group" @click.stop="isCollapsed = !isCollapsed">
+            {{ group?.name }}
+
+            <span class="group-note" v-if="hidden">
+                Skjult for medarbejder <i class="fa-solid fa-eye-slash"></i>
+            </span>
+            <span :class="['group-status', 'complete']" v-if="result">
+                <i class="fa-regular fa-circle-check"></i>
+            </span>
+            <span :class="['group-status', 'overdue']" v-if="!result && !templateView && !isPreparation && new Date(deadline) < new Date()">
+                Deadline overskredet <i class="fa-solid fa-triangle-exclamation"></i>
+            </span>
+            <span :class="['group-status', 'upcoming']" v-if="!result && !templateView && !isPreparation && new Date(startdate) > new Date()">
+                <i class="fa-solid fa-clock"></i>
+            </span>
+        </div>
 
         <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
 
@@ -622,6 +641,10 @@
         transition: max-height 300ms ease;
     }
 
+    .task.hidden-task {
+        background-color: var(--color-card-yellow);
+    }
+
     .task::after {
         content: '';
         position: absolute;
@@ -650,5 +673,29 @@
     .collapsed:hover {
         clip-path: inset(0 0 0 0);
         mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    }
+
+    .group-note {
+        float: right;
+        font-style: italic;
+        opacity: 0.6;
+    }
+    .group-note i, .group-status i {
+        margin-left: 0.3rem;
+        font-size: 0.9em;
+    }
+    .group-status {
+        float: right;
+    }
+    .group-status.complete {
+        color: #617a5d;
+    }
+    .group-status.overdue {
+        color: #bf4e4e;
+    }
+    .group-status.upcoming {
+        color: #777371;
+        font-style: italic;
+        opacity: 0.6;
     }
 </style>

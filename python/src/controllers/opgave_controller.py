@@ -17,6 +17,20 @@ db_client = get_db_client()
 logger = logging.getLogger(__name__)
 
 
+def _is_hidden_visible_to_user(opgave, user_email: str | None) -> bool:
+    if not bool(getattr(opgave, 'hidden', False)):
+        return True
+
+    if not user_email:
+        return False
+
+    ansvarlig_email = getattr(opgave, 'ansvarligEmail', None)
+    if not ansvarlig_email:
+        return False
+
+    return ansvarlig_email.strip().lower() == user_email.strip().lower()
+
+
 def create_opgave():
     session = db_client.get_session()
     try:
@@ -36,6 +50,7 @@ def create_opgave():
             relativ_startdag=data['relativ_startdag'] if 'relativ_startdag' in data else None,
             relativ_slutdag=data['relativ_slutdag'] if 'relativ_slutdag' in data else None,
             result=data['result'],
+            hidden=bool(data.get('hidden', False)),
             booking=datetime.fromisoformat(data['booking']) if 'booking' in data else None,
             timestamp=datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
         )
@@ -158,6 +173,7 @@ def get_all_opgaver():
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'hidden': bool(getattr(opgave, 'hidden', False)),
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgaver
@@ -192,6 +208,7 @@ def create_opgave_with_opgaveskabelon():
             relativ_startdag=data['relativ_startdag'] if 'relativ_startdag' in data else None,
             relativ_slutdag=data['relativ_slutdag'] if 'relativ_slutdag' in data else None,
             result=data.get('result', False),
+            hidden=bool(data.get('hidden', bool(getattr(opgaveskabelon, 'hidden', False)))),
             timestamp=datetime.now()
         )
 
@@ -336,6 +353,7 @@ def get_opgave_by_forloebsskabelon_id(forlobsskabelon_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'hidden': bool(getattr(opgave, 'hidden', False)),
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
@@ -380,6 +398,7 @@ def get_opgave(opgave_id):
             'relativ_startdag': opgave.relativ_startdag,
             'relativ_slutdag': opgave.relativ_slutdag,
             'result': opgave.result,
+            'hidden': bool(getattr(opgave, 'hidden', False)),
             'booking': opgave.booking.isoformat() if opgave.booking else None,
             'timestamp': opgave.timestamp.isoformat(),
             'ForløbID': opgave.ForløbID,
@@ -426,6 +445,7 @@ def get_opgave_by_forloebsskabelon_id_admin(forlobsskabelon_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'hidden': bool(getattr(opgave, 'hidden', False)),
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
@@ -472,6 +492,7 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'hidden': bool(getattr(opgave, 'hidden', False)),
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat(),
                 'pending_emails': [
@@ -537,6 +558,7 @@ def get_opgave_by_ansvarlig(usermail):
                 'relativ_startdag': opg.relativ_startdag,
                 'relativ_slutdag': opg.relativ_slutdag,
                 'result': opg.result,
+                'hidden': bool(getattr(opg, 'hidden', False)),
                 'booking': opg.booking.isoformat() if opg.booking else None,
                 'timestamp': opg.timestamp.isoformat()
             })
@@ -555,6 +577,8 @@ def get_opgave_by_forloeb_id(forlob_id):
             user_email = get_current_user_email()
             if not user_can_access_forloeb(session, forlob_id, user_email):
                 return jsonify({"error": "Forbidden"}), 403
+        else:
+            user_email = None
 
         opgave = (
             session.query(Opgave)
@@ -565,6 +589,12 @@ def get_opgave_by_forloeb_id(forlob_id):
             .filter_by(ForløbID=forlob_id)
             .all()
         )
+
+        if not opgave:
+            return jsonify([])
+
+        if not is_current_user_admin():
+            opgave = [item for item in opgave if _is_hidden_visible_to_user(item, user_email)]
 
         if not opgave:
             return jsonify([])
@@ -587,6 +617,7 @@ def get_opgave_by_forloeb_id(forlob_id):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'hidden': bool(getattr(opgave, 'hidden', False)),
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             } for opgave in opgave
@@ -631,6 +662,7 @@ def update_opgave(opgave_id):
         opgave.relativ_startdag = data.get('relativ_startdag', opgave.relativ_startdag)
         opgave.relativ_slutdag = data.get('relativ_slutdag', opgave.relativ_slutdag)
         opgave.result = data.get('result', opgave.result)
+        opgave.hidden = bool(data.get('hidden', opgave.hidden))
         opgave.booking = datetime.fromisoformat(data['booking']) if 'booking' in data else opgave.booking,
         opgave.timestamp = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00')) if 'timestamp' in data else opgave.timestamp
 

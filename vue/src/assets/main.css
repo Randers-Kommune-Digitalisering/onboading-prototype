@@ -34,9 +34,9 @@ body.onboarding-theme-sand {
     --color-input-invalid-bg: rgb(255, 204, 204);
     --color-progression-bar: rgb(180, 173, 165);
     --color-progression: #4b8049;
-    --color-achievement-box: rgb(221, 213, 204);
+    /* --color-achievement-box: rgb(221, 213, 204);
     --color-achievement-item: rgb(221, 213, 204);
-    --color-achievement-item-text: rgb(221, 213, 204);
+    --color-achievement-item-text: rgb(221, 213, 204); */
 }
 
 body.onboarding-theme-randers {
@@ -58,6 +58,7 @@ body.onboarding-theme-randers {
     --color-card-dark: rgb(215, 207, 197);
     --color-card-dark-faded: rgb(219, 213, 205);
     --color-card-faded: rgb(241, 237, 232);
+    --color-card-yellow: rgb(244, 240, 224);
     --color-card-text: rgb(92, 89, 88); /* Also used for floating-button hover */
     --color-button-text: rgb(237, 229, 220);
     --color-button-text: rgb(255, 255, 241);
@@ -78,9 +79,9 @@ body.onboarding-theme-randers {
     --color-input-invalid-bg: rgb(255, 204, 204);
     --color-progression-bar: rgb(180, 173, 165);
     --color-progression: #4b8049;
-    --color-achievement-box: rgb(221, 213, 204);
+    /* --color-achievement-box: rgb(221, 213, 204);
     --color-achievement-item: rgb(221, 213, 204);
-    --color-achievement-item-text: rgb(221, 213, 204);
+    --color-achievement-item-text: rgb(221, 213, 204); */
 }
 
 *

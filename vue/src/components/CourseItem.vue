@@ -54,9 +54,12 @@
     const opgaver = ref(props.tasks || null)
     const hasForloebStarted = props.startDate && new Date(props.startDate) <= new Date()
 
+    const getProgressTasks = (tasks) => (tasks || []).filter(opgave => opgave?.hidden !== true)
+
     const updateCompletedPercentage = (tasks) => {
-        completedPercentage.value = tasks?.length > 0
-            ? Math.round((tasks.filter(opgave => opgave.result).length / tasks.length) * 100)
+        const visibleTasks = getProgressTasks(tasks)
+        completedPercentage.value = visibleTasks.length > 0
+            ? Math.round((visibleTasks.filter(opgave => opgave.result).length / visibleTasks.length) * 100)
             : 0
     }
 

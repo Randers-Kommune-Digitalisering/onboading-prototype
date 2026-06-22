@@ -61,6 +61,7 @@ def create_forloeb():
                     startdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag),  # Adding relative days
                     slutdato=forloeb.startdate + timedelta(days=opgave.relativ_startdag) + timedelta(days=opgave.relativ_slutdag),
                     result=opgave.result,
+                    hidden=bool(getattr(opgave, 'hidden', False)),
                     timestamp=opgave.timestamp,
                     ForløbID=forloeb.ForløbID,
                     OpgaveGruppeID=matching_gruppe.OpgaveGruppeID if matching_gruppe else None
@@ -134,6 +135,7 @@ def create_forloeb_preparation():
                 relativ_startdag=opgave.relativ_startdag,
                 relativ_slutdag=opgave.relativ_slutdag,
                 result=opgave.result,
+                hidden=bool(getattr(opgave, 'hidden', False)),
                 timestamp=opgave.timestamp,
                 ForløbID=forloeb.ForløbID,
                 OpgaveGruppeID=matching_gruppe.OpgaveGruppeID if matching_gruppe else None

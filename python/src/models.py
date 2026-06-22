@@ -41,6 +41,7 @@ class Opgaveskabelon(Base):
     title = Column(String, nullable=False)
     beskrivelse = Column(String, nullable=False)
     note = Column(String, nullable=True)
+    hidden = Column(Boolean, default=False)
     ressource = relationship('Ressource', back_populates='opgaveskabelon', cascade='all, delete')
     relativ_slutdag = Column(Integer, nullable=False)
 
@@ -57,6 +58,7 @@ class Opgave(Base):
     relativ_startdag = Column(Integer)
     relativ_slutdag = Column(Integer)
     result = Column(Boolean, nullable=False)
+    hidden = Column(Boolean, default=False)
     booking = Column(DateTime)
     timestamp = Column(DateTime, nullable=False)
     ForløbsskabelonID = Column(Integer, ForeignKey('Forløbsskabelon.ForløbsskabelonID', ondelete='CASCADE'))

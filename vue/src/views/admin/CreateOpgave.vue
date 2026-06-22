@@ -31,6 +31,7 @@
         ansvarlig: "",
         beskrivelse: "",
         note: "",
+        hidden: false,
         startdato: "",
         slutdato: "",
         relativ_startdag: 0,
@@ -45,6 +46,7 @@
         ansvarlig: { text: "Ansvarlig medarbejder", tooltip: "<span>Vælg den medarbejder, der skal hjælpe den nye medarbejder med denne opgave (f.eks. introducere, vejlede eller løse opgaven sammen).</span><span>Det er også den ansvarlige, der efterfølgende skal markere opgaven som udført.</span>" },
         beskrivelse: { text: "Beskrivelse", tooltip: "<span>Giv en detaljeret beskrivelse af opgaven.</span><span>Beskrivelsen er synlig både for den nye medarbejder samt en eventuel ansvarlig medarbejder.</span>" },
         note: { text: "Note til ansvarlig", tooltip: "<span>Tilføj eventuelle noter til den ansvarlige medarbejder.</span><span>Noten vil kun være synlig for den ansvarlige medarbejder, og kan ikke læses af den nye medarbejder.</span>" },
+        hidden: { text: "Skjult opgave", tooltip: "<span>Når slået til, vises opgaven kun for administratorer og den ansvarlige medarbejder.</span><span>Skjulte opgaver tæller ikke med i forløbets gennemførelsesprocent.</span>" },
         gruppe: { text: "Opgavegruppe", tooltip: "<span>Vælg en opgavegruppe for at gruppere denne opgave med andre opgaver i forløbet.</span><span>Opgaver kan sorteres efter gruppe i forløbets opgaveoverblik, hvilket kan hjælpe med at skabe overblik i forløb med mange opgaver</span>" },
         nygruppe: { text: "Ny opgavegruppe", tooltip: "<span>Giv den nye opgavegruppe et beskrivende navn.</span><span>Du kan efterfølgende tilføje flere opgaver til denne gruppe for at skabe bedre overblik over opgaverne i forløbet.</span>" },
         startdato: { text: "Startdato", tooltip: "<span>Vælg startdato for opgaven.</span><span>Startdato sættes til den dag, hvor opgaven skal påbegyndes.</span>" },
@@ -164,6 +166,7 @@
             inputFields.value.title = ""
             inputFields.value.beskrivelse = ""
             inputFields.value.note = ""
+            inputFields.value.hidden = false
             inputFields.value.startdato = ""
             inputFields.value.slutdato = ""
             inputFields.value.booking = ""
@@ -178,6 +181,7 @@
         inputFields.value.title = template.title
         inputFields.value.beskrivelse = template.beskrivelse
         inputFields.value.note = template.note
+        inputFields.value.hidden = template.hidden === true
         inputFields.value.startdato = template.startdato
         inputFields.value.slutdato = template.slutdato
         inputFields.value.booking = template.booking
@@ -354,6 +358,9 @@
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
                 if(formData.booking == "")
                     delete formData.booking
+
+            if(inputFields.value.hidden === true)
+                formData.note = null
             
             const response = isEditing ?
                                 (isTemplate ?
@@ -557,6 +564,15 @@
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
+                <label class="checkbox-row"
+                    @focusin="focusedInput = inputFieldDescriptions.hidden"
+                    @focusout="focusedInput = null">
+                    <input type="checkbox" v-model="inputFields.hidden">
+                    <span>Skjult opgave (kun admin + ansvarlig)</span>
+                </label>
+            </div>
+
+            <div v-if="!inputFields.hidden" :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
                 <textarea
                     id="note" name="note"
                     ref="textareaNote"
@@ -656,6 +672,21 @@
     </div></div><!-- /wrapper -->
 </template>
 <style scoped>
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0. 8rem;
+        color: var(--color-text);
+        padding: 0.2rem 0.5rem;
+        width: 100%;
+    }
+    .checkbox-row > input[type='checkbox'] {
+        width: 1rem;
+        height: 1rem;
+        margin: 0;
+        cursor: pointer;
+    }
     .annot-label {
         left: 2.5rem;
         bottom: 0.6rem;

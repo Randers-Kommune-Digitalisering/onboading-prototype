@@ -20,6 +20,7 @@ def create_opgaveskabelon():
             title=data['title'],
             beskrivelse=data['beskrivelse'],
             note=data['note'],
+            hidden=bool(data.get('hidden', False)),
             relativ_slutdag=data['relativ_slutdag'],
         )
         session.add(new_opgaveskabelon)
@@ -47,6 +48,7 @@ def get_all_opgaveskabeloner():
                 'beskrivelse': opgaveskabelon.beskrivelse,
                 'relativ_slutdag': opgaveskabelon.relativ_slutdag,
                 'note': opgaveskabelon.note if opgaveskabelon.note else "",
+                'hidden': bool(getattr(opgaveskabelon, 'hidden', False)),
                 'resourcer': [serialize_ressource(ressource) for ressource in opgaveskabelon.ressource]
             } for opgaveskabelon in opgaveskabeloner
         ]
@@ -69,6 +71,7 @@ def get_opgaveskabelon(opgaveskabelon_id):
             'title': opgaveskabelon.title,
             'beskrivelse': opgaveskabelon.beskrivelse,
             'note': opgaveskabelon.note if opgaveskabelon.note else "",
+            'hidden': bool(getattr(opgaveskabelon, 'hidden', False)),
             'relativ_slutdag': opgaveskabelon.relativ_slutdag
         }
         return jsonify(opgaveskabelon_data), 200
@@ -94,6 +97,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
         opgaveskabelon.title = data['title']
         opgaveskabelon.beskrivelse = data['beskrivelse']
         opgaveskabelon.note = data['note']
+        opgaveskabelon.hidden = bool(data.get('hidden', False))
         opgaveskabelon.relativ_slutdag = data['relativ_slutdag']
 
         session.commit()

@@ -92,9 +92,12 @@
             taskList.splice(index, 1)
     }
 
+    const getProgressTasks = (tasks) => (tasks || []).filter(opgave => opgave?.hidden !== true)
+
     const updateCompletedPercentage = () => {
-        completedPercentage.value = opgaver_all.value.length > 0
-            ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100)
+        const progressTasks = getProgressTasks(opgaver_all.value)
+        completedPercentage.value = progressTasks.length > 0
+            ? Math.round(progressTasks.filter(opgave => opgave.result).length / progressTasks.length * 100)
             : 0
     }
 
@@ -177,7 +180,7 @@
                     opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
 
                 opgaver_all.value = opgaver_response.data
-                completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
+                updateCompletedPercentage()
 
                 if (isUnderPreparation.value)
                 {
@@ -265,7 +268,7 @@
                     opgaver_response.data.sort((a, b) => new Date(a.slutdato) - new Date(b.slutdato))
 
                 opgaver_all.value = opgaver_response.data
-                completedPercentage.value = opgaver_all.value.length > 0 ? Math.round(opgaver_all.value.filter(opgave => opgave.result).length / opgaver_all.value.length * 100) : 0
+                updateCompletedPercentage()
 
                 if(props.isTemplate || isUnderPreparation.value)
                 {

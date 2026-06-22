@@ -225,6 +225,9 @@ def get_opgaver_forloeb_external(forloeb_id: int):
 
         result = []
         for opgave in opgaver:
+            if bool(getattr(opgave, 'hidden', False)):
+                continue
+
             result.append({
                 'OpgaveID': opgave.OpgaveID,
                 'title': opgave.title,
@@ -242,6 +245,7 @@ def get_opgaver_forloeb_external(forloeb_id: int):
                 'relativ_startdag': opgave.relativ_startdag,
                 'relativ_slutdag': opgave.relativ_slutdag,
                 'result': opgave.result,
+                'hidden': False,
                 'booking': opgave.booking.isoformat() if opgave.booking else None,
                 'timestamp': opgave.timestamp.isoformat()
             })

@@ -76,6 +76,8 @@
     const completedItemColor = '617a5d'
     const overdueItemColor = 'bf4e4e'
     const upcomingItemColor = '777371'
+    const hiddenItemColor = 'fcb103'
+    const hiddenItemBorderColor = '9b9b9b'
 </script>
 
 <template>
@@ -108,8 +110,9 @@
                     :ansvarlig="task.ansvarlig"
                     :ansvarligEmail="task.ansvarligEmail"
                     :booking="task.booking ? new Date(new Date(task.booking)) : null"
-                    :color="task.result ? completedItemColor : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? overdueItemColor : (!templateView && !isPreparation && new Date(task.startdato) > new Date()) ? upcomingItemColor : defaultItemColor"
-                    :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? overdueItemColor : null"
+                    :hidden="task.hidden === true"
+                    :color="(task.result ? completedItemColor : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? overdueItemColor : (!templateView && !isPreparation && new Date(task.startdato) > new Date()) ? upcomingItemColor : task.hidden === true ? hiddenItemColor : defaultItemColor)"
+                    :border="((!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? overdueItemColor : task.hidden === true ? hiddenItemBorderColor : null)"
                     :scrollTo="scrollToItem === task.OpgaveID || scrollToItem === task.OpgaveskabelonID"
                     :dark="dark || task.result"
                     :templateView="templateView"
