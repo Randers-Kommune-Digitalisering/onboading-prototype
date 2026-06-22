@@ -416,9 +416,6 @@
         <div class="card-group" @click.stop="isCollapsed = !isCollapsed">
             {{ group?.name }}
 
-            <span class="group-note" v-if="hidden">
-                Skjult for medarbejder <i class="fa-solid fa-eye-slash"></i>
-            </span>
             <span :class="['group-status', 'complete']" v-if="result">
                 <i class="fa-regular fa-circle-check"></i>
             </span>
@@ -426,7 +423,10 @@
                 Deadline overskredet <i class="fa-solid fa-triangle-exclamation"></i>
             </span>
             <span :class="['group-status', 'upcoming']" v-if="!result && !templateView && !isPreparation && new Date(startdate) > new Date()">
-                <i class="fa-solid fa-clock"></i>
+                Kommende <i class="fa-solid fa-clock"></i>
+            </span>
+            <span class="group-note" v-if="hidden">
+                Skjult for medarbejder <i class="fa-solid fa-eye-slash"></i>
             </span>
         </div>
 
@@ -679,6 +679,7 @@
         float: right;
         font-style: italic;
         opacity: 0.6;
+        margin-left: 0.2rem;
     }
     .group-note i, .group-status i {
         margin-left: 0.3rem;
@@ -686,6 +687,7 @@
     }
     .group-status {
         float: right;
+        margin-left: 0.4rem;
     }
     .group-status.complete {
         color: #617a5d;
