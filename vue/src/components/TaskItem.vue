@@ -413,7 +413,7 @@
          ref="cardRef"
          @click="isCollapsed ? isCollapsed = false : null">
 
-        <div class="card-group" @click.stop="isCollapsed = !isCollapsed">
+        <div class="card-group no-select" @click.stop="isCollapsed = !isCollapsed">
             {{ group?.name }}
 
             <span :class="['group-status', 'complete']" v-if="result">
