@@ -619,7 +619,7 @@
         position: relative;
         overflow: hidden;
         max-height: 80rem;
-        transition: max-height 320ms ease, margin-bottom 320ms ease;
+        transition: max-height 300ms ease;
     }
 
     .task::after {
@@ -635,10 +635,12 @@
     }
 
     .collapsed {
-        max-height: 5rem;
+        max-height: 6rem;
         cursor: pointer;
-        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-        margin-bottom: 2rem;
+        mask-image: linear-gradient(to bottom, black 55%, transparent 85%);
+        margin-bottom: 1rem;
+        clip-path: inset(0 0 1rem 0);
+        transition: clip-path 220ms ease;
     }
 
     .collapsed::after {
@@ -646,8 +648,7 @@
     }
 
     .collapsed:hover {
-        max-height: 6rem;
-        margin-bottom: 1rem;
+        clip-path: inset(0 0 0 0);
         mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
     }
 </style>
