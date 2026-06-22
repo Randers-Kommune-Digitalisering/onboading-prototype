@@ -563,12 +563,16 @@
                 <label for="description" class="floating-label">Beskrivelse</label>
             </div>
 
-            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
-                <label class="checkbox-row"
-                    @focusin="focusedInput = inputFieldDescriptions.hidden"
-                    @focusout="focusedInput = null">
-                    <input type="checkbox" v-model="inputFields.hidden">
-                    <span>Skjult opgave (kun admin + ansvarlig)</span>
+            <div :class="['inputContainer checkbox', { 'hideOnMobile': isAssistantSearchOpen }]">
+                <input
+                    type="checkbox"
+                    id="hidden"
+                    name="hidden"
+                    v-model="inputFields.hidden"
+                    @focus="focusedInput = inputFieldDescriptions.hidden"
+                    @blur="focusedInput = null">
+                <label for="hidden" class="checkbox-label">
+                    Skjult opgave (kun admin + ansvarlig)
                 </label>
             </div>
 
@@ -672,21 +676,6 @@
     </div></div><!-- /wrapper -->
 </template>
 <style scoped>
-    .checkbox-row {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        font-size: 0. 8rem;
-        color: var(--color-text);
-        padding: 0.2rem 0.5rem;
-        width: 100%;
-    }
-    .checkbox-row > input[type='checkbox'] {
-        width: 1rem;
-        height: 1rem;
-        margin: 0;
-        cursor: pointer;
-    }
     .annot-label {
         left: 2.5rem;
         bottom: 0.6rem;
