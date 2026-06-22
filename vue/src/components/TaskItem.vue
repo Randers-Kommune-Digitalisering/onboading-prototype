@@ -663,7 +663,7 @@
         mask-image: linear-gradient(to bottom, black 55%, transparent 85%);
         margin-bottom: 1rem;
         clip-path: inset(0 0 1rem 0);
-        transition: clip-path 220ms ease;
+        transition: max-height 300ms ease, clip-path 220ms ease;
     }
 
     .collapsed::after {
