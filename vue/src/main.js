@@ -86,6 +86,17 @@ const routes = [
         path: '/create-forloebsskabelon',
         name: 'CreateForløbsskabelon',
         component: CreateForløbsskabelon,
+        beforeEnter: (to) => {
+            // Keep standalone create flow from template-overview.
+            // Redirect edit/context-bound flows to nested forloeb-overview route.
+            if (to.query.edit !== 'true' && !to.query.id && !to.query.tid)
+                return true
+
+            return {
+                path: '/forloeb-overview/create-forloebsskabelon',
+                query: to.query,
+            }
+        },
         meta: { roles: ['Admin'] }
     },
     {
@@ -165,6 +176,12 @@ const routes = [
                 path: 'start-forloeb',
                 name: 'ForløbOverviewStartForløb',
                 component: StartForløb,
+                meta: { roles: ['Admin'] }
+            },
+            {
+                path: 'create-forloebsskabelon',
+                name: 'ForløbOverviewCreateForløbsskabelon',
+                component: CreateForløbsskabelon,
                 meta: { roles: ['Admin'] }
             }
         ],

@@ -147,18 +147,26 @@
 	const returnToPrevious = () =>
 	{
 		if (router.currentRoute.value.path.startsWith('/forloeb-overview/')) {
-			const parentForloebId = router.currentRoute.value.query.forloebId
+			const parentForloebId = router.currentRoute.value.query.forloebTid || router.currentRoute.value.query.forloebId
+			const isTemplateContext = router.currentRoute.value.query.forloebTid != null
+				|| router.currentRoute.value.query.template === 'true'
+				|| router.currentRoute.value.query.tid != null
 			const nextQuery = {
 				...router.currentRoute.value.query,
 				item: opgaveId.value,
 				refreshTasks: Date.now().toString(),
 			}
 
-			if (parentForloebId)
-				nextQuery.id = parentForloebId
+			if (parentForloebId) {
+				if (isTemplateContext)
+					nextQuery.tid = parentForloebId
+				else
+					nextQuery.id = parentForloebId
+			}
 
 			delete nextQuery.edit
 			delete nextQuery.forloebId
+			delete nextQuery.forloebTid
 			router.replace({ path: '/forloeb-overview', query: nextQuery })
 			return
 		}

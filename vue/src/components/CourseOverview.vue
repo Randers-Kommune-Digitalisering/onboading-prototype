@@ -349,11 +349,23 @@
             refreshTasks: Date.now().toString(),
         }
 
-        const parentForloebId = route.query.forloebId || route.query.id || forloeb_id.value
-        if (route.query.tid != null && !parentForloebId)
-            query.tid = route.query.tid
-        else if (parentForloebId != null)
-            query.id = parentForloebId
+        const currentQuery = router.currentRoute.value.query
+        const isTemplateContext = props.isTemplate
+            || currentQuery.template === 'true'
+            || route.query.tid != null
+            || route.query.forloebTid != null
+
+        const parentForloebId = route.query.forloebTid || route.query.forloebId || route.query.tid || route.query.id || forloeb_id.value
+        if (parentForloebId != null) {
+            if (isTemplateContext)
+                query.tid = parentForloebId
+            else
+                query.id = parentForloebId
+        }
+
+        // On task routes (e.g. create-opgave/edit), `id` is often the task id while
+        // `forloebId` points to the parent forloeb. Preserve that task id for scroll/focus.
+        query.item = currentQuery.item || ((currentQuery.forloebId != null || currentQuery.forloebTid != null) ? currentQuery.id : null)
 
         if (route.query.external != null)
             query.external = route.query.external
@@ -437,7 +449,8 @@
         <div @click="returnToOverview()"
              class="button hollow"
              v-if="!showTaskLists">
-                <i class="fa-solid fa-chevron-left" style="font-size: 0.6em;margin-right:0.4rem;transform:translateY(-0.06rem)"></i>Tilbage til oversigt
+                <i class="fa-solid fa-chevron-left" style="font-size: 0.6em;margin-right:0.4rem;transform:translateY(-0.06rem)"></i>
+                Tilbage til oversigt
         </div>
 
         <template v-else>
@@ -447,7 +460,7 @@
                         + Tilføj opgave
         </router-link>
 
-        <router-link :to="`/create-opgave?tid=${forloeb_id}`"
+        <router-link :to="`/forloeb-overview/create-opgave?tid=${forloeb_id}`"
                      class="button"
                      v-if="isTemplate">
                         + Tilføj opgave
@@ -458,7 +471,7 @@
                         Redigér{{isForloebCompleted ? ' / genoptag' : '' }} forløb
         </router-link>
 
-        <router-link :to="`/create-forloebsskabelon?id=${forloeb_id}&edit=true`" v-else
+        <router-link :to="`/forloeb-overview/create-forloebsskabelon?tid=${forloeb_id}&edit=true`" v-else
                      class="button hollow">
                         Redigér skabelon
         </router-link>

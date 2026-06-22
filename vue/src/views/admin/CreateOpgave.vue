@@ -379,19 +379,27 @@
     const returnToPrevious = (id = null) =>
 	{
         if (router.currentRoute.value.path.startsWith('/forloeb-overview/')) {
+            const parentForloebId = route.query.forloebTid || route.query.forloebId || forloeb_id.value
+            const returnToTemplateOverview = route.query.forloebTid != null || route.query.tid != null
             const nextQuery = {
                 ...router.currentRoute.value.query,
                 item: id ?? opgaveId,
                 refreshTasks: Date.now().toString(),
             }
 
-            if (addToTemplate.value)
-                nextQuery.tid = forloeb_id.value
+            if (returnToTemplateOverview)
+                nextQuery.tid = parentForloebId
             else
-                nextQuery.id = forloeb_id.value
+                nextQuery.id = parentForloebId
+
+            // In nested edit flows, `id` may still be the task id from the editor URL.
+            // Keep task selection in `item` and avoid leaking stale task id as forloeb id.
+            if (returnToTemplateOverview)
+                delete nextQuery.id
 
             delete nextQuery.edit
             delete nextQuery.forloebId
+            delete nextQuery.forloebTid
             router.replace({ path: '/forloeb-overview', query: nextQuery })
             return
         }

@@ -240,8 +240,9 @@
     const gotoRessource = (id) => {
         const currentQuery = router.currentRoute.value.query
         let updateQuery = { ...currentQuery, item: props.id }
-        const ressourcePath = props.isTemplate ? '/create-ressource' : '/forloeb-overview/create-ressource'
+        const ressourcePath = '/forloeb-overview/create-ressource'
         const parentForloebId = props.forloebId ?? currentQuery.id ?? currentQuery.tid
+        const isParentTemplateContext = currentQuery.tid != null || (props.templateView && !props.isTemplate)
 
         let newQuery = {}
         if(props.isTemplate)
@@ -249,8 +250,15 @@
         else
             newQuery.id = id != null ? id : props.id
 
-        if (parentForloebId)
-            newQuery.forloebId = parentForloebId
+        if (props.isTemplate)
+            newQuery.template = true
+
+        if (parentForloebId) {
+            if (isParentTemplateContext)
+                newQuery.forloebTid = parentForloebId
+            else
+                newQuery.forloebId = parentForloebId
+        }
 
         if(id != null)
             newQuery.edit = true
@@ -265,17 +273,26 @@
         let updateQuery = { ...currentQuery, item: props.id }
         const taskPath = props.isTemplate ? '/create-opgave' : '/forloeb-overview/create-opgave'
         const parentForloebId = props.forloebId ?? currentQuery.id ?? currentQuery.tid
+        const isParentTemplateContext = currentQuery.tid != null || (props.templateView && !props.isTemplate)
+
+        const nextQuery = {
+            id: props.id,
+            edit: true,
+            template: props.isTemplate,
+            prep: props.isPreparation,
+        }
+
+        if (parentForloebId) {
+            if (isParentTemplateContext)
+                nextQuery.forloebTid = parentForloebId
+            else
+                nextQuery.forloebId = parentForloebId
+        }
 
         router.replace({ query: updateQuery }).then(() => {
             router.push({
                 path: taskPath,
-                query: {
-                    id: props.id,
-                    edit: true,
-                    template: props.isTemplate,
-                    prep: props.isPreparation,
-                    forloebId: parentForloebId,
-                },
+                query: nextQuery,
             })
         })
     }
