@@ -31,6 +31,49 @@ def _is_hidden_visible_to_user(opgave, user_email: str | None) -> bool:
     return ansvarlig_email.strip().lower() == user_email.strip().lower()
 
 
+def _mail_sort_value(mail):
+    return getattr(mail, 'sent', None) or getattr(mail, 'created', None) or datetime.min
+
+
+def _get_last_sent_mails(mails):
+    sent_mails = [mail for mail in mails if bool(getattr(mail, 'isSent', False))]
+    if not sent_mails:
+        return []
+
+    last_user_mail = None
+    user_mails = [
+        mail
+        for mail in sent_mails
+        if getattr(mail, 'description', None) == MAIL_DESC_NEW_TASK_USER
+    ]
+    if user_mails:
+        last_user_mail = max(user_mails, key=_mail_sort_value)
+
+    last_ansvarlig_mail = None
+    ansvarlig_mails = [
+        mail
+        for mail in sent_mails
+        if getattr(mail, 'description', None) == MAIL_DESC_NEW_TASK_ANSVARLIG
+    ]
+    if ansvarlig_mails:
+        last_ansvarlig_mail = max(ansvarlig_mails, key=_mail_sort_value)
+
+    result = []
+    for mail in [last_ansvarlig_mail, last_user_mail]:
+        if mail is None:
+            continue
+        result.append({
+            'id': mail.MailID,
+            'recipient': mail.recipient,
+            'subject': mail.subject,
+            'description': mail.description,
+            'sent': mail.sent.isoformat() if mail.sent else None,
+            'created': mail.created.isoformat() if mail.created else None,
+        })
+
+    return result
+
+
 def create_opgave():
     session = db_client.get_session()
     try:
@@ -473,38 +516,40 @@ def get_opgave_by_forloeb_id_admin(forlob_id):
         if not opgave:
             return jsonify([])
 
-        opgave_data = [
-            {
-                'OpgaveID': opgave.OpgaveID,
-                'title': opgave.title,
-                'beskrivelse': opgave.beskrivelse,
-                'note': opgave.note,
-                'resourcer': [_serialize_ressource(ressource) for ressource in opgave.ressource],
+        opgave_data = []
+        for opg in opgave:
+            mails = getattr(opg, 'mails', []) or []
+            opgave_data.append({
+                'OpgaveID': opg.OpgaveID,
+                'title': opg.title,
+                'beskrivelse': opg.beskrivelse,
+                'note': opg.note,
+                'resourcer': [_serialize_ressource(ressource) for ressource in opg.ressource],
                 'gruppe': {
-                    'OpgaveGruppeID': opgave.opgavegruppe.OpgaveGruppeID,
-                    'name': opgave.opgavegruppe.name,
-                    'letter': opgave.opgavegruppe.letter
-                } if opgave.opgavegruppe else None,
-                'ansvarlig': opgave.ansvarlig,
-                'ansvarligEmail': opgave.ansvarligEmail,
-                'startdato': opgave.startdato.isoformat() if opgave.startdato else None,
-                'slutdato': opgave.slutdato.isoformat() if opgave.slutdato else None,
-                'relativ_startdag': opgave.relativ_startdag,
-                'relativ_slutdag': opgave.relativ_slutdag,
-                'result': opgave.result,
-                'hidden': bool(getattr(opgave, 'hidden', False)),
-                'booking': opgave.booking.isoformat() if opgave.booking else None,
-                'timestamp': opgave.timestamp.isoformat(),
+                    'OpgaveGruppeID': opg.opgavegruppe.OpgaveGruppeID,
+                    'name': opg.opgavegruppe.name,
+                    'letter': opg.opgavegruppe.letter
+                } if opg.opgavegruppe else None,
+                'ansvarlig': opg.ansvarlig,
+                'ansvarligEmail': opg.ansvarligEmail,
+                'startdato': opg.startdato.isoformat() if opg.startdato else None,
+                'slutdato': opg.slutdato.isoformat() if opg.slutdato else None,
+                'relativ_startdag': opg.relativ_startdag,
+                'relativ_slutdag': opg.relativ_slutdag,
+                'result': opg.result,
+                'hidden': bool(getattr(opg, 'hidden', False)),
+                'booking': opg.booking.isoformat() if opg.booking else None,
+                'timestamp': opg.timestamp.isoformat(),
                 'pending_emails': [
                     {
                         'id': mail.MailID,
                         'recipient': mail.recipient,
                         'subject': mail.subject,
                         'description': mail.description
-                    } for mail in opgave.mails if not mail.isSent
-                ]
-            } for opgave in opgave
-        ]
+                    } for mail in mails if not mail.isSent
+                ],
+                'sent_emails': _get_last_sent_mails(mails)
+            })
         return jsonify(opgave_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

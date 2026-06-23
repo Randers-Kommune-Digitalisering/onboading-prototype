@@ -6,7 +6,7 @@
 
     import { updateOpgave, deleteOpgave } from '@/services/opgaveService.js'
     import { deleteOpgaveskabelon } from '@/services/opgaveskabelonService.js'
-    import { deleteMail, NEW_TASK_ANSVARLIG } from '@/services/mailService.js'
+    import { deleteMail, NEW_TASK_ANSVARLIG, NEW_TASK_USER } from '@/services/mailService.js'
     import { downloadRessourceFile } from '@/services/ressourceService.js'
 
     const router = useRouter()
@@ -49,7 +49,10 @@
         if(d == 'Invalid Date')
             return null
 
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        let formattedDate = d.toLocaleString('da-DK', { month: '2-digit', day: '2-digit' })
+        let formattedHourMinute = d.toLocaleString('da-DK', { hour: '2-digit', minute: '2-digit' })
+
+        return formattedDate + ' kl. ' + formattedHourMinute
     }
 
     const returnFirstAndLastName = (name) => {
@@ -190,6 +193,10 @@
             type: Array,
             default: () => []
         },
+        sentMails: {
+            type: Array,
+            default: () => []
+        },
         isPreparation:
         {
             type: Boolean,
@@ -206,7 +213,27 @@
     })
 
     const dynamicMails = ref(props.mails)
+    const dynamicSentMails = ref(props.sentMails)
     const isCollapsed = ref(props.result)
+
+    const resolveMailReceiverLabel = (description) => {
+        if (description === NEW_TASK_ANSVARLIG)
+            return 'ansvarlig'
+        if (description === NEW_TASK_USER)
+            return 'ny medarbejder'
+        return 'modtager'
+    }
+
+    const formatMailSentDate = (sent) => {
+        if (!sent)
+            return ''
+
+        const parsed = new Date(normalized)
+        if (parsed.toString() === 'Invalid Date')
+            return ''
+
+        return parsed.toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    }
 
     /* Task operations */
 
@@ -405,6 +432,14 @@
         if (scrollTo && !previousValue)
             _scrollTo()
     })
+
+    watch(() => props.mails, (mails) => {
+        dynamicMails.value = mails || []
+    })
+
+    watch(() => props.sentMails, (mails) => {
+        dynamicSentMails.value = mails || []
+    })
 </script>
 
 <template>
@@ -560,37 +595,22 @@
         </div><!-- /buttons -->
 
         <div class="mails">
+            <div class="mail sent" v-for="mail in dynamicSentMails" :key="`sent-${mail.id}`">
+                <div>
+                    <div class="nowrap">Notifikation sendt til {{ resolveMailReceiverLabel(mail.description) }}</div>
+                    <div class="mail-recipient">{{ mail.recipient }} - Sendt {{ returnFormattedDate(mail.sent) }}</div>
+                </div>
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
             <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
                 <div>
-                    <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
+                    <div class="nowrap">Notifikation til {{ resolveMailReceiverLabel(mail.description) }}</div>
                     <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
                 </div>
                 <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
             </div>
         </div><!-- /mails -->
-
-            <!-- 
-            <div class="card-separator"></div>
-            
-            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
-                <div class="tooltipContainer">
-                    <div class="icon"><i class="fa-solid fa-envelope"></i></div>
-                    <div class="text">
-                        <div class="small faded">Mails</div>
-                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
-                    </div>
-                    
-                    <div class="tooltip">
-                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
-                            <div>
-                                <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
-                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
-                            </div>
-                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
 
     </div><!-- /card -->
 
@@ -627,7 +647,7 @@
         border-top-left-radius: 0.35rem;
         border-top-right-radius: 0.35rem;
         background-color: rgba(145, 135, 130, 0.16);
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 0.6rem;
         cursor: pointer;
     }
 
@@ -712,12 +732,19 @@
         padding: 0.4rem 0.6rem;
         transition: background-color 200ms ease;
     }
-    .mail:has(i:hover) {
+    .mail.sent {
+        background-color: rgba(29, 99, 24, 0.1);
+    }
+    .mail:not(.sent):has(i:hover) {
         background-color: rgba(145, 135, 130, 0.15);
     }
     .mail i {
         cursor: pointer;
         color: var(--color-card-text);
+    }
+    .mail.sent i {
+        color: #617a5d;
+        cursor: default;
     }
     .mail > div:first-child {
         display: flex;

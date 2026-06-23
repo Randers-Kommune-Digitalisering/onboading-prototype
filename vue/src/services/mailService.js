@@ -3,6 +3,7 @@ import { apiRequest } from './apiRequest';
 const API_URL = 'api';
 
 export const NEW_TASK_ANSVARLIG = 'NEW_TASK_ANSVARLIG';
+export const NEW_TASK_USER = 'NEW_TASK_USER';
 
 export const deleteMail = (data) => {
   return apiRequest({ method: 'delete', url: `${API_URL}/mail/delete/${data.id}` });

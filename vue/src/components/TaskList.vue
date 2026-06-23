@@ -120,6 +120,7 @@
                     :result="task.result"
                     :ressources="task.resourcer"
                     :mails="task.pending_emails"
+                    :sentMails="task.sent_emails"
 					:isPreparation="isPreparation"
 					:external="external"
                     :accessKey="accessKey"
