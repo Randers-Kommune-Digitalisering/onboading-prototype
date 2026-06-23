@@ -433,46 +433,12 @@
         <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
 
         <div class="card-header">
-
             <div style="width:100%">
-
-
-                <!-- <div class="card-icon no-select">
-                    <div :style="`position:relative;background-color: #`+ color +`;`" class="tooltip-hover">
-                        <div>{{ group?.letter }}</div>
-                        <span v-if="group != null" class="tooltip-display">{{ group?.name }}</span>
-                    </div>
-                </div> -->
-
                 <span class="card-inline-title">
                     {{ title }}
                 </span>
                 <span class="card-description">{{ description }}</span>
-
             </div>
-
-            <!-- 
-            <div class="card-separator"></div>
-            
-            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
-                <div class="tooltipContainer">
-                    <div class="icon"><i class="fa-solid fa-envelope"></i></div>
-                    <div class="text">
-                        <div class="small faded">Mails</div>
-                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
-                    </div>
-                    
-                    <div class="tooltip">
-                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
-                            <div>
-                                <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
-                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
-                            </div>
-                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
         </div>
 
         <div class="ressources" v-if="props.ressources.length > 0">
@@ -503,8 +469,6 @@
                     <i class="fa-solid fa-pen-to-square"></i>
                     {{ ressource.name }}
                     <div class="file-name">{{ ressource.filename || ressource.url }}</div>
-
-                    <!-- <span v-if="ressource != null" class="tooltip-display">{{ ressource.isFile ? (ressource.filename || ressource.url) : ressource.url }}</span> -->
                 </div>
             </template>
         </div>
@@ -594,6 +558,39 @@
                             Gå til forløb
             </router-link>
         </div><!-- /buttons -->
+
+        <div class="mails">
+            <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
+                <div>
+                    <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
+                    <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
+                </div>
+                <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
+            </div>
+        </div><!-- /mails -->
+
+            <!-- 
+            <div class="card-separator"></div>
+            
+            <div class="card-details" v-if="props.duration == null && dynamicMails.length > 0">
+                <div class="tooltipContainer">
+                    <div class="icon"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="text">
+                        <div class="small faded">Mails</div>
+                        <div>{{ dynamicMails.length > 0 ? (dynamicMails.length + ' planlagt') : 'Ingen mails' }}</div>
+                    </div>
+                    
+                    <div class="tooltip">
+                        <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
+                            <div>
+                                <div class="nowrap">Notifikation til {{ mail.description == NEW_TASK_ANSVARLIG ? 'ansvarlig' : 'ny medarbejder' }}</div>
+                                <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
+                            </div>
+                            <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
 
     </div><!-- /card -->
 
@@ -700,4 +697,37 @@
         font-style: italic;
         opacity: 0.6;
     }
+
+    .mails {
+        margin-top: 0.5rem;
+        border-top: 0.1rem solid var(--color-background);
+        background-color: rgba(145, 135, 130, 0.16);
+        display: flex;
+        flex-direction: column;
+    }
+    .mail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0.6rem;
+        transition: background-color 200ms ease;
+    }
+    .mail:has(i:hover) {
+        background-color: rgba(145, 135, 130, 0.15);
+    }
+    .mail i {
+        cursor: pointer;
+        color: var(--color-card-text);
+    }
+    .mail > div:first-child {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.8em;
+    }
+    .mail .mail-recipient {
+        opacity: 0.7;
+        font-size: 0.9em;
+    }
+
+
 </style>
