@@ -598,15 +598,15 @@
             <div class="mail sent" v-for="mail in dynamicSentMails" :key="`sent-${mail.id}`">
                 <div>
                     <div class="nowrap">Notifikation sendt til {{ resolveMailReceiverLabel(mail.description) }}</div>
-                    <div class="mail-recipient">{{ mail.recipient }} - Sendt {{ returnFormattedDate(mail.sent) }}</div>
+                    <div class="mail-recipient"><i class="fa-solid fa-envelope"></i> {{ mail.recipient }} <i class="fa-solid fa-clock"></i> {{ returnFormattedDate(mail.sent) }}</div>
                 </div>
                 <i class="fa-solid fa-circle-check"></i>
             </div>
 
             <div class="mail" v-for="mail in dynamicMails" :key="mail.id">
                 <div>
-                    <div class="nowrap">Notifikation til {{ resolveMailReceiverLabel(mail.description) }}</div>
-                    <div class="mail-recipient nowrap">{{ mail.recipient }}</div>
+                    <div class="nowrap">Notifikation planlagt til {{ resolveMailReceiverLabel(mail.description) }}</div>
+                    <div class="mail-recipient nowrap"><i class="fa-solid fa-envelope"></i> {{ mail.recipient }}</div>
                 </div>
                 <i @click="deletePendingEmail(mail.id)" class="fa-solid fa-circle-xmark"></i>
             </div>
@@ -754,6 +754,14 @@
     .mail .mail-recipient {
         opacity: 0.7;
         font-size: 0.9em;
+    }
+    .mail-recipient i {
+        margin-right: 0.1rem;
+        font-size: 0.85em;
+        color: var(--color-card-text)!important;
+    }
+    .mail-recipient i:not(:first-of-type) {
+        margin-left: 0.5rem;
     }
 
 
