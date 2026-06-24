@@ -559,6 +559,12 @@ p > a:hover {
     margin-top: 0rem;
     margin-bottom: 1rem;
 }
+    .card-details .overdue * {
+        color: var(--color-button-red);
+    }
+    .card-details .overdue *.small.faded {
+        opacity: 0.75;
+    }
 
 .card-content > p {
     margin-left: 1.2rem;
@@ -584,14 +590,14 @@ p > a:hover {
 
     .card > .ressources > .ressource {
         color: var(--color-text);
-        background-color: var(--color-card-dark);
+        background-color: rgba(145, 135, 130, 0.18);
         cursor: pointer;
         padding: 0.4rem 0.6rem;
         border-radius: 0.3rem;
     }
 
     .card > .ressources > .ressource:hover {
-        background-color: var(--color-card-dark-faded);
+        background-color: rgba(145, 135, 130, 0.26);
     }
 
     .card > .ressources > .ressource > i {

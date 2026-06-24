@@ -73,11 +73,11 @@
         emit('task-result-change', payload)
     }
 
-    const defaultItemColor = '4c4980'
-    const completedItemColor = '617a5d'
+    const defaultItemColor = '4e4a8c'
+    const completedItemColor = '558f4c'
     const overdueItemColor = 'bf4e4e'
     const upcomingItemColor = '777371'
-    const hiddenItemColor = 'fcb103'
+    // const hiddenItemColor = 'fcb103'
     const hiddenItemBorderColor = '9b9b9b'
 
     const listRef = ref(null)
@@ -215,8 +215,8 @@
         if (!props.templateView && !props.isPreparation && new Date(task.startdato) > new Date())
             return upcomingItemColor
 
-        if (task.hidden === true)
-            return hiddenItemColor
+        // if (task.hidden === true)
+        //     return hiddenItemColor
 
         return defaultItemColor
     }

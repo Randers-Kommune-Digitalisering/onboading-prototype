@@ -452,7 +452,7 @@
             {{ group?.name }}
 
             <span :class="['group-status', 'complete']" v-if="result">
-                <i class="fa-regular fa-circle-check"></i>
+                <i class="fa-solid fa-circle-check"></i>
             </span>
             <span :class="['group-status', 'overdue']" v-if="!result && !templateView && !isPreparation && new Date(deadline) < new Date()">
                 Deadline overskredet <i class="fa-solid fa-triangle-exclamation"></i>
@@ -460,9 +460,13 @@
             <span :class="['group-status', 'upcoming']" v-if="!result && !templateView && !isPreparation && new Date(startdate) > new Date()">
                 Kommende <i class="fa-solid fa-clock"></i>
             </span>
+            <span :class="['group-status', 'ongoing']" v-if="startdate && !isFutureTask && !isPreparation && !templateView && !result && new Date(deadline) >= new Date()">
+                <i class="fa-solid fa-circle"></i>
+            </span>
             <span class="group-note" v-if="hidden">
                 Skjult for medarbejder <i class="fa-solid fa-eye-slash"></i>
             </span>
+
         </div>
 
         <div class="card-color-seperator" :style="`background-color: #`+ color +`;`"></div>
@@ -511,18 +515,35 @@
         <div class="card-details">
 
             <div v-if="(templateView && !isTemplate) || isPreparation">
-                <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="icon"><i class="fa-regular fa-clock"></i></div>
                 <div class="text">
                     <div class="small faded">Startdag</div>
                     <div>{{ relativeStartdate == 0 ? 'Ved forløbets start' : Math.abs(relativeStartdate) + ' ' + returnDagOrDage(Math.abs(relativeStartdate)) + (relativeStartdate > 0 ? ' efter opstart' : ' før opstart') }}</div>
                 </div>
             </div>
 
-            <div>
+            <div v-if="isFutureTask">
+                <div class="icon"><i class="fa-solid fa-calendar"></i></div>
+                <div class="text">
+                    <div class="small faded">Starter {{ (returnDaysFromNow(startdate) > 1 ? ' om ' : '') }}</div>
+                    <div>{{ returnDaysFromNowString(startdate) }}</div>
+                </div>
+            </div>
+
+            <div v-if="isTemplate || templateView || isPreparation">
                 <div class="icon"><i class="fa-solid fa-clock"></i></div>
                 <div class="text">
-                    <div class="small faded">{{ templateView || isPreparation ? 'Varighed' : isFutureTask ? ('Starter' + (returnDaysFromNow(startdate) > 1 ? ' om ' : '')) : 'Deadline' }}</div>
-                    <div>{{ templateView || isPreparation ? relativeEnddate + ' ' + returnDagOrDage(relativeEnddate) : returnDaysFromNowString(isFutureTask ? startdate : deadline) }}</div>
+                    <div class="small faded">Varighed</div>
+                    <div>{{ relativeEnddate + ' ' + returnDagOrDage(relativeEnddate)}}</div>
+                </div>
+            </div>
+
+            <div v-if="!isTemplate && !templateView && !isPreparation"
+                :class="!result && !templateView && !isPreparation && new Date(deadline) < new Date() ? 'overdue' : ''">
+                <div class="icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="text">
+                    <div class="small faded">Deadline</div>
+                    <div>{{ returnDaysFromNowString(deadline) }}</div>
                 </div>
             </div>
 
@@ -650,6 +671,15 @@
         padding: 0.5rem 0.6rem;
         cursor: pointer;
     }
+    .card-group:has(.group-status.complete) {
+        background-color: rgba(34, 152, 16, 0.05);
+    }
+    .card-group:has(.group-status.overdue) {
+        background-color: rgba(177, 21, 21, 0.05);
+    }
+    .card-group:has(.group-status.ongoing) {
+        background-color: rgba(24, 17, 171, 0.05);
+    }
 
     .task {
         position: relative;
@@ -707,10 +737,17 @@
         margin-left: 0.4rem;
     }
     .group-status.complete {
-        color: #617a5d;
+        color: #2e7b22;
+        opacity: 0.6;
+        font-style: italic;
+        opacity: 0.6;
     }
     .group-status.overdue {
-        color: #bf4e4e;
+        color: #b11515;
+    }
+    .group-status.ongoing {
+        color: #211a84; 
+        opacity: 0.6;
     }
     .group-status.upcoming {
         color: #777371;
