@@ -78,12 +78,12 @@ def create_opgave():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'ansvarlig', 'ansvarligEmail', 'result', 'timestamp']
+        required_fields = ['beskrivelse', 'ansvarlig', 'ansvarligEmail', 'result', 'timestamp']
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
         new_opgave = Opgave(
-            title=data['title'],
+            title=data.get('title', ''),
             beskrivelse=data['beskrivelse'],
             note=data['note'],
             ansvarlig=data['ansvarlig'],

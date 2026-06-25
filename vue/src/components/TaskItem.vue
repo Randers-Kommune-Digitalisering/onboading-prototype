@@ -476,7 +476,7 @@
 
         <div class="card-header">
             <div style="width:100%">
-                <span class="card-inline-title">
+                <span class="card-inline-title" v-if="title != null && title != ''">
                     {{ title }}
                 </span>
                 <span class="card-description">{{ description }}</span>
@@ -553,7 +553,7 @@
             <div v-if="!templateView && ansvarlig">
                 <div class="icon"><i class="fa-solid fa-user"></i></div>
                 
-                <div class="text" v-if="forloebId != null && userInfo.email.toLowerCase() == ansvarligEmail.toLowerCase()">
+                <div class="text" v-if="forloebId != null && userInfo.email.toLowerCase() == ansvarligEmail?.toLowerCase()">
                     <div class="small faded">Medarbejder</div>
                     <div>{{ username ?? 'Ukendt medarbejder' }}</div>
                 </div>
@@ -582,9 +582,9 @@
             {{ note }}
         </div>
 
-        <div class="buttons" v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase())">
+        <div class="buttons" v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase())">
             <div class="button"
-                    v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase())"
+                    v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase())"
                     @click="gotoRessource()">
                     + Tilføj ressource
             </div>
@@ -598,8 +598,8 @@
             <div :class="['button', 'hollow', {'yellow': result}]"
                     v-if="!templateView && !isPreparation && 
                         (userInfo?.isAdmin ||
-                            (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase()) ||
-                            (userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase())
+                            (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase()) ||
+                            (userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase())
                         )"
                     @click="completeTask(!result)">
                     Markér {{ result ? 'ej ' :'' }} gennemført
@@ -612,7 +612,7 @@
             </div>
 
             <router-link class="button hollow"
-                            v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase() && forloebId != null)"
+                            v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase() && forloebId != null)"
                             :to="`/forloeb-overview?id=${forloebId}`">
                             Gå til forløb
             </router-link>

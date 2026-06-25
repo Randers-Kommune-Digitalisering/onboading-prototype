@@ -11,13 +11,13 @@ def create_opgaveskabelon():
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'relativ_slutdag']
+        required_fields = ['beskrivelse', 'relativ_slutdag']
 
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
         new_opgaveskabelon = Opgaveskabelon(
-            title=data['title'],
+            title=data.get('title', ''),
             beskrivelse=data['beskrivelse'],
             note=data['note'],
             hidden=bool(data.get('hidden', False)),
@@ -85,7 +85,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
     session = db_client.get_session()
     try:
         data = request.json
-        required_fields = ['title', 'beskrivelse', 'relativ_slutdag']
+        required_fields = ['beskrivelse', 'relativ_slutdag']
 
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
@@ -94,7 +94,7 @@ def update_opgaveskabelon(opgaveskabelon_id):
         if not opgaveskabelon:
             return jsonify({"error": "Opgaveskabelon not found"}), 404
 
-        opgaveskabelon.title = data['title']
+        opgaveskabelon.title = data.get('title', opgaveskabelon.title)
         opgaveskabelon.beskrivelse = data['beskrivelse']
         opgaveskabelon.note = data['note']
         opgaveskabelon.hidden = bool(data.get('hidden', False))

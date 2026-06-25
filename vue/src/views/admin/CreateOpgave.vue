@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, nextTick } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 
     import { getUsers } from '@/services/userService.js'
@@ -170,6 +170,7 @@
             inputFields.value.startdato = ""
             inputFields.value.slutdato = ""
             inputFields.value.booking = ""
+            inputFields.value.hidden = false
             if(addToTemplate.value || isPreparation.value)
             {
                 inputFields.value.relativ_slutdag = 1
@@ -185,11 +186,16 @@
         inputFields.value.startdato = template.startdato
         inputFields.value.slutdato = template.slutdato
         inputFields.value.booking = template.booking
+        inputFields.value.hidden = template.hidden === true
         if(addToTemplate.value || isPreparation.value)
         {
             inputFields.value.relativ_slutdag = template.relativ_slutdag
             relativEndday.value = inputFields.value.relativ_slutdag
         }
+        nextTick(() => {
+            resizeTextareasToFitContent()
+            resizeTextareaDescriptionToFitContent()
+        })
     }
 
     const selectNoTemplateIfNotSelected = () => {
@@ -473,7 +479,7 @@
                 <select id="template" name="template" v-model="selectedTemplate" @change="selectTemplate(selectedTemplate)" required>
                     <option value="" disabled selected hidden></option>
                     <option :value="null" style="color:gray">Ingen skabelon</option>
-                    <option v-for="template in templates" :value="template">{{template.title}}</option>
+                    <option v-for="template in templates" :value="template">{{template.title ? template.title + ' | ' : ''}}{{template.beskrivelse ? template.beskrivelse.substring(0, 50) + (template.beskrivelse.length > 50 ? '...' : '') : ''}}</option>
                 </select>
                 <label for="template" class="floating-label">Skabelon</label>
                 <div class="icon nohover adjust-for-button"><i class="fa-solid fa-caret-down"></i></div>
@@ -491,7 +497,6 @@
                     type="text" id="title" name="title"
                     placeholder=" "
                     v-model="inputFields.title"
-                    required
                     @focus="focusedInput = inputFieldDescriptions.title"
                     @blur="focusedInput = null">
                 <label for="title" class="floating-label">Opgavens navn</label>
