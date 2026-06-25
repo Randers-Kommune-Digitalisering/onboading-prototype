@@ -759,7 +759,6 @@
     }
 
     .mails {
-        margin-top: 0.5rem;
         border-top: 0.1rem solid var(--color-background);
         background-color: rgba(145, 135, 130, 0.16);
         display: flex;

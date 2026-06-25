@@ -580,6 +580,9 @@ p > a:hover {
     margin: 0rem 0.8rem;
     font-family: 'Lato', sans-serif;
 }
+.card-details ~ .notes {
+    margin-top: 0.8rem;
+}
 
 .card > .ressources {
     margin-bottom: 1rem;
