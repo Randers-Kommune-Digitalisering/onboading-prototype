@@ -111,6 +111,9 @@
         username: {
             type: String
         },
+        useremail: {
+            type: String
+        },
         title: {
             type: String,
             required: true
@@ -486,25 +489,25 @@
                     <a v-if="!ressource.isFile"
                         :href="ressource.url"
                         target="_blank"
-                        class="ressource tooltip-hover">
+                        class="ressource">
                         <i class="fa-solid fa-up-right-from-square"></i>
                         {{ ressource.name }}
-                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.url }}</span>
+                        <div class="file-name">{{ ressource.url }}</div>
                     </a>
-                    <span v-else
+                    <div v-else
                         @click="downloadRessource(ressource)"
-                        class="ressource tooltip-hover">
+                        class="ressource">
                         <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
                         {{ ressource.name }}
-                        <span v-if="ressource != null" class="tooltip-display">{{ ressource.filename || ressource.url }}</span>
-                    </span>
+                        <div class="file-name">{{ ressource.filename || ressource.url }}</div>
+                    </div>
                 </div>
             </template>
             <template v-else>
                 <div v-for="ressource in ressources"
                     :key="ressource.RessourceID"
                     @click="gotoRessource(ressource.RessourceID)"
-                    class="ressource tooltip-hover">
+                    class="ressource">
                     <i class="fa-solid fa-pen-to-square"></i>
                     {{ ressource.name }}
                     <div class="file-name">{{ ressource.filename || ressource.url }}</div>
@@ -550,7 +553,7 @@
             <div v-if="!templateView && ansvarlig">
                 <div class="icon"><i class="fa-solid fa-user"></i></div>
                 
-                <div class="text" v-if="forloebId != null && userInfo.email == ansvarligEmail">
+                <div class="text" v-if="forloebId != null && userInfo.email.toLowerCase() == ansvarligEmail.toLowerCase()">
                     <div class="small faded">Medarbejder</div>
                     <div>{{ username ?? 'Ukendt medarbejder' }}</div>
                 </div>
@@ -579,9 +582,9 @@
             {{ note }}
         </div>
 
-        <div class="buttons">
+        <div class="buttons" v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase())">
             <div class="button"
-                    v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail)"
+                    v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase())"
                     @click="gotoRessource()">
                     + Tilføj ressource
             </div>
@@ -595,8 +598,8 @@
             <div :class="['button', 'hollow', {'yellow': result}]"
                     v-if="!templateView && !isPreparation && 
                         (userInfo?.isAdmin ||
-                            (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail) ||
-                            (userInfo?.isMedarbejder && ansvarligEmail == '')
+                            (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase()) ||
+                            (userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase())
                         )"
                     @click="completeTask(!result)">
                     Markér {{ result ? 'ej ' :'' }} gennemført
@@ -609,13 +612,13 @@
             </div>
 
             <router-link class="button hollow"
-                            v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email == ansvarligEmail && forloebId != null)"
+                            v-if="(userInfo?.isAdmin && forloebId != null) || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email.toLowerCase() == ansvarligEmail.toLowerCase() && forloebId != null)"
                             :to="`/forloeb-overview?id=${forloebId}`">
                             Gå til forløb
             </router-link>
         </div><!-- /buttons -->
 
-        <div class="mails">
+        <div class="mails" v-if="dynamicMails.length > 0 || dynamicSentMails.length > 0">
             <div class="mail sent" v-for="mail in dynamicSentMails" :key="`sent-${mail.id}`">
                 <div>
                     <div class="nowrap">Notifikation sendt til {{ resolveMailReceiverLabel(mail.description) }}</div>

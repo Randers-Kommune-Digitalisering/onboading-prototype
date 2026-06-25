@@ -558,7 +558,6 @@ p > a:hover {
     margin-left: 1.2rem;
     margin-right: 1.2rem;
     margin-top: 0rem;
-    margin-bottom: 1rem;
 }
     .card-details .overdue * {
         color: var(--color-button-red);
@@ -566,6 +565,9 @@ p > a:hover {
     .card-details .overdue *.small.faded {
         opacity: 0.75;
     }
+.card.task .card-details:last-child {
+    margin-bottom: 0.8rem;
+}
 
 .card-content > p {
     margin-left: 1.2rem;
@@ -589,7 +591,8 @@ p > a:hover {
     padding: 0rem 0.8rem;
 }
 
-    .card > .ressources > .ressource {
+    .card > .ressources .ressource {
+        display: block;
         color: var(--color-text);
         background-color: rgba(145, 135, 130, 0.18);
         cursor: pointer;
@@ -597,17 +600,17 @@ p > a:hover {
         border-radius: 0.3rem;
     }
 
-    .card > .ressources > .ressource:hover {
+    .card > .ressources .ressource:hover {
         background-color: rgba(145, 135, 130, 0.26);
     }
 
-    .card > .ressources > .ressource > i {
+    .card > .ressources .ressource > i {
         margin-right: 0.5rem;
         font-size: 0.8em;
         transform: translateY(-0.03rem);
     }
 
-    .card > .ressources > .ressource > .file-name {
+    .card > .ressources .ressource > .file-name {
         font-size: 0.75em;
         color: var(--color-text-faded);
         margin-top: 0.2rem;
@@ -696,9 +699,9 @@ p > a:hover {
 .card.task .buttons {
     justify-content: flex-end;
     margin-top: 0.2rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.8rem;
 }
-.card.task .notes ~ .buttons {
+.card.task .notes ~ .buttons, .card.task .card-details ~ .buttons {
     margin-top: 1rem;
 }
 .button {

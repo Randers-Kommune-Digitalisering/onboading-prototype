@@ -14,7 +14,7 @@
             type: Boolean,
             default: false
         },
-        username: {
+        useremail: {
             type: String,
             default: null
         },
@@ -277,6 +277,7 @@
         id: task.OpgaveID ?? task.OpgaveskabelonID,
         forloebId: task.ForløbID,
         username: task.name,
+        useremail: props.useremail,
         title: task.title,
         header: task.header ?? task.beskrivelse,
         description: task.beskrivelse,

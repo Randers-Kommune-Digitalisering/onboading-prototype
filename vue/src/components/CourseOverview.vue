@@ -158,10 +158,7 @@
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
 
                 if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
-                {
                     forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
-                    sortBy.value = 'gruppe'
-                }
 
                 const opgaver_response = await getOpgaverByForloebIDExternal(forloeb_id.value, props.accessKey)
 
@@ -531,6 +528,7 @@
                 :isPreparation="isUnderPreparation"
                 :external="props.external"
                 :accessKey="props.accessKey"
+                :useremail="forloeb.usermail"
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index"
                 @task-result-change="handleTaskResultChange" />
@@ -543,6 +541,7 @@
                 :scrollToItem="scrollToItem"
                 :external="props.external"
                 :accessKey="props.accessKey"
+                :useremail="forloeb?.usermail"
                 @task-result-change="handleTaskResultChange" />
 
         <TaskList v-if="(forloeb != null || props.ansvarligView) && (!isTemplate && !isUnderPreparation)"
@@ -553,6 +552,7 @@
                 :scrollToItem="scrollToItem"
                 :external="props.external"
                 :accessKey="props.accessKey"
+                :useremail="forloeb?.usermail"
                 :forloebStartDate="new Date(forloeb?.startdate)"
                 :startMessageIndex="start_message_index"
                 @task-result-change="handleTaskResultChange" />
@@ -566,6 +566,7 @@
                 :dark="true"
                 :external="props.external"
                 :accessKey="props.accessKey"
+                :useremail="forloeb?.usermail"
                 itemColor="617a5d"
                 @task-result-change="handleTaskResultChange" />
     </div>
@@ -580,6 +581,7 @@
                 :isPreparation="isUnderPreparation"
                 :external="props.external"
                 :accessKey="props.accessKey"
+                :useremail="forloeb.usermail"
                 @task-result-change="handleTaskResultChange" />
 
         <TaskList v-if="forloeb != null && (forloeb.opgave_grupper.length === 0 || opgaver_all.filter(opgave => opgave.gruppe?.OpgaveGruppeID == null).length > 0)"
