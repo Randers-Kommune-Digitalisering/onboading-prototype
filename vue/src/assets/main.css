@@ -395,7 +395,8 @@ p > a:hover {
     color: var(--color-card-text);
     padding: 0.5rem 1rem!important;
     border-radius: 0.35rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1em;
+    margin-block-start: 0!important;
 }
     .notification.red {
         background-color: var(--color-button-red);
