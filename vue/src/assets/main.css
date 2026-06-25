@@ -395,7 +395,7 @@ p > a:hover {
     color: var(--color-card-text);
     padding: 0.5rem 1rem!important;
     border-radius: 0.35rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
     .notification.red {
         background-color: var(--color-button-red);
@@ -582,6 +582,9 @@ p > a:hover {
 }
 .card-details ~ .notes {
     margin-top: 0.8rem;
+}
+.notes:last-child {
+    margin-bottom: 0.8rem;
 }
 
 .card > .ressources {

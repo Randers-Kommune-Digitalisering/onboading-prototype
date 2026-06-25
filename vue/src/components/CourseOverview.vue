@@ -223,21 +223,25 @@
                                         : await getForloebById(props.id, { headers })
                 isForloebFetched.value = true
                 forloeb.value = forloeb_response?.data
+
                 if (forloeb_response && forloeb.value == null) {
                     isOpgaverFetched.value = true
                     return
                 }
+
                 isUnderPreparation.value = forloeb.value?.isPreparation || false
                 isForloebCompleted.value = !isUnderPreparation.value && forloeb.value?.enddate ? new Date(forloeb.value.enddate) <= new Date() : false
                 isForloebOngoing.value = !isUnderPreparation.value && forloeb.value?.startdate ? new Date(forloeb.value.startdate) <= new Date() : false
                 forloeb_id.value = forloeb.value?.ForløbID || forloeb.value?.ForløbsskabelonID
                 userTitle.value = forloeb.value?.userdq != '' ? forloeb.value?.userdq : forloeb.value?.usermail
-                if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper))
+
+                if (forloeb.value?.opgave_grupper && Array.isArray(forloeb.value.opgave_grupper) && forloeb.value?.opgave_grupper.length > 0)
                 {
                     forloeb.value?.opgave_grupper.sort((a, b) => a.name.localeCompare(b.name))
-                    sortBy.value = 'gruppe'
+                    if (userInfo.value.isAdmin)
+                        sortBy.value = 'gruppe'
                 }
-                
+
                 // Get opgaver
                                         // In ansvarligView fetch opgaver
                 const opgaver_response =  props.ansvarligView && !props.id ? await getOpgaverByAnsvarligEmail({ headers }) 
@@ -253,7 +257,7 @@
                     isOpgaverFetched.value = true
                     return
                 }
-                
+
                 if (!Array.isArray(opgaver_response.data))
                     opgaver_response.data = [opgaver_response.data]
 

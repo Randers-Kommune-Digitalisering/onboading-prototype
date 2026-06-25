@@ -582,7 +582,7 @@
             {{ note }}
         </div>
 
-        <div class="buttons" v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase())">
+        <div class="buttons" v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && (userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase() || (userInfo?.email?.toLowerCase() == useremail?.toLowerCase() && (ansvarligEmail == '' || ansvarligEmail == null))))">
             <div class="button"
                     v-if="isTemplate || userInfo?.isAdmin || (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase())"
                     @click="gotoRessource()">
@@ -598,8 +598,11 @@
             <div :class="['button', 'hollow', {'yellow': result}]"
                     v-if="!templateView && !isPreparation && 
                         (userInfo?.isAdmin ||
-                            (userInfo?.email != null && userInfo?.email != '' && userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase()) ||
-                            (userInfo?.email?.toLowerCase() == ansvarligEmail?.toLowerCase())
+                            (userInfo?.email != null && userInfo?.email != '') &&
+                            (
+                                (userInfo.email.toLowerCase() == ansvarligEmail?.toLowerCase()) ||
+                                (userInfo?.email?.toLowerCase() == useremail?.toLowerCase() && (ansvarligEmail == '' || ansvarligEmail == null))
+                            )
                         )"
                     @click="completeTask(!result)">
                     Markér {{ result ? 'ej ' :'' }} gennemført
