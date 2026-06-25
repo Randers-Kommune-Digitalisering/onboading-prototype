@@ -380,6 +380,10 @@
     max-width: 100%;
 }
 
+.task-grid-column :deep(.card.task.collapsed) {
+    margin-bottom: 0;
+}
+
 .start-spacer {
     font-size: 0.8em;
     text-transform: none;
