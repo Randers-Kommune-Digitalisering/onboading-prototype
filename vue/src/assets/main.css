@@ -439,6 +439,7 @@ p > a:hover {
 }
 .task .card-header {
     padding: 0.8rem 1.1rem;
+    padding-bottom: 1.5rem;
 }
 
 .card-header:first-child {

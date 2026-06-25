@@ -403,6 +403,11 @@
         if (!isNestedForloebRoute(oldPath || ''))
             return
 
+        // When returning from nested routes we typically attach a refreshTasks token.
+        // In that case, the refreshTasks watcher will already perform the refetch.
+        if (route.query.refreshTasks != null)
+            return
+
         await fetchOpgaver()
     })
 

@@ -85,6 +85,8 @@
     const isLayoutFrozen = ref(false)
     const frozenColumnWidth = ref(null)
     let freezeAnimationFrameId = 0
+    let resizeFreezeTimeoutId = 0
+    let lastViewportWidth = null
 
     const getTaskId = (task, index) => task.OpgaveID ?? task.OpgaveskabelonID ?? `task-${index}`
 
@@ -191,18 +193,61 @@
         })
     }
 
+    const scheduleLayoutFreezeAfterResize = () => {
+        if (resizeFreezeTimeoutId)
+            clearTimeout(resizeFreezeTimeoutId)
+
+        resizeFreezeTimeoutId = setTimeout(() => {
+            resizeFreezeTimeoutId = 0
+            scheduleLayoutFreeze()
+        }, 140)
+    }
+
+    const handleWindowResizeX = () => {
+        if (typeof window === 'undefined')
+            return
+
+        const nextViewportWidth = window.innerWidth
+
+        if (lastViewportWidth == null) {
+            lastViewportWidth = nextViewportWidth
+            return
+        }
+
+        if (nextViewportWidth === lastViewportWidth)
+            return
+
+        lastViewportWidth = nextViewportWidth
+
+        if (isLayoutFrozen.value)
+            resetFrozenLayout()
+
+        scheduleLayoutFreezeAfterResize()
+    }
+
     watch(taskListSignature, () => {
         resetFrozenLayout()
         scheduleLayoutFreeze()
     })
 
     onMounted(() => {
+        if (typeof window !== 'undefined') {
+            lastViewportWidth = window.innerWidth
+            window.addEventListener('resize', handleWindowResizeX)
+        }
+
         scheduleLayoutFreeze()
     })
 
     onBeforeUnmount(() => {
         if (freezeAnimationFrameId)
             cancelAnimationFrame(freezeAnimationFrameId)
+
+        if (resizeFreezeTimeoutId)
+            clearTimeout(resizeFreezeTimeoutId)
+
+        if (typeof window !== 'undefined')
+            window.removeEventListener('resize', handleWindowResizeX)
     })
 
     const getTaskColor = (task) => {
@@ -317,7 +362,6 @@
     align-items: flex-start;
     gap: 1rem;
     width: 100%;
-    overflow-x: auto;
 }
 
 .task-grid-column {

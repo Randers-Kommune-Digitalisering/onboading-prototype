@@ -34,9 +34,9 @@
         const diffDays = returnDaysFromNow(deadline)
         if (diffDays == null) return ''
 
-        if (diffDays === 0) return 'I dag'
         if (diffDays === 1) return 'I morgen'
-        if (diffDays === -1) return 'I går'
+        else if (diffDays === 0) return 'I dag'
+        else if (diffDays === -1) return 'I går'
 
         const absDays = Math.abs(diffDays)
         const daysText = absDays + ' dag' + (absDays > 1 ? 'e' : '')
@@ -458,7 +458,7 @@
                 Deadline overskredet <i class="fa-solid fa-triangle-exclamation"></i>
             </span>
             <span :class="['group-status', 'upcoming']" v-if="!result && !templateView && !isPreparation && new Date(startdate) > new Date()">
-                Kommende <i class="fa-solid fa-clock"></i>
+                <i class="fa-solid fa-clock"></i>
             </span>
             <span :class="['group-status', 'ongoing']" v-if="startdate && !isFutureTask && !isPreparation && !templateView && !result && new Date(deadline) >= new Date()">
                 <i class="fa-solid fa-circle"></i>
