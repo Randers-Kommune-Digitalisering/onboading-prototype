@@ -421,6 +421,18 @@
         }
     }
 
+    const prettifyUrl = (url) => {
+        if (!url || typeof url !== 'string')
+            return ''
+
+        try {
+            const parsedUrl = new URL(url)
+            return parsedUrl.protocol + '//' + parsedUrl.hostname
+        } catch {
+            return url
+        }
+    }
+
     /* Instantiate */
 
     onMounted(async () => {
@@ -492,14 +504,14 @@
                         class="ressource">
                         <i class="fa-solid fa-up-right-from-square"></i>
                         {{ ressource.name }}
-                        <div class="file-name">{{ ressource.url }}</div>
+                        <div class="file-name">{{ prettifyUrl(ressource.url) }}</div>
                     </a>
                     <div v-else
                         @click="downloadRessource(ressource)"
                         class="ressource">
                         <i :class="'fa-regular fa-file' + (extractFileType(ressource.content_type) ? '-' + extractFileType(ressource.content_type) : '')"></i>
                         {{ ressource.name }}
-                        <div class="file-name">{{ ressource.filename || ressource.url }}</div>
+                        <div class="file-name">{{ ressource.filename || prettifyUrl(ressource.url) }}</div>
                     </div>
                 </div>
             </template>
@@ -510,7 +522,7 @@
                     class="ressource">
                     <i class="fa-solid fa-pen-to-square"></i>
                     {{ ressource.name }}
-                    <div class="file-name">{{ ressource.filename || ressource.url }}</div>
+                    <div class="file-name">{{ ressource.filename || prettifyUrl(ressource.url) }}</div>
                 </div>
             </template>
         </div>
