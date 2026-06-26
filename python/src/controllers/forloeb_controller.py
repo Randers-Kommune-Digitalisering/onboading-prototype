@@ -135,6 +135,7 @@ def create_forloeb_preparation():
                 relativ_startdag=opgave.relativ_startdag,
                 relativ_slutdag=opgave.relativ_slutdag,
                 result=opgave.result,
+                note=opgave.note,
                 hidden=bool(getattr(opgave, 'hidden', False)),
                 timestamp=opgave.timestamp,
                 ForløbID=forloeb.ForløbID,
