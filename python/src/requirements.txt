@@ -1,4 +1,6 @@
+Authlib
 Flask==3.0.3
+flask-session
 mariadb
 pymssql
 py-healthcheck
@@ -8,4 +10,9 @@ prometheus-client
 python-dotenv
 requests==2.31.0
 requests-pkcs12==1.24
+rk-digi==1.1.0
 SQLAlchemy
+pandas
+flask-cors
+fpdf
+paramiko==3.4.0
