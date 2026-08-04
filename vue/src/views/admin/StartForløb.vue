@@ -135,6 +135,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width">
+
     <p class="indent-tiny bold uppercase p-header-adjust">Start forløb</p>
 
     <form @submit.prevent="submitForm">
@@ -180,4 +182,6 @@
 
     </div>
     </form>
+
+    </div></div><!-- /wrapper -->
 </template>

@@ -1,4 +1,5 @@
 <script setup>
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
     import Card from './TaskItem.vue'
 
     const props = defineProps({
@@ -13,7 +14,7 @@
             type: Boolean,
             default: false
         },
-        username: {
+        useremail: {
             type: String,
             default: null
         },
@@ -26,12 +27,7 @@
             type: Boolean,
             default: false
         },
-        expandFirstItem:
-        {
-            type: Boolean,
-            default: true
-        },
-        expandItem:
+        scrollToItem:
         {
             type: Number,
             default: null
@@ -45,10 +41,6 @@
         {
             type: Boolean,
             default: false
-        },
-        itemColor:
-        {
-            type: String
         },
         forloebStartDate:
         {
@@ -75,15 +67,252 @@
         }
     })
 
-    const defaultItemColor = '4c4980'
+    const emit = defineEmits(['task-result-change'])
+
+    const onTaskResultUpdated = (payload) => {
+        emit('task-result-change', payload)
+    }
+
+    const defaultItemColor = '4e4a8c'
+    const completedItemColor = '558f4c'
+    const overdueItemColor = 'bf4e4e'
+    const upcomingItemColor = '777371'
+    // const hiddenItemColor = 'fcb103'
+    const hiddenItemBorderColor = '9b9b9b'
+
+    const listRef = ref(null)
+    const frozenColumns = ref([])
+    const isLayoutFrozen = ref(false)
+    const frozenColumnWidth = ref(null)
+    let freezeAnimationFrameId = 0
+    let resizeFreezeTimeoutId = 0
+    let lastViewportWidth = null
+
+    const getTaskId = (task, index) => task.OpgaveID ?? task.OpgaveskabelonID ?? `task-${index}`
+
+    const layoutItems = computed(() => {
+        if (!props.tasks || props.tasks.length === 0)
+            return []
+
+        return props.tasks.flatMap((task, index) => {
+            const taskId = getTaskId(task, index)
+            const items = []
+
+            if (props.forloebStartDate != null && index === props.startMessageIndex)
+                items.push({ key: `start-spacer-${taskId}-${index}`, type: 'start-spacer' })
+
+            items.push({ key: `task-${taskId}-${index}`, type: 'task', task })
+            return items
+        })
+    })
+
+    const taskListSignature = computed(() => layoutItems.value.map(item => item.key).join('|'))
+
+    const findNearestColumnIndex = (columnLefts, left) => {
+        let nearestIndex = 0
+        let nearestDistance = Number.POSITIVE_INFINITY
+
+        columnLefts.forEach((columnLeft, index) => {
+            const distance = Math.abs(columnLeft - left)
+            if (distance < nearestDistance) {
+                nearestDistance = distance
+                nearestIndex = index
+            }
+        })
+
+        return nearestIndex
+    }
+
+    const resetFrozenLayout = () => {
+        isLayoutFrozen.value = false
+        frozenColumns.value = []
+        frozenColumnWidth.value = null
+    }
+
+    const freezeCurrentLayout = async () => {
+        await nextTick()
+
+        if (!listRef.value || layoutItems.value.length === 0)
+            return
+
+        const itemNodes = Array.from(listRef.value.querySelectorAll('[data-layout-key]'))
+        if (itemNodes.length === 0)
+            return
+
+        const itemsByKey = new Map(layoutItems.value.map(item => [item.key, item]))
+        const measuredEntries = itemNodes.map(node => {
+            const rect = node.getBoundingClientRect()
+            return {
+                key: node.getAttribute('data-layout-key'),
+                left: Math.round(rect.left),
+                top: rect.top
+            }
+        })
+
+        const sortedLefts = [...new Set(measuredEntries.map(entry => entry.left).sort((a, b) => a - b))]
+        const columnLefts = []
+        const tolerancePx = 8
+
+        sortedLefts.forEach((left) => {
+            const previousLeft = columnLefts[columnLefts.length - 1]
+            if (previousLeft == null || Math.abs(previousLeft - left) > tolerancePx)
+                columnLefts.push(left)
+        })
+
+        if (columnLefts.length === 0)
+            columnLefts.push(0)
+
+        const measuredColumns = Array.from({ length: columnLefts.length }, () => [])
+
+        measuredEntries
+            .sort((a, b) => a.top - b.top || a.left - b.left)
+            .forEach((entry) => {
+                const item = itemsByKey.get(entry.key)
+                if (!item)
+                    return
+
+                const columnIndex = findNearestColumnIndex(columnLefts, entry.left)
+                measuredColumns[columnIndex].push(item)
+            })
+
+        frozenColumns.value = measuredColumns
+        frozenColumnWidth.value = Math.round(itemNodes[0].getBoundingClientRect().width)
+        isLayoutFrozen.value = true
+    }
+
+    const scheduleLayoutFreeze = () => {
+        if (layoutItems.value.length === 0)
+            return
+
+        if (freezeAnimationFrameId)
+            cancelAnimationFrame(freezeAnimationFrameId)
+
+        freezeAnimationFrameId = requestAnimationFrame(() => {
+            freezeAnimationFrameId = 0
+            freezeCurrentLayout()
+        })
+    }
+
+    const scheduleLayoutFreezeAfterResize = () => {
+        if (resizeFreezeTimeoutId)
+            clearTimeout(resizeFreezeTimeoutId)
+
+        resizeFreezeTimeoutId = setTimeout(() => {
+            resizeFreezeTimeoutId = 0
+            scheduleLayoutFreeze()
+        }, 140)
+    }
+
+    const handleWindowResizeX = () => {
+        if (typeof window === 'undefined')
+            return
+
+        const nextViewportWidth = window.innerWidth
+
+        if (lastViewportWidth == null) {
+            lastViewportWidth = nextViewportWidth
+            return
+        }
+
+        if (nextViewportWidth === lastViewportWidth)
+            return
+
+        lastViewportWidth = nextViewportWidth
+
+        if (isLayoutFrozen.value)
+            resetFrozenLayout()
+
+        scheduleLayoutFreezeAfterResize()
+    }
+
+    watch(taskListSignature, () => {
+        resetFrozenLayout()
+        scheduleLayoutFreeze()
+    })
+
+    onMounted(() => {
+        if (typeof window !== 'undefined') {
+            lastViewportWidth = window.innerWidth
+            window.addEventListener('resize', handleWindowResizeX)
+        }
+
+        scheduleLayoutFreeze()
+    })
+
+    onBeforeUnmount(() => {
+        if (freezeAnimationFrameId)
+            cancelAnimationFrame(freezeAnimationFrameId)
+
+        if (resizeFreezeTimeoutId)
+            clearTimeout(resizeFreezeTimeoutId)
+
+        if (typeof window !== 'undefined')
+            window.removeEventListener('resize', handleWindowResizeX)
+    })
+
+    const getTaskColor = (task) => {
+        if (task.result)
+            return completedItemColor
+
+        if (!props.templateView && !props.isPreparation && new Date(task.slutdato) < new Date())
+            return overdueItemColor
+
+        if (!props.templateView && !props.isPreparation && new Date(task.startdato) > new Date())
+            return upcomingItemColor
+
+        // if (task.hidden === true)
+        //     return hiddenItemColor
+
+        return defaultItemColor
+    }
+
+    const getTaskBorder = (task) => {
+        if (!task.result && !props.templateView && !props.isPreparation && new Date(task.slutdato) < new Date())
+            return overdueItemColor
+
+        return task.hidden === true ? hiddenItemBorderColor : null
+    }
+
+    const buildCardProps = (task) => ({
+        id: task.OpgaveID ?? task.OpgaveskabelonID,
+        forloebId: task.ForløbID,
+        username: task.name,
+        useremail: props.useremail,
+        title: task.title,
+        header: task.header ?? task.beskrivelse,
+        description: task.beskrivelse,
+        note: task.note,
+        group: task.gruppe,
+        relativeStartdate: task.relativ_startdag,
+        relativeEnddate: task.relativ_slutdag,
+        startdate: task.startdato ? new Date(new Date(task.startdato)) : null,
+        deadline: task.slutdato ? new Date(new Date(task.slutdato)) : null,
+        ansvarlig: task.ansvarlig,
+        ansvarligEmail: task.ansvarligEmail,
+        booking: task.booking ? new Date(new Date(task.booking)) : null,
+        hidden: task.hidden === true,
+        color: getTaskColor(task),
+        border: getTaskBorder(task),
+        scrollTo: props.scrollToItem === task.OpgaveID || props.scrollToItem === task.OpgaveskabelonID,
+        dark: props.dark || task.result,
+        templateView: props.templateView,
+        isTemplate: task.OpgaveskabelonID != null,
+        result: task.result,
+        ressources: task.resourcer,
+        mails: task.pending_emails,
+        sentMails: task.sent_emails,
+        isPreparation: props.isPreparation,
+        external: props.external,
+        accessKey: props.accessKey
+    })
 </script>
 
 <template>
     <div>
         <p :class="'indent-tiny bold uppercase p-header-adjust' + (largeHeaderAdjust ? '-large' : '')">{{ (title ?? 'Opgaver' ) }} </p>
-        <div class="card-list" v-if="tasks && tasks.length > 0">
-            <template v-for="(task, index) in tasks">
-                <div class="start-spacer" v-if="forloebStartDate != null && index === startMessageIndex">
+        <div class="card-list row" ref="listRef" v-if="tasks && tasks.length > 0 && !isLayoutFrozen">
+            <template v-for="item in layoutItems" :key="`measure-${item.key}`">
+                <div class="start-spacer" :data-layout-key="item.key" v-if="item.type === 'start-spacer'">
                     <div class="line"></div>
                     <span class="text">Forløbet starter
                         {{
@@ -93,35 +322,34 @@
                     </span>
                 </div>
                 <Card
-                    :id="task.OpgaveID ?? task.OpgaveskabelonID"
-                    :forloebId="task.ForløbID"
-                    :username="task.name"
-                    :title="task.title"
-                    :header="task.header ?? task.beskrivelse"
-                    :description="task.beskrivelse"
-                    :note="task.note"
-                    :group="task.gruppe"
-                    :relativeStartdate="task.relativ_startdag"
-                    :relativeEnddate="task.relativ_slutdag"
-                    :startdate="task.startdato ? new Date(new Date(task.startdato)) : null"
-                    :deadline="task.slutdato ? new Date(new Date(task.slutdato)) : null"
-                    :ansvarlig="task.ansvarlig"
-                    :ansvarligEmail="task.ansvarligEmail"
-                    :booking="task.booking ? new Date(new Date(task.booking)) : null"
-                    :color="props.itemColor != null ? props.itemColor : task.result ? '617a5d' : (!templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : defaultItemColor"
-                    :border="(!task.result && !templateView && !isPreparation && new Date(task.slutdato) < new Date()) ? 'bf4e4e' : null"
-                    :expandByDefault="expandFirstItem && index == 0 || expandItem === task.OpgaveID || expandItem === task.OpgaveskabelonID"
-                    :dark="dark || task.result"
-                    :templateView="templateView"
-                    :isTemplate="task.OpgaveskabelonID != null"
-                    :result="task.result"
-                    :ressources="task.resourcer"
-                    :mails="task.pending_emails"
-					:isPreparation="isPreparation"
-					:external="external"
-					:accessKey="accessKey" />
+                    :data-layout-key="item.key"
+                    v-else
+                    v-bind="buildCardProps(item.task)"
+                    @result-updated="onTaskResultUpdated" />
             </template>
         </div><!-- /card-list -->
+        <div class="task-grid" v-else-if="tasks && tasks.length > 0">
+            <div class="task-grid-column"
+                 v-for="(column, columnIndex) in frozenColumns"
+                 :key="`column-${columnIndex}`"
+                 :style="frozenColumnWidth ? { width: `${frozenColumnWidth}px` } : null">
+                <template v-for="item in column" :key="`frozen-${item.key}`">
+                    <div class="start-spacer" v-if="item.type === 'start-spacer'">
+                        <div class="line"></div>
+                        <span class="text">Forløbet starter
+                            {{
+                                isPreparation || templateView ? 'her' :
+                                new Date(forloebStartDate).toLocaleDateString('da-DK', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                            }}
+                        </span>
+                    </div>
+                    <Card
+                        v-else
+                        v-bind="buildCardProps(item.task)"
+                        @result-updated="onTaskResultUpdated" />
+                </template>
+            </div>
+        </div>
         <div v-else>
             <p class="indent-tiny" v-if="isFetchingTasks">Indlæser ...</p>
             <p class="indent-tiny faded" v-else>Ingen opgaver fundet.</p>
@@ -130,6 +358,32 @@
 
 </template>
 <style scoped>
+.task-grid {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+}
+
+.task-grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.task-grid-column > * {
+    width: 100%;
+}
+
+.task-grid-column > .card.task {
+    max-width: 100%;
+}
+
+.task-grid-column :deep(.card.task.collapsed) {
+    margin-bottom: 0;
+}
+
 .start-spacer {
     font-size: 0.8em;
     text-transform: none;

@@ -9,7 +9,7 @@
 
     const isSubmitting = ref(false)
     const isEditing = route.query.edit === 'true'
-    const skabelon_id = isEditing ? parseInt(route.query.id, 10) : null
+    const skabelon_id = isEditing ? parseInt(route.query.tid ?? route.query.id, 10) : null
 
 	const inputFields = ref({
         name: "",
@@ -46,7 +46,7 @@
             const response = isEditing ? await updateForloebsskabelon(skabelon_id, formData) : await createForloebsskabelon(formData)
             if(response !== null)
             {
-                router.push({ path: 'forloeb-overview', query: { tid: response.data.uid } })
+                router.push({ path: '/forloeb-overview', query: { tid: response.data.uid } })
             }
             else
                 console.error('Response:', response)
@@ -64,6 +64,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
 	<p class="indent-tiny bold uppercase p-header-adjust">{{ isEditing ? 'Rediger forløbsskabelon' : 'Opret forløbsskabelon' }}</p>
 
     <div
@@ -107,6 +109,8 @@
 
 	</div>
 	</form>
+
+    </div></div><!-- /wrapper -->
 </template>
 <style scoped>
     .annot-label {

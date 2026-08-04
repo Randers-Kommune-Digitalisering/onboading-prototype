@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, nextTick } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
 
     import { getUsers } from '@/services/userService.js'
@@ -31,6 +31,7 @@
         ansvarlig: "",
         beskrivelse: "",
         note: "",
+        hidden: false,
         startdato: "",
         slutdato: "",
         relativ_startdag: 0,
@@ -45,7 +46,8 @@
         ansvarlig: { text: "Ansvarlig medarbejder", tooltip: "<span>Vælg den medarbejder, der skal hjælpe den nye medarbejder med denne opgave (f.eks. introducere, vejlede eller løse opgaven sammen).</span><span>Det er også den ansvarlige, der efterfølgende skal markere opgaven som udført.</span>" },
         beskrivelse: { text: "Beskrivelse", tooltip: "<span>Giv en detaljeret beskrivelse af opgaven.</span><span>Beskrivelsen er synlig både for den nye medarbejder samt en eventuel ansvarlig medarbejder.</span>" },
         note: { text: "Note til ansvarlig", tooltip: "<span>Tilføj eventuelle noter til den ansvarlige medarbejder.</span><span>Noten vil kun være synlig for den ansvarlige medarbejder, og kan ikke læses af den nye medarbejder.</span>" },
-        gruppe: { text: "Opgavegruppe", tooltip: "<span>Vælg en opgavegruppe for at gruppere denne opgave med andre opgaver i forløbet.</span><span>Opgaver kan sorteres efter gruppe i forløbets opgaveoverblik, hvilket kan hjælpe med at skabe overblik i forløb med mange opgaver</span>" },
+        hidden: { text: "Skjult opgave", tooltip: "<span>Når slået til, vises opgaven kun for administratorer og den ansvarlige medarbejder.</span><span>Skjulte opgaver tæller ikke med i forløbets gennemførelsesprocent.</span>" },
+        gruppe: { text: "Opgavegruppe", tooltip: "<span>Vælg en opgavegruppe for at gruppere denne opgave med andre opgaver i forløbet.</span><span>Opgaver kan sorteres efter gruppe i forløbets opgaveoverblik, hvilket kan hjælpe med at skabe overblik i forløb med mange opgaver.</span>" },
         nygruppe: { text: "Ny opgavegruppe", tooltip: "<span>Giv den nye opgavegruppe et beskrivende navn.</span><span>Du kan efterfølgende tilføje flere opgaver til denne gruppe for at skabe bedre overblik over opgaverne i forløbet.</span>" },
         startdato: { text: "Startdato", tooltip: "<span>Vælg startdato for opgaven.</span><span>Startdato sættes til den dag, hvor opgaven skal påbegyndes.</span>" },
         slutdato: { text: "Slutdato", tooltip: "<span>Vælg slutdato for opgaven.</span><span>Slutdato fungerer som en deadline for opgaven, og sættes til den dag, opgaven skal være afsluttet inden.</span><span>Slutdato kan tidligst sættes til dagen efter startdato for opgaven.</span>" },
@@ -164,9 +166,11 @@
             inputFields.value.title = ""
             inputFields.value.beskrivelse = ""
             inputFields.value.note = ""
+            inputFields.value.hidden = false
             inputFields.value.startdato = ""
             inputFields.value.slutdato = ""
             inputFields.value.booking = ""
+            inputFields.value.hidden = false
             if(addToTemplate.value || isPreparation.value)
             {
                 inputFields.value.relativ_slutdag = 1
@@ -178,14 +182,20 @@
         inputFields.value.title = template.title
         inputFields.value.beskrivelse = template.beskrivelse
         inputFields.value.note = template.note
+        inputFields.value.hidden = template.hidden === true
         inputFields.value.startdato = template.startdato
         inputFields.value.slutdato = template.slutdato
         inputFields.value.booking = template.booking
+        inputFields.value.hidden = template.hidden === true
         if(addToTemplate.value || isPreparation.value)
         {
             inputFields.value.relativ_slutdag = template.relativ_slutdag
             relativEndday.value = inputFields.value.relativ_slutdag
         }
+        nextTick(() => {
+            resizeTextareasToFitContent()
+            resizeTextareaDescriptionToFitContent()
+        })
     }
 
     const selectNoTemplateIfNotSelected = () => {
@@ -354,6 +364,9 @@
                 delete formData.relativ_startdag, delete formData.relativ_slutdag
                 if(formData.booking == "")
                     delete formData.booking
+
+            if(inputFields.value.hidden === true)
+                formData.note = null
             
             const response = isEditing ?
                                 (isTemplate ?
@@ -378,9 +391,58 @@
 
     const returnToPrevious = (id = null) =>
 	{
+        if (router.currentRoute.value.path.startsWith('/forloeb-overview/')) {
+            const parentForloebId = route.query.forloebTid || route.query.forloebId || forloeb_id.value
+            const returnToTemplateOverview = route.query.forloebTid != null || route.query.tid != null
+            const nextQuery = {
+                ...router.currentRoute.value.query,
+                item: id ?? opgaveId,
+                refreshTasks: Date.now().toString(),
+            }
+
+            if (returnToTemplateOverview)
+                nextQuery.tid = parentForloebId
+            else
+                nextQuery.id = parentForloebId
+
+            // In nested edit flows, `id` may still be the task id from the editor URL.
+            // Keep task selection in `item` and avoid leaking stale task id as forloeb id.
+            if (returnToTemplateOverview)
+                delete nextQuery.id
+
+            delete nextQuery.edit
+            delete nextQuery.forloebId
+            delete nextQuery.forloebTid
+            router.replace({ path: '/forloeb-overview', query: nextQuery })
+            return
+        }
+
 		// Get last route
 		let lastUrl = router.options.history.state.back
+        if (!lastUrl) {
+            router.replace({
+                path: '/forloeb-overview',
+                query: {
+                    id: forloeb_id.value,
+                    item: id ?? opgaveId,
+                    refreshTasks: Date.now().toString(),
+                },
+            })
+            return
+        }
+
 		let lastRoute = router.getRoutes().find(route => route.path == lastUrl.split('?')[0])
+        if (!lastRoute) {
+            router.replace({
+                path: '/forloeb-overview',
+                query: {
+                    id: forloeb_id.value,
+                    item: id ?? opgaveId,
+                    refreshTasks: Date.now().toString(),
+                },
+            })
+            return
+        }
 		lastRoute.query = Object.fromEntries(new URLSearchParams(lastUrl.split('?')[1]))
 
 		// Add query params
@@ -392,6 +454,8 @@
 </script>
 
 <template>
+    <div class="flex"><div class="max-width"><!-- wrapper -->
+
     <p class="indent-tiny bold uppercase p-header-adjust">
         {{ isEditing ? 'Rediger opgave' : isTemplate ? 'Opret opgaveskabelon' : 'Tilføj opgave' }}
         {{ isTemplate ? '' : ' til ' + (forloeb?.name ?? 'forløbet') }}
@@ -415,7 +479,7 @@
                 <select id="template" name="template" v-model="selectedTemplate" @change="selectTemplate(selectedTemplate)" required>
                     <option value="" disabled selected hidden></option>
                     <option :value="null" style="color:gray">Ingen skabelon</option>
-                    <option v-for="template in templates" :value="template">{{template.title}}</option>
+                    <option v-for="template in templates" :value="template">{{template.title ? template.title + ' | ' : ''}}{{template.beskrivelse ? template.beskrivelse.substring(0, 50) + (template.beskrivelse.length > 50 ? '...' : '') : ''}}</option>
                 </select>
                 <label for="template" class="floating-label">Skabelon</label>
                 <div class="icon nohover adjust-for-button"><i class="fa-solid fa-caret-down"></i></div>
@@ -433,13 +497,42 @@
                     type="text" id="title" name="title"
                     placeholder=" "
                     v-model="inputFields.title"
-                    required
                     @focus="focusedInput = inputFieldDescriptions.title"
                     @blur="focusedInput = null">
                 <label for="title" class="floating-label">Opgavens navn</label>
                 <div class="button input-button tooltip-hover" @click="toggleSelectTemplate()" v-if="!isEditing && !isTemplate">
                     <i class="fa-solid fa-folder"></i>
                     <span class="tooltip-display nohover">Vælg skabelon</span>
+                </div>
+            </div>
+
+            <div :class="['inputContainer']" v-if="!isTemplate">
+                <input
+                    type="text" id="gruppe" name="gruppe" 
+                    v-if="isAddingNewGroup"
+                    placeholder=""
+                    v-model="inputFields.OpgaveGruppeNavn"
+                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
+                    @blur="focusedInput = null"
+                    required>
+                <select
+                    id="gruppe" name="gruppe" 
+                    v-else
+                    v-model="selectedGroup"
+                    @change="selectGroup(selectedGroup)"
+                    @focus="focusedInput = inputFieldDescriptions.gruppe"
+                    @blur="focusedInput = null"
+                    required>
+                    <option value="" disabled selected hidden></option>
+                    <option :value="null" style="color:gray">Ingen gruppe</option>
+                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
+                </select>
+                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
+                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
+                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
+                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
+                    <i v-else class="fa-solid fa-plus"></i>
+                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
                 </div>
             </div>
 
@@ -475,7 +568,20 @@
                 <label for="description" class="floating-label">Beskrivelse</label>
             </div>
 
-            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
+            <div :class="['inputContainer checkbox', { 'hideOnMobile': isAssistantSearchOpen }]">
+                <input
+                    type="checkbox"
+                    id="hidden"
+                    name="hidden"
+                    v-model="inputFields.hidden"
+                    @focus="focusedInput = inputFieldDescriptions.hidden"
+                    @blur="focusedInput = null">
+                <label for="hidden" class="checkbox-label">
+                    Skjult opgave (kun admin + ansvarlig)
+                </label>
+            </div>
+
+            <div v-if="!inputFields.hidden" :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]">
                 <textarea
                     id="note" name="note"
                     ref="textareaNote"
@@ -485,36 +591,6 @@
                     @focus="focusedInput = inputFieldDescriptions.note"
                     @blur="focusedInput = null"></textarea>
                 <label for="note" class="floating-label">Note til ansvarlig</label>
-            </div>
-
-            <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate">
-                <input
-                    type="text" id="gruppe" name="gruppe" 
-                    v-if="isAddingNewGroup"
-                    placeholder=""
-                    v-model="inputFields.OpgaveGruppeNavn"
-                    @focus="focusedInput = inputFieldDescriptions.nygruppe"
-                    @blur="focusedInput = null"
-                    required>
-                <select
-                    id="gruppe" name="gruppe" 
-                    v-else
-                    v-model="selectedGroup"
-                    @change="selectGroup(selectedGroup)"
-                    @focus="focusedInput = inputFieldDescriptions.gruppe"
-                    @blur="focusedInput = null"
-                    required>
-                    <option value="" disabled selected hidden></option>
-                    <option :value="null" style="color:gray">Ingen gruppe</option>
-                    <option v-for="gruppe in forloeb?.opgave_grupper" :value="gruppe.OpgaveGruppeID">{{gruppe.name}}</option>
-                </select>
-                <label for="gruppe" class="floating-label">{{ isAddingNewGroup ? 'Nyt gruppenavn' : 'Gruppe' }}</label>
-                <div v-if="!isAddingNewGroup" class="icon nohover" style="transform: translateX(-4rem);"><i class="fa-solid fa-caret-down"></i></div>
-                <div class="button input-button tooltip-hover" @click="toggleAddNewGroup()">
-                    <i v-if="isAddingNewGroup" class="fa-solid fa-arrow-left"></i>
-                    <i v-else class="fa-solid fa-plus"></i>
-                    <span class="tooltip-display nohover">{{ isAddingNewGroup ? 'Fortryd' : 'Opret gruppe' }}</span>
-                </div>
             </div>
 
             <div :class="['inputContainer', { 'hideOnMobile': isAssistantSearchOpen }]" v-if="!isTemplate && !addToTemplate && !isPreparation">
@@ -601,6 +677,8 @@
 
     </div>
     </form>
+
+    </div></div><!-- /wrapper -->
 </template>
 <style scoped>
     .annot-label {

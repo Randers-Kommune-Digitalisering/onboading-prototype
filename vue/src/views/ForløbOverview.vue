@@ -8,10 +8,12 @@
 
     const route = useRoute()
     const router = useRouter()
-    const id = computed(() => parseInt(route.query.id || route.query.tid, 10))
-    const isTemplate = computed(() => route.query.tid !== undefined)
-	const _expandItem = route.query.item
-	const expandItem = ref(_expandItem ? parseInt(_expandItem) : null)
+    const id = computed(() => parseInt(route.query.forloebTid || route.query.forloebId || route.query.tid || route.query.id, 10))
+    const isTemplate = computed(() => route.query.tid !== undefined || route.query.forloebTid !== undefined)
+    const scrollToItem = computed(() => {
+        const parsed = parseInt(route.query.item, 10)
+        return Number.isNaN(parsed) ? null : parsed
+    })
     const userInfo = ref(null)
 
     const isExternal = computed(() => (route.query.external || '').toString().toLowerCase() === 'true')
@@ -126,7 +128,7 @@
                             :id="id"
                             :showDetails="true"
                             :isTemplate="false"
-                            :expandItem="expandItem"
+                            :scrollToItem="scrollToItem"
                             :external="true"
                             :accessKey="accessKey" />
         </div>
@@ -135,6 +137,20 @@
                         :id="id"
                         :showDetails="true"
                         :isTemplate="isTemplate"
-                        :expandItem="expandItem" />
+                        :scrollToItem="scrollToItem" />
+
+        <div class="content">
+            <router-view v-slot="{ Component }">
+                <div v-if="Component" class="workspace-editor">
+                    <component :is="Component" />
+                </div>
+            </router-view>
+        </div>
     </div>
 </template>
+
+<style scoped>
+    .workspace-editor {
+        margin-top: 1.2rem;
+    }
+</style>
