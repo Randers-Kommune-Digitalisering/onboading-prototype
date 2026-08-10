@@ -15,18 +15,6 @@ updates:
     commit-message:
       prefix: "pip"
 
-  # Node.js dependencies (security updates only)
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-      day: "sunday"
-      time: "04:00"
-    open-pull-requests-limit: 0
-    commit-message:
-      prefix: "npm"
-    security-updates-only: true
-
   # GitHub Actions dependencies (security updates only)
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
